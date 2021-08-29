@@ -4,7 +4,6 @@ module.exports = {
     title: "CodeBG",
   },
   plugins: [
-    "gatsby-plugin-sass",
     "gatsby-plugin-react-helmet",
     "gatsby-plugin-sitemap",
     {
@@ -19,6 +18,15 @@ module.exports = {
         isTSX: true, // defaults to false
         jsxPragma: `jsx`, // defaults to "React"
         allExtensions: true, // defaults to false
+      },
+    },
+    {
+      resolve: `gatsby-plugin-sass`,
+      options: {
+        postCssPlugins: [
+          require("tailwindcss"),
+          require("./tailwind.config.js"),
+        ],
       },
     },
   ],
