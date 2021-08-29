@@ -8,7 +8,7 @@ const IndexPage = () => {
       <Section title="CodeBG">
         <div className="text-2xl">A web development boutique</div>
       </Section>
-      <Section title="About">
+      <Section title="About" linkTo="about">
         <div className="text-2xl">We do web apps and sites.</div>
       </Section>
       <Section title="Contact Us">
