@@ -12,7 +12,9 @@ const IndexPage = () => {
         <div className="text-2xl">We do web apps and sites.</div>
       </Section>
       <Section title="Contact Us">
-        <div className="text-2xl">Email: request@codebg.com</div>
+        <div className="text-base text-blue">
+          <a href="mailto:request@codebg.com">Email: request@codebg.com</a>
+        </div>
       </Section>
     </Layout>
   );
