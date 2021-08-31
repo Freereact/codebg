@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@fontsource/montserrat": "^4.5.1",
+    "@types/react-helmet": "^6.1.2",
     "autoprefixer": "^10.3.3",
     "gatsby": "^3.12.1",
     "gatsby-plugin-manifest": "^3.12.0",
