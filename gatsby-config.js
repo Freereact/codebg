@@ -9,7 +9,13 @@ module.exports = {
     {
       resolve: "gatsby-plugin-manifest",
       options: {
-        icon: "src/images/icon.png",
+        name: "CodeBG",
+        short_name: "CodeBG",
+        start_url: "/",
+        background_color: "#FFFAF0",
+        display: "standalone",
+        theme_color: "#e06900",
+        icon: "src/images/favicon.png",
       },
     },
     {
