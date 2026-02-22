@@ -1,35 +1,34 @@
 {
-  "name": "code-bg",
-  "version": "1.0.0",
+  "name": "codebg",
   "private": true,
-  "description": "CodeBG",
-  "author": "szautkin",
-  "keywords": [
-    "gatsby"
-  ],
+  "version": "1.1.0",
+  "type": "module",
   "scripts": {
-    "develop": "gatsby develop",
-    "start": "gatsby develop",
-    "build": "gatsby build",
-    "serve": "gatsby serve",
-    "clean": "gatsby clean"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@fontsource/montserrat": "^4.5.1",
-    "@types/react-helmet": "^6.1.2",
-    "autoprefixer": "^10.3.3",
-    "gatsby": "^3.12.1",
-    "gatsby-plugin-manifest": "^3.12.0",
-    "gatsby-plugin-react-helmet": "^4.12.0",
-    "gatsby-plugin-sass": "^4.12.0",
-    "gatsby-plugin-sitemap": "^4.8.0",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-helmet": "^6.1.0",
-    "sass": "^1.38.2",
-    "tailwindcss": "^2.2.8"
+    "@radix-ui/react-slot": "^1.1.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
-    "@types/tailwindcss": "^2.2.1"
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.16.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
   }
 }
