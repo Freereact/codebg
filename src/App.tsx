@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from './components/ui/button'
+import heroBg from './assets/hero-bg.webp'
 
 export default function App() {
   const [sent, setSent] = useState(false)
@@ -22,20 +23,26 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 md:px-6 md:py-10">
-        <section className="section-card p-8 md:p-12">
-          <p className="mb-3 inline-flex rounded-full border border-orange-300 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700">
-            Low-maintenance web development
-          </p>
-          <h1 className="text-4xl font-semibold leading-tight text-slate-800 md:text-5xl">
-            Build fast. Stay simple. Grow with confidence.
-          </h1>
-          <p className="mt-4 max-w-3xl text-slate-600">
-            CodeBG builds clean, TypeScript-first web apps with practical UX and long-term maintainability.
-            We focus on shipping value fast without creating future technical debt.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button size="lg">Start your project</Button>
-            <Button variant="ghost" size="lg">See pricing approach</Button>
+        <section
+          className="section-card relative overflow-hidden p-8 md:p-12"
+          style={{ backgroundImage: `url(${heroBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-white/72 via-white/68 to-[#f6f6f3]/88 backdrop-blur-[1px]" />
+          <div className="relative">
+            <p className="mb-3 inline-flex rounded-full border border-orange-300 bg-orange-50/95 px-3 py-1 text-xs font-medium text-orange-700">
+              Low-maintenance web development
+            </p>
+            <h1 className="text-4xl font-semibold leading-tight text-slate-800 md:text-5xl">
+              Build fast. Stay simple. Grow with confidence.
+            </h1>
+            <p className="mt-4 max-w-3xl text-slate-700">
+              CodeBG builds clean, TypeScript-first web apps with practical UX and long-term maintainability.
+              We focus on shipping value fast without creating future technical debt.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button size="lg">Start your project</Button>
+              <Button variant="ghost" size="lg">See pricing approach</Button>
+            </div>
           </div>
         </section>
 
