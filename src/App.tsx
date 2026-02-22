@@ -27,15 +27,15 @@ export default function App() {
           className="section-card relative overflow-hidden p-8 md:p-12"
           style={{ backgroundImage: `url(${heroBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-white/72 via-white/68 to-[#f6f6f3]/88 backdrop-blur-[1px]" />
-          <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/76 to-[#f6f6f3]/92 backdrop-blur-[2px]" />
+          <div className="relative max-w-3xl rounded-2xl border border-white/70 bg-white/72 p-6 shadow-lg backdrop-blur-sm md:p-8">
             <p className="mb-3 inline-flex rounded-full border border-orange-300 bg-orange-50/95 px-3 py-1 text-xs font-medium text-orange-700">
               Low-maintenance web development
             </p>
-            <h1 className="text-4xl font-semibold leading-tight text-slate-800 md:text-5xl">
+            <h1 className="text-4xl font-bold leading-tight text-slate-900 md:text-5xl">
               Build fast. Stay simple. Grow with confidence.
             </h1>
-            <p className="mt-4 max-w-3xl text-slate-700">
+            <p className="mt-4 max-w-3xl text-slate-800">
               CodeBG builds clean, TypeScript-first web apps with practical UX and long-term maintainability.
               We focus on shipping value fast without creating future technical debt.
             </p>
