@@ -1,5 +1,5 @@
 import amqp from 'amqplib'
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import nodemailer from 'nodemailer'
 import { config } from './config.js'
 import type { EmailJob } from './types.js'

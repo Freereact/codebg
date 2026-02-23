@@ -3,7 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import amqp from 'amqplib'
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import { config } from './config.js'
 import { emailJobSchema, isAllowedOrigin } from './validation.js'
 import { verifyTurnstile } from './turnstile.js'
@@ -57,7 +57,7 @@ app.post('/api/email-job', async (req, res) => {
     email: parsed.data.email,
     message: parsed.data.message,
     createdAt: new Date().toISOString(),
-    ip: req.ip,
+    ip: req.ip ?? "unknown",
     userAgent: req.get('user-agent') ?? 'unknown',
   }
 
