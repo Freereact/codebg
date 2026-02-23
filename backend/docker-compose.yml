@@ -1,0 +1,56 @@
+services:
+  codebg-api:
+    build: .
+    container_name: codebg-api
+    command: ["node", "dist/server.js"]
+    env_file:
+      - .env
+    ports:
+      - "8787:8787"
+    restart: always
+    depends_on:
+      - rabbitmq
+      - redis
+    networks:
+      - codebg-backend
+      - hst-map-net
+
+  codebg-worker:
+    build: .
+    container_name: codebg-worker
+    command: ["node", "dist/worker.js"]
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - rabbitmq
+      - redis
+    networks:
+      - codebg-backend
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: codebg-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - codebg-backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: codebg-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - codebg-backend
+
+networks:
+  codebg-backend:
+    driver: bridge
+  hst-map-net:
+    external: true
+    name: hst-cluster_hst-map-net
