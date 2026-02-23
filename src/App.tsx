@@ -181,8 +181,8 @@ export default function App() {
           className="section-card relative overflow-hidden p-8 md:p-12"
           style={{ backgroundImage: `url(${heroBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-white/84 via-white/80 to-[#f6f6f3]/94 backdrop-blur-[2px]" />
-          <div className="relative max-w-3xl rounded-2xl border border-white/70 bg-white/78 p-6 shadow-lg backdrop-blur-sm md:p-8">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#f6f6f3]/94 via-[#f6f6f3]/92 to-[#f6f6f3]/96 backdrop-blur-[3px]" />
+          <div className="relative max-w-3xl rounded-2xl border border-white/80 bg-[#f6f6f3]/90 p-6 shadow-lg backdrop-blur-sm md:p-8">
             <p className="mb-3 inline-flex rounded-full border border-orange-300 bg-orange-50/95 px-3 py-1 text-xs font-medium text-orange-700">
               Canadian web development
             </p>
