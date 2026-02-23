@@ -10,6 +10,31 @@ type FormState = {
 
 const initialForm: FormState = { name: '', email: '', message: '' }
 
+function loadTurnstileScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.turnstile) {
+      resolve()
+      return
+    }
+
+    const existing = document.querySelector<HTMLScriptElement>('script[data-turnstile="true"]')
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true })
+      existing.addEventListener('error', () => reject(new Error('turnstile_script_load_failed')), { once: true })
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+    script.async = true
+    script.defer = true
+    script.dataset.turnstile = 'true'
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('turnstile_script_load_failed'))
+    document.head.appendChild(script)
+  })
+}
+
 export default function App() {
   const [form, setForm] = useState<FormState>(initialForm)
   const [showCaptchaModal, setShowCaptchaModal] = useState(false)
@@ -17,18 +42,60 @@ export default function App() {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+  const [captchaStatus, setCaptchaStatus] = useState<'idle' | 'loading' | 'ready' | 'failed'>('idle')
   const widgetIdRef = useRef<string | null>(null)
 
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'https://codebg.com'
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
 
   useEffect(() => {
-    if (!showCaptchaModal || !window.turnstile || widgetIdRef.current || !siteKey) return
-    widgetIdRef.current = window.turnstile.render('#turnstile-widget', {
-      sitekey: siteKey,
-      callback: (token) => setTurnstileToken(token),
-      'expired-callback': () => setTurnstileToken(''),
-    })
+    let cancelled = false
+
+    async function initTurnstile() {
+      if (!showCaptchaModal) return
+
+      if (!siteKey) {
+        setCaptchaStatus('failed')
+        setError('Turnstile site key is missing on frontend build.')
+        return
+      }
+
+      setCaptchaStatus('loading')
+
+      try {
+        await loadTurnstileScript()
+        if (cancelled || !showCaptchaModal || !window.turnstile) return
+
+        if (widgetIdRef.current) {
+          window.turnstile.reset(widgetIdRef.current)
+          setCaptchaStatus('ready')
+          return
+        }
+
+        const widgetId = window.turnstile.render('#turnstile-widget', {
+          sitekey: siteKey,
+          callback: (token: string) => {
+            setTurnstileToken(token)
+            setCaptchaStatus('ready')
+          },
+          'expired-callback': () => setTurnstileToken(''),
+        })
+
+        widgetIdRef.current = widgetId
+        setCaptchaStatus('ready')
+      } catch {
+        if (!cancelled) {
+          setCaptchaStatus('failed')
+          setError('Security widget failed to load. Please refresh and try again.')
+        }
+      }
+    }
+
+    void initTurnstile()
+
+    return () => {
+      cancelled = true
+    }
   }, [showCaptchaModal, siteKey])
 
   const openCaptcha = (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,6 +106,7 @@ export default function App() {
       setError('Please fill in all fields before verification.')
       return
     }
+    setTurnstileToken('')
     setShowCaptchaModal(true)
   }
 
@@ -134,7 +202,9 @@ export default function App() {
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
             <h3 className="text-lg font-semibold text-slate-800">Verify and confirm</h3>
             <p className="mt-1 text-sm text-slate-600">Complete the security check, then confirm send.</p>
-            <div id="turnstile-widget" className="mt-4 min-h-16" />
+            <div id="turnstile-widget" className="mt-4 min-h-[72px]" />
+            {captchaStatus === 'loading' && <p className="mt-2 text-xs text-slate-500">Loading security check…</p>}
+            {captchaStatus === 'failed' && <p className="mt-2 text-xs text-red-600">Security widget failed to load. Try refreshing the page.</p>}
             <div className="mt-5 flex justify-end gap-2">
               <Button variant="ghost" type="button" onClick={() => { setShowCaptchaModal(false); setTurnstileToken('') }}>Cancel</Button>
               <Button type="button" onClick={submitVerified} disabled={!turnstileToken || sending}>{sending ? 'Sending…' : 'Confirm send'}</Button>
