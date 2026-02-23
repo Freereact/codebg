@@ -23,6 +23,10 @@ jobs:
         env:
           TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
         run: |
+          if [ -z "$TURNSTILE_SITE_KEY" ]; then
+            echo "Missing TURNSTILE_SITE_KEY secret in test-ci environment"
+            exit 1
+          fi
           ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
             set -e
             mkdir -p ~/projects
@@ -34,6 +38,7 @@ jobs:
             git fetch --all --prune
             git checkout -B test-ci origin/test-ci
             git reset --hard origin/test-ci
+            rm -rf node_modules
             npm ci
             export VITE_TURNSTILE_SITE_KEY='${TURNSTILE_SITE_KEY}'
             npm run build
