@@ -34,4 +34,6 @@ jobs:
             git reset --hard origin/test-ci
             npm ci
             npm run build
+            rsync -a --delete dist/ /home/starry/projects/hst-cluster/deploy/nginx/html/codebg/
+            docker exec hst-map-nginx nginx -s reload
           '
