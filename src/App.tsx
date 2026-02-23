@@ -106,6 +106,10 @@ export default function App() {
       setError('Please fill in all fields before verification.')
       return
     }
+    if (form.message.trim().length < 3) {
+      setError('Project summary must be at least 3 characters.')
+      return
+    }
     setTurnstileToken('')
     setShowCaptchaModal(true)
   }
