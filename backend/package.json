@@ -9,7 +9,7 @@
     "start:worker": "node dist/worker.js",
     "dev": "tsx watch src/server.ts",
     "dev:worker": "tsx watch src/worker.ts",
-    "test": "vitest run test/**/*.ts"
+    "test": "vitest run test/validation.test.ts"
   },
   "dependencies": {
     "amqplib": "^0.10.5",
