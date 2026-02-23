@@ -186,7 +186,7 @@ export default function App() {
 
         <section id="contact" className="section-card p-8">
           <h2 className="text-2xl font-semibold text-slate-800">Contact</h2>
-          <p className="mt-2 text-slate-600">Tell us what you need. We’ll reply with a practical plan. Or email <a className="font-medium text-orange-700 underline" href="mailto:info@codebg.com">info@codebg.com</a>.</p>
+          <p className="mt-2 text-slate-600">Tell us what you need. We’ll reply with a practical plan. Or email <a className="font-medium text-orange-700 underline" href="mailto:web@codebg.com">web@codebg.com</a>.</p>
           <form className="mt-5 grid gap-4 md:grid-cols-2" onSubmit={openCaptcha}>
             <label className="space-y-1"><span className="text-sm text-slate-600">Name</span><input className="input" name="name" value={form.name} onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))} required /></label>
             <label className="space-y-1"><span className="text-sm text-slate-600">Email</span><input className="input" type="email" name="email" value={form.email} onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))} required /></label>
