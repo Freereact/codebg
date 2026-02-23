@@ -12,9 +12,14 @@ interface ImportMeta {
 declare global {
   interface Window {
     turnstile?: {
-      render: (el: string | HTMLElement, options: { sitekey: string; callback: (token: string) => void; 'expired-callback'?: () => void }) => string
+      render: (
+        el: string | HTMLElement,
+        options: { sitekey: string; callback: (token: string) => void; 'expired-callback'?: () => void }
+      ) => string
       reset: (widgetId?: string) => void
       remove: (widgetId?: string) => void
     }
   }
 }
+
+export {}
