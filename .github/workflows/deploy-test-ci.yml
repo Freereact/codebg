@@ -13,13 +13,13 @@ jobs:
 
       - name: Frontend build check
         run: |
-          npm ci
+          npm install
           npm run build
 
       - name: Backend test + build check
         run: |
           cd backend
-          npm ci
+          npm install
           npm test
           npm run build
 
@@ -58,7 +58,7 @@ jobs:
             git checkout -B test-ci origin/test-ci
             git reset --hard origin/test-ci
             rm -rf node_modules
-            npm ci
+            npm install
             export VITE_TURNSTILE_SITE_KEY='${TURNSTILE_SITE_KEY}'
             npm run build
             rsync -a --delete dist/ /home/starry/projects/hst-cluster/deploy/nginx/html/codebg/
