@@ -20,8 +20,10 @@ jobs:
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy build on VM
+        env:
+          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
         run: |
-          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} '
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
             set -e
             mkdir -p ~/projects
             if [ ! -d ~/projects/codebg/.git ]; then
@@ -33,7 +35,8 @@ jobs:
             git checkout -B test-ci origin/test-ci
             git reset --hard origin/test-ci
             npm ci
+            export VITE_TURNSTILE_SITE_KEY='${TURNSTILE_SITE_KEY}'
             npm run build
             rsync -a --delete dist/ /home/starry/projects/hst-cluster/deploy/nginx/html/codebg/
             docker exec hst-map-nginx nginx -s reload
-          '
+          "
