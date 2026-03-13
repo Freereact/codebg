@@ -168,6 +168,7 @@ export default function App() {
             <a href="#about" className="hover:text-orange-400">About</a>
             <a href="#services" className="hover:text-orange-400">Services</a>
             <a href="#process" className="hover:text-orange-400">Process</a>
+            <a href="#samples" className="hover:text-orange-400">Samples</a>
             <a href="#pricing" className="hover:text-orange-400">Pricing</a>
             <a href="#contact" className="hover:text-orange-400">Contact</a>
           </nav>
@@ -237,6 +238,29 @@ export default function App() {
                 <p className="font-medium text-slate-800">{step}</p>
                 <p className="mt-1 text-sm text-slate-600">{desc}</p>
               </div>
+            ))}
+          </div>
+        </section>
+
+
+        <section id="samples" className="section-card p-8">
+          <h2 className="text-2xl font-semibold text-slate-800">Sample sites by business type</h2>
+          <p className="mt-2 text-slate-600">
+            Explore live sample customer sites built with CodeBG. Each template can be customized and launched fast.
+          </p>
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {[
+              ['Auto shop', '/customers/autoshop/', 'Repair shop landing page template with service highlights and booking CTA.'],
+              ['Dental cabinet', '/customers/dental-cabinet/', 'Comfort-first dental clinic template with services and appointment funnel.'],
+              ['Winery', '/customers/winery/', 'Local winery template with featured products, experience, and visit CTA.'],
+            ].map(([title, href, desc]) => (
+              <article key={title} className="rounded-2xl border border-slate-200 bg-white p-5">
+                <h3 className="font-semibold text-slate-800">{title}</h3>
+                <p className="mt-2 text-sm text-slate-600">{desc}</p>
+                <a href={href} className="mt-3 inline-block text-sm font-medium text-orange-700 hover:text-orange-800">
+                  Open sample →
+                </a>
+              </article>
             ))}
           </div>
         </section>
