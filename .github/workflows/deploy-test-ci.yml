@@ -59,8 +59,9 @@ jobs:
             git reset --hard origin/test-ci
             rm -rf node_modules
             npm install
-            export VITE_TURNSTILE_SITE_KEY='${TURNSTILE_SITE_KEY}'
+            export VITE_TURNSTILE_SITE_KEY=
             npm run build
-            rsync -a --delete dist/ /home/starry/projects/hst-cluster/deploy/nginx/html/codebg/
-            docker exec hst-map-nginx nginx -s reload
+            mkdir -p /var/www/codebg
+            rsync -a --delete dist/ /var/www/codebg/
+            systemctl reload nginx || nginx -s reload
           "
