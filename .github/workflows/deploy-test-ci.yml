@@ -41,12 +41,10 @@ jobs:
       - name: Deploy build on VM
         env:
           TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
-          VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
           TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
         run: |
-          KEY="${VITE_TURNSTILE_SITE_KEY:-$TURNSTILE_SITE_KEY}"
-          if [ -z "$KEY" ]; then
-            echo "Missing Turnstile site key. Set VITE_TURNSTILE_SITE_KEY or TURNSTILE_SITE_KEY in test-ci secrets"
+          if [ -z "$TURNSTILE_SITE_KEY" ]; then
+            echo "Missing TURNSTILE_SITE_KEY in test-ci secrets"
             exit 1
           fi
           ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
@@ -62,9 +60,10 @@ jobs:
             git reset --hard origin/test-ci
             rm -rf node_modules
             npm install
-            export VITE_TURNSTILE_SITE_KEY=
+            export VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY'
+            echo 'VITE_TURNSTILE_SITE_KEY=$TURNSTILE_SITE_KEY' > .env.production
             npm run build
             mkdir -p /var/www/codebg
-            rsync -a --delete dist/ /var/www/codebg/
+            rsync -a --delete --exclude='customers/' dist/ /var/www/codebg/
             systemctl reload nginx || nginx -s reload
           "
