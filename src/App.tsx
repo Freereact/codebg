@@ -332,6 +332,22 @@ export default function App() {
           </div>
         </section>
 
+
+        <section id="seo" className="section-card p-8">
+          <h2 className="text-2xl font-semibold text-slate-800">Local web design resources</h2>
+          <p className="mt-2 text-slate-600">Helpful pages for search and planning your project.</p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <a className="rounded-xl border border-slate-200 bg-white p-4 hover:border-orange-300" href="/services/web-design-penticton.html">
+              <p className="font-medium text-slate-800">Web Design Penticton, BC</p>
+              <p className="mt-1 text-sm text-slate-600">What local businesses need from a modern website.</p>
+            </a>
+            <a className="rounded-xl border border-slate-200 bg-white p-4 hover:border-orange-300" href="/services/website-redesign.html">
+              <p className="font-medium text-slate-800">Website Redesign Guide</p>
+              <p className="mt-1 text-sm text-slate-600">How to improve clarity, UX, and conversion flow.</p>
+            </a>
+          </div>
+        </section>
+
         <section id="contact" className="section-card p-8">
           <h2 className="text-2xl font-semibold text-slate-800">Contact</h2>
           <p className="mt-2 text-slate-600">Tell us what you need. We’ll reply with a practical plan.</p>
