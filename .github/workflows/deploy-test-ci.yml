@@ -93,18 +93,17 @@ jobs:
             docker run -d --name codebg-rabbitmq --network codebg-backend rabbitmq:3.13-management-alpine
             cd ~/projects/codebg/backend
             docker build -t codebg-backend:latest .
-            cat > /tmp/codebg-backend.env <<'ENV'
-PORT=8787
-REDIS_URL=redis://codebg-redis:6379
-RABBITMQ_URL=amqp://codebg-rabbitmq:5672
-RABBITMQ_QUEUE=email_jobs
-TURNSTILE_SECRET_KEY=$TURNSTILE_SECRET_KEY
-RESEND_API_KEY=$RESEND_API_KEY
-MAIL_FROM=$MAIL_FROM
-MAIL_TO=$MAIL_TO
-ALLOWED_ORIGINS=https://codebg.com
-MAX_EMAILS_PER_DAY=100
-ENV
+            : > /tmp/codebg-backend.env
+            echo 'PORT=8787' >> /tmp/codebg-backend.env
+            echo 'REDIS_URL=redis://codebg-redis:6379' >> /tmp/codebg-backend.env
+            echo 'RABBITMQ_URL=amqp://codebg-rabbitmq:5672' >> /tmp/codebg-backend.env
+            echo 'RABBITMQ_QUEUE=email_jobs' >> /tmp/codebg-backend.env
+            echo 'TURNSTILE_SECRET_KEY=$TURNSTILE_SECRET_KEY' >> /tmp/codebg-backend.env
+            echo 'RESEND_API_KEY=$RESEND_API_KEY' >> /tmp/codebg-backend.env
+            echo 'MAIL_FROM=$MAIL_FROM' >> /tmp/codebg-backend.env
+            echo 'MAIL_TO=$MAIL_TO' >> /tmp/codebg-backend.env
+            echo 'ALLOWED_ORIGINS=https://codebg.com' >> /tmp/codebg-backend.env
+            echo 'MAX_EMAILS_PER_DAY=100' >> /tmp/codebg-backend.env
             docker run -d --name codebg-api --network codebg-backend --env-file /tmp/codebg-backend.env -p 8787:8787 codebg-backend:latest node dist/server.js
             docker run -d --name codebg-worker --network codebg-backend --env-file /tmp/codebg-backend.env codebg-backend:latest node dist/worker.js
             curl -fsS http://127.0.0.1:8787/healthz
