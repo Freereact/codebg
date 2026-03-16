@@ -14,13 +14,16 @@ type SampleEntry = {
   slug: string
   title: string
   description: string
+  tags?: string[]
+  thumbnail?: string
 }
 
 const fallbackSamples: SampleEntry[] = [
-  { slug: 'autoshop', title: 'Auto shop', description: 'Repair shop landing page template with service highlights and booking CTA.' },
-  { slug: 'dental-cabinet', title: 'Dental cabinet', description: 'Comfort-first dental clinic template with services and appointment funnel.' },
-  { slug: 'winery', title: 'Winery', description: 'Local winery template with featured products, experience, and visit CTA.' },
-  { slug: 'massage-service', title: 'Massage service', description: 'Wellness and massage therapy template with treatment and booking sections.' },
+  { slug: 'autoshop', title: 'Auto shop', description: 'Services, trust points, reviews, location, CTA.', tags: ['hero','services','testimonials','location'], thumbnail: '/customers/autoshop/assets/autoshop-hero-CQViJQB6.jpg' },
+  { slug: 'dental-cabinet', title: 'Dental cabinet', description: 'Service highlights, practitioner trust, reviews, contact.', tags: ['hero','benefits','reviews','contact'] },
+  { slug: 'winery', title: 'Winery', description: 'Featured products, story, social proof, visit info.', tags: ['hero','products','story','visit'] },
+  { slug: 'massage-service', title: 'Massage service', description: 'Treatments, process, pricing, testimonials, location.', tags: ['hero','pricing','testimonials','location'], thumbnail: '/customers/massage-service/assets/massage-hero-C2NIHe0G.jpg' },
+  { slug: 'bakery-service', title: 'Bakery service', description: 'Menu highlights, testimonials, hours, location.', tags: ['hero','menu','reviews','hours'], thumbnail: '/customers/bakery-service/assets/bakery-hero-DmIi84jx.jpg' },
 ]
 
 function loadTurnstileScript(): Promise<void> {
@@ -290,15 +293,28 @@ export default function App() {
             <a href="/customers/" className="text-sm font-medium text-orange-700 hover:text-orange-800">View all samples →</a>
           </div>
 
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {samples.map((sample) => (
-              <article key={sample.slug} className="rounded-2xl border border-slate-200 bg-white p-5">
-                <p className="text-xs uppercase tracking-wide text-orange-700">Sample</p>
-                <h3 className="mt-1 font-semibold text-slate-800">{sample.title}</h3>
-                <p className="mt-2 text-sm text-slate-600">{sample.description}</p>
-                <a href={`/customers/${sample.slug}/`} className="mt-3 inline-block text-sm font-medium text-orange-700 hover:text-orange-800">
-                  Open sample →
-                </a>
+              <article key={sample.slug} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <div
+                  className="h-28 bg-slate-100 bg-cover bg-center"
+                  style={sample.thumbnail ? { backgroundImage: `url(${sample.thumbnail})` } : undefined}
+                />
+                <div className="p-5">
+                  <p className="text-xs uppercase tracking-wide text-orange-700">Sample</p>
+                  <h3 className="mt-1 font-semibold text-slate-800">{sample.title}</h3>
+                  <p className="mt-2 text-sm text-slate-600">{sample.description}</p>
+                  {sample.tags?.length ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {sample.tags.map((tag) => (
+                        <span key={tag} className="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-700">{tag}</span>
+                      ))}
+                    </div>
+                  ) : null}
+                  <a href={`/customers/${sample.slug}/`} className="mt-4 inline-block text-sm font-medium text-orange-700 hover:text-orange-800">
+                    Open sample →
+                  </a>
+                </div>
               </article>
             ))}
           </div>
