@@ -208,6 +208,7 @@ export default function App() {
             <a href="#services" className="hover:text-orange-400">Services</a>
             <a href="#process" className="hover:text-orange-400">Process</a>
             <a href="#samples" className="hover:text-orange-400">Samples</a>
+            <a href="#news" className="hover:text-orange-400">News</a>
             <a href="#pricing" className="hover:text-orange-400">Pricing</a>
             <a href="#contact" className="hover:text-orange-400">Contact</a>
           </nav>
@@ -317,6 +318,40 @@ export default function App() {
                 </div>
               </article>
             ))}
+          </div>
+        </section>
+
+
+        <section id="news" className="section-card p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-800">News</h2>
+              <p className="mt-2 text-slate-600">Latest updates from our stack, tools, and workflows.</p>
+            </div>
+            <a href="/news/nemoclaw-by-nvidia.html" className="text-sm font-medium text-orange-700 hover:text-orange-800">View latest post →</a>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            <article className="rounded-2xl border border-slate-200 bg-white p-5">
+              <p className="text-xs uppercase tracking-wide text-orange-700">Mar 2026 · NVIDIA</p>
+              <h3 className="mt-1 font-semibold text-slate-800">NemoClaw (OpenClaw plugin): what’s confirmed</h3>
+              <p className="mt-2 text-sm text-slate-600">Verified summary of NVIDIA NemoClaw in OpenClaw deployment context.</p>
+              <a href="/news/nemoclaw-by-nvidia.html" className="mt-3 inline-block text-sm font-medium text-orange-700 hover:text-orange-800">Read article →</a>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-white p-5">
+              <p className="text-xs uppercase tracking-wide text-orange-700">Platform</p>
+              <h3 className="mt-1 font-semibold text-slate-800">Sample catalog now updates dynamically</h3>
+              <p className="mt-2 text-sm text-slate-600">Main site sample cards now load from a shared JSON catalog for faster updates.</p>
+              <a href="/customers/index.html" className="mt-3 inline-block text-sm font-medium text-orange-700 hover:text-orange-800">Open samples →</a>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-white p-5">
+              <p className="text-xs uppercase tracking-wide text-orange-700">SEO</p>
+              <h3 className="mt-1 font-semibold text-slate-800">New local service pages are live</h3>
+              <p className="mt-2 text-sm text-slate-600">Added focused pages for Penticton web design and small business redesign.</p>
+              <a href="/services/web-design-penticton.html" className="mt-3 inline-block text-sm font-medium text-orange-700 hover:text-orange-800">Read page →</a>
+            </article>
           </div>
         </section>
 
