@@ -10,6 +10,19 @@ type FormState = {
 
 const initialForm: FormState = { name: '', email: '', message: '' }
 
+type SampleEntry = {
+  slug: string
+  title: string
+  description: string
+}
+
+const fallbackSamples: SampleEntry[] = [
+  { slug: 'autoshop', title: 'Auto shop', description: 'Repair shop landing page template with service highlights and booking CTA.' },
+  { slug: 'dental-cabinet', title: 'Dental cabinet', description: 'Comfort-first dental clinic template with services and appointment funnel.' },
+  { slug: 'winery', title: 'Winery', description: 'Local winery template with featured products, experience, and visit CTA.' },
+  { slug: 'massage-service', title: 'Massage service', description: 'Wellness and massage therapy template with treatment and booking sections.' },
+]
+
 function loadTurnstileScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.turnstile) {
@@ -43,6 +56,7 @@ export default function App() {
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const [captchaStatus, setCaptchaStatus] = useState<'idle' | 'loading' | 'ready' | 'failed'>('idle')
+  const [samples, setSamples] = useState<SampleEntry[]>(fallbackSamples)
   const widgetIdRef = useRef<string | null>(null)
 
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'https://codebg.com'
@@ -95,6 +109,28 @@ export default function App() {
       cancelled = true
     }
   }, [showCaptchaModal, siteKey])
+
+  useEffect(() => {
+    let mounted = true
+
+    async function loadSamples() {
+      try {
+        const res = await fetch('/customers/samples.json', { cache: 'no-store' })
+        if (!res.ok) return
+        const data = (await res.json()) as { samples?: SampleEntry[] }
+        if (mounted && data.samples && data.samples.length) {
+          setSamples(data.samples)
+        }
+      } catch {
+        // keep fallback samples
+      }
+    }
+
+    void loadSamples()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const openCaptcha = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -244,20 +280,23 @@ export default function App() {
 
 
         <section id="samples" className="section-card p-8">
-          <h2 className="text-2xl font-semibold text-slate-800">Sample sites by business type</h2>
-          <p className="mt-2 text-slate-600">
-            Explore live sample customer sites built with CodeBG. Each template can be customized and launched fast.
-          </p>
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {[
-              ['Auto shop', '/customers/autoshop/', 'Repair shop landing page template with service highlights and booking CTA.'],
-              ['Dental cabinet', '/customers/dental-cabinet/', 'Comfort-first dental clinic template with services and appointment funnel.'],
-              ['Winery', '/customers/winery/', 'Local winery template with featured products, experience, and visit CTA.'],
-            ].map(([title, href, desc]) => (
-              <article key={title} className="rounded-2xl border border-slate-200 bg-white p-5">
-                <h3 className="font-semibold text-slate-800">{title}</h3>
-                <p className="mt-2 text-sm text-slate-600">{desc}</p>
-                <a href={href} className="mt-3 inline-block text-sm font-medium text-orange-700 hover:text-orange-800">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-800">Sample sites by business type</h2>
+              <p className="mt-2 text-slate-600">
+                Explore live examples and pick the structure that best matches your business.
+              </p>
+            </div>
+            <a href="/customers/" className="text-sm font-medium text-orange-700 hover:text-orange-800">View all samples →</a>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {samples.map((sample) => (
+              <article key={sample.slug} className="rounded-2xl border border-slate-200 bg-white p-5">
+                <p className="text-xs uppercase tracking-wide text-orange-700">Sample</p>
+                <h3 className="mt-1 font-semibold text-slate-800">{sample.title}</h3>
+                <p className="mt-2 text-sm text-slate-600">{sample.description}</p>
+                <a href={`/customers/${sample.slug}/`} className="mt-3 inline-block text-sm font-medium text-orange-700 hover:text-orange-800">
                   Open sample →
                 </a>
               </article>
