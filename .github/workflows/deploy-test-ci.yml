@@ -59,7 +59,10 @@ jobs:
             sudo docker rm -f codebg-api codebg-worker codebg-rabbitmq codebg-redis >/dev/null 2>&1 || true
             sudo docker run -d --name codebg-redis --network codebg-backend redis:7-alpine redis-server --appendonly yes
             sudo docker run -d --name codebg-rabbitmq --network codebg-backend rabbitmq:3.13-management-alpine
-            sleep 8
+            for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+              sudo docker exec codebg-rabbitmq rabbitmq-diagnostics -q ping && break || true
+              sleep 2
+            done
             cd ~/projects/codebg/backend
             sudo docker build -t codebg-backend:latest .
             : > /tmp/codebg-backend.env
@@ -73,8 +76,8 @@ jobs:
             echo 'MAIL_TO=$MAIL_TO' >> /tmp/codebg-backend.env
             echo 'ALLOWED_ORIGINS=https://codebg.com' >> /tmp/codebg-backend.env
             echo 'MAX_EMAILS_PER_DAY=100' >> /tmp/codebg-backend.env
-            sudo docker run -d --name codebg-api --network codebg-backend --env-file /tmp/codebg-backend.env -p 8787:8787 codebg-backend:latest node dist/server.js
-            sudo docker run -d --name codebg-worker --network codebg-backend --env-file /tmp/codebg-backend.env codebg-backend:latest node dist/worker.js
+            sudo docker run -d --restart unless-stopped --name codebg-api --network codebg-backend --env-file /tmp/codebg-backend.env -p 8787:8787 codebg-backend:latest node dist/server.js
+            sudo docker run -d --restart unless-stopped --name codebg-worker --network codebg-backend --env-file /tmp/codebg-backend.env codebg-backend:latest node dist/worker.js
             for i in 1 2 3 4 5 6 7 8 9 10; do
               curl -fsS http://127.0.0.1:8787/healthz && break || true
               sleep 2
