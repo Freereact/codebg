@@ -9,16 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Frontend build check
-        run: |
-          npm install
-          npm run build
-      - name: Backend test + build check
-        run: |
-          cd backend
-          npm install
-          npm test
-          npm run build
+      - run: npm install && npm run build
+      - run: cd backend && npm install && npm test && npm run build
 
   deploy:
     runs-on: ubuntu-latest
@@ -32,21 +24,6 @@ jobs:
           echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Validate secrets
-        env:
-          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
-          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          MAIL_FROM: ${{ secrets.MAIL_FROM }}
-          MAIL_TO: ${{ secrets.MAIL_TO }}
-        run: |
-          test -n "$TURNSTILE_SITE_KEY"
-          test -n "$TURNSTILE_SECRET_KEY"
-          test -n "$RESEND_API_KEY"
-          test -n "$MAIL_FROM"
-          test -n "$MAIL_TO"
-
       - name: Deploy on VM
         env:
           TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
@@ -55,17 +32,15 @@ jobs:
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
         run: |
+          test -n "$TURNSTILE_SITE_KEY" && test -n "$TURNSTILE_SECRET_KEY" && test -n "$RESEND_API_KEY" && test -n "$MAIL_FROM" && test -n "$MAIL_TO"
           ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
             set -e
             mkdir -p ~/projects
-            if [ ! -d ~/projects/codebg/.git ]; then
-              git clone https://github.com/Freereact/codebg.git ~/projects/codebg
-            fi
+            if [ ! -d ~/projects/codebg/.git ]; then git clone https://github.com/Freereact/codebg.git ~/projects/codebg; fi
             cd ~/projects/codebg
             git fetch --all --prune
             git checkout -B test-ci origin/test-ci
             git reset --hard origin/test-ci
-
             rm -rf node_modules
             npm install
             export VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY'
@@ -73,19 +48,7 @@ jobs:
             npm run build
             mkdir -p /var/www/codebg
             rsync -a --delete --exclude='customers/' dist/ /var/www/codebg/
-
-            # nginx /api proxy
-            if ! grep -q 'location /api/' /etc/nginx/sites-available/codebg; then
-              awk '
-                /location \/ \{/ {print; print "\n    location /api/ {\n        proxy_pass http://127.0.0.1:8787;\n        proxy_http_version 1.1;\n        proxy_set_header Host \\$host;\n        proxy_set_header X-Real-IP \\$remote_addr;\n        proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto \\$scheme;\n    }\n"; next}
-                {print}
-              ' /etc/nginx/sites-available/codebg > /etc/nginx/sites-available/codebg.new
-              mv /etc/nginx/sites-available/codebg.new /etc/nginx/sites-available/codebg
-            fi
-            nginx -t
             systemctl reload nginx || nginx -s reload
-
-            # backend containers
             command -v docker >/dev/null 2>&1
             docker network create codebg-backend >/dev/null 2>&1 || true
             docker rm -f codebg-api codebg-worker codebg-rabbitmq codebg-redis >/dev/null 2>&1 || true
