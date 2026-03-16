@@ -269,7 +269,7 @@ export default function App() {
           <h2 className="text-2xl font-semibold text-slate-800">Pricing</h2>
           <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-6">
             <p className="text-sm uppercase tracking-wide text-orange-700">Starting price</p>
-            <p className="mt-1 text-4xl font-bold text-slate-900">From $99</p>
+            <p className="mt-1 text-4xl font-bold text-slate-900">From $49</p>
             <p className="mt-2 text-slate-700">Single-page, 5-section website. A weekend project, professionally delivered.</p>
           </div>
           <div className="mt-5">
