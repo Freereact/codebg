@@ -59,6 +59,7 @@ jobs:
             sudo docker rm -f codebg-api codebg-worker codebg-rabbitmq codebg-redis >/dev/null 2>&1 || true
             sudo docker run -d --name codebg-redis --network codebg-backend redis:7-alpine redis-server --appendonly yes
             sudo docker run -d --name codebg-rabbitmq --network codebg-backend rabbitmq:3.13-management-alpine
+            sleep 8
             cd ~/projects/codebg/backend
             sudo docker build -t codebg-backend:latest .
             : > /tmp/codebg-backend.env
