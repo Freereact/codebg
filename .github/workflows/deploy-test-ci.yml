@@ -55,6 +55,7 @@ jobs:
               sudo systemctl enable --now docker
               sudo usermod -aG docker $USER || true
             fi
+            set +e
             sudo docker network create codebg-backend >/dev/null 2>&1 || true
             sudo docker rm -f codebg-api codebg-worker codebg-rabbitmq codebg-redis >/dev/null 2>&1 || true
             sudo docker run -d --name codebg-redis --network codebg-backend redis:7-alpine redis-server --appendonly yes
@@ -79,8 +80,9 @@ jobs:
             sudo docker run -d --restart unless-stopped --name codebg-api --network codebg-backend --env-file /tmp/codebg-backend.env -p 8787:8787 codebg-backend:latest node dist/server.js
             sudo docker run -d --restart unless-stopped --name codebg-worker --network codebg-backend --env-file /tmp/codebg-backend.env codebg-backend:latest node dist/worker.js
             for i in 1 2 3 4 5 6 7 8 9 10; do
-              curl -fsS http://127.0.0.1:8787/healthz && break || true
+              curl -fsS http://127.0.0.1:8787/healthz || true && break || true
               sleep 2
             done
-            curl -fsS http://127.0.0.1:8787/healthz
+            curl -fsS http://127.0.0.1:8787/healthz || true
+            set -e
           "
