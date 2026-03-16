@@ -8,14 +8,11 @@ jobs:
   quality-check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Frontend build check
         run: |
           npm install
           npm run build
-
       - name: Backend test + build check
         run: |
           cd backend
@@ -28,9 +25,7 @@ jobs:
     needs: quality-check
     environment: test-ci
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -38,7 +33,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy build on VM
+      - name: Validate secrets
         env:
           TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
           TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
@@ -46,26 +41,31 @@ jobs:
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
         run: |
-          for v in TURNSTILE_SITE_KEY TURNSTILE_SECRET_KEY RESEND_API_KEY MAIL_FROM MAIL_TO; do
-            if [ -z "${!v}" ]; then
-              echo "Missing required secret: $v"
-              exit 1
-            fi
-          done
+          test -n "$TURNSTILE_SITE_KEY"
+          test -n "$TURNSTILE_SECRET_KEY"
+          test -n "$RESEND_API_KEY"
+          test -n "$MAIL_FROM"
+          test -n "$MAIL_TO"
 
+      - name: Deploy on VM
+        env:
+          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: |
           ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
             set -e
             mkdir -p ~/projects
             if [ ! -d ~/projects/codebg/.git ]; then
-              git clone git@github.com:Freereact/codebg.git ~/projects/codebg || git clone https://github.com/Freereact/codebg.git ~/projects/codebg
+              git clone https://github.com/Freereact/codebg.git ~/projects/codebg
             fi
             cd ~/projects/codebg
-            git remote prune origin || true
             git fetch --all --prune
             git checkout -B test-ci origin/test-ci
             git reset --hard origin/test-ci
 
-            # Frontend deploy
             rm -rf node_modules
             npm install
             export VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY'
@@ -74,35 +74,23 @@ jobs:
             mkdir -p /var/www/codebg
             rsync -a --delete --exclude='customers/' dist/ /var/www/codebg/
 
-            # Ensure nginx routes /api to backend
+            # nginx /api proxy
             if ! grep -q 'location /api/' /etc/nginx/sites-available/codebg; then
-              python3 - <<'PY'
-from pathlib import Path
-p=Path('/etc/nginx/sites-available/codebg')
-s=p.read_text()
-needle='    location / {\n        try_files $uri $uri/ /index.html;\n    }\n\n'
-insert='    location /api/ {\n        proxy_pass http://127.0.0.1:8787;\n        proxy_http_version 1.1;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n\n'
-if needle in s:
-    s=s.replace(needle, needle+insert)
-else:
-    raise SystemExit('Could not patch nginx config for /api')
-p.write_text(s)
-PY
+              awk '
+                /location \/ \{/ {print; print "\n    location /api/ {\n        proxy_pass http://127.0.0.1:8787;\n        proxy_http_version 1.1;\n        proxy_set_header Host \\$host;\n        proxy_set_header X-Real-IP \\$remote_addr;\n        proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto \\$scheme;\n    }\n"; next}
+                {print}
+              ' /etc/nginx/sites-available/codebg > /etc/nginx/sites-available/codebg.new
+              mv /etc/nginx/sites-available/codebg.new /etc/nginx/sites-available/codebg
             fi
             nginx -t
             systemctl reload nginx || nginx -s reload
 
-            # Backend deploy (docker)
-            if ! command -v docker >/dev/null 2>&1; then
-              echo 'Docker is required for backend deploy on VM' >&2
-              exit 1
-            fi
+            # backend containers
+            command -v docker >/dev/null 2>&1
             docker network create codebg-backend >/dev/null 2>&1 || true
             docker rm -f codebg-api codebg-worker codebg-rabbitmq codebg-redis >/dev/null 2>&1 || true
-
-            docker run -d --name codebg-redis --network codebg-backend -p 6379:6379 redis:7-alpine redis-server --appendonly yes
-            docker run -d --name codebg-rabbitmq --network codebg-backend -p 5672:5672 -p 15672:15672 rabbitmq:3.13-management-alpine
-
+            docker run -d --name codebg-redis --network codebg-backend redis:7-alpine redis-server --appendonly yes
+            docker run -d --name codebg-rabbitmq --network codebg-backend rabbitmq:3.13-management-alpine
             cd ~/projects/codebg/backend
             docker build -t codebg-backend:latest .
             cat > /tmp/codebg-backend.env <<'ENV'
@@ -119,11 +107,5 @@ MAX_EMAILS_PER_DAY=100
 ENV
             docker run -d --name codebg-api --network codebg-backend --env-file /tmp/codebg-backend.env -p 8787:8787 codebg-backend:latest node dist/server.js
             docker run -d --name codebg-worker --network codebg-backend --env-file /tmp/codebg-backend.env codebg-backend:latest node dist/worker.js
-
-            # health checks
-            for i in 1 2 3 4 5 6 7 8 9 10; do
-              if curl -fsS http://127.0.0.1:8787/healthz >/dev/null; then break; fi
-              sleep 2
-            done
             curl -fsS http://127.0.0.1:8787/healthz
           "
