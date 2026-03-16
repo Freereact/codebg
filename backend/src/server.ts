@@ -18,9 +18,37 @@ app.use(cors({
 }))
 
 const redis = new Redis(config.redisUrl)
-const amqpConn = await amqp.connect(config.rabbitUrl)
-const channel = await amqpConn.createChannel()
-await channel.assertQueue(config.queueName, { durable: true })
+let channel: amqp.Channel | null = null
+try {
+  const amqpConn = await amqp.connect(config.rabbitUrl)
+  channel = await amqpConn.createChannel()
+  await channel.assertQueue(config.queueName, { durable: true })
+  console.log('RabbitMQ queue ready')
+} catch (err) {
+  console.warn('RabbitMQ unavailable, using direct-send fallback', err)
+}
+
+async function sendViaResend(job: EmailJob): Promise<void> {
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${config.resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: config.mailFrom,
+      to: [config.mailTo],
+      reply_to: job.email,
+      subject: `CodeBG Contact: ${job.name}`,
+      text: `Name: ${job.name}\nEmail: ${job.email}\nIP: ${job.ip}\nUA: ${job.userAgent}\n\nMessage:\n${job.message}`,
+    }),
+  })
+
+  if (!response.ok) {
+    const errText = await response.text()
+    throw new Error(`Resend API error (${response.status}): ${errText}`)
+  }
+}
 
 app.get('/healthz', (_req, res) => {
   res.json({ ok: true })
@@ -68,8 +96,26 @@ app.post('/api/email-job', async (req, res) => {
     name: job.name,
   })
 
-  channel.sendToQueue(config.queueName, Buffer.from(JSON.stringify(job)), { persistent: true })
-  return res.status(202).json({ ok: true, jobId })
+  if (channel) {
+    channel.sendToQueue(config.queueName, Buffer.from(JSON.stringify(job)), { persistent: true })
+    return res.status(202).json({ ok: true, jobId })
+  }
+
+  try {
+    await sendViaResend(job)
+    await redis.hset(`email_job:${jobId}`, {
+      status: 'sent',
+      sentAt: new Date().toISOString(),
+    })
+    return res.status(200).json({ ok: true, jobId, direct: true })
+  } catch (error) {
+    await redis.hset(`email_job:${jobId}`, {
+      status: 'failed',
+      failedAt: new Date().toISOString(),
+      error: error instanceof Error ? error.message : 'unknown',
+    })
+    return res.status(502).json({ ok: false, error: 'email_send_failed' })
+  }
 })
 
 app.listen(config.port, () => {
