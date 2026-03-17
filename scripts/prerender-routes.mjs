@@ -42,6 +42,26 @@ const routes = [
     ogType: 'article',
   },
   {
+    path: '/about',
+    title: 'About CodeBG — AI-Powered Web Development That Reduces Your Cost',
+    description: 'CodeBG combines 10+ years of web development expertise with AI to deliver professional websites faster and at a fraction of the traditional cost.',
+  },
+  {
+    path: '/services',
+    title: 'Services — AI-Powered Web Development | CodeBG',
+    description: 'Single-page websites built with AI: mobile-first design, fast deployment, and pricing that reflects real efficiency gains.',
+  },
+  {
+    path: '/process',
+    title: 'Our Process — From Brief to Launch in Days | CodeBG',
+    description: 'A transparent 4-step process: brief, draft, build, launch. AI accelerates every phase so you get a professional site faster and cheaper.',
+  },
+  {
+    path: '/pricing',
+    title: 'Pricing — Professional Websites from $49 CAD | CodeBG',
+    description: 'AI-powered web development starting at $49 CAD. Get a professional single-page website delivered in days, not weeks.',
+  },
+  {
     path: '/customers',
     title: 'Samples | CodeBG',
     description: 'Explore live examples and pick the structure that best matches your business.',

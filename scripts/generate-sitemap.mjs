@@ -11,6 +11,10 @@ const today = new Date().toISOString().split('T')[0]
 
 const urls = [
   { loc: '/', priority: '1.0', changefreq: 'weekly' },
+  { loc: '/about', priority: '0.8', changefreq: 'monthly' },
+  { loc: '/services', priority: '0.8', changefreq: 'monthly' },
+  { loc: '/process', priority: '0.8', changefreq: 'monthly' },
+  { loc: '/pricing', priority: '0.8', changefreq: 'monthly' },
   { loc: '/services/web-design-penticton', priority: '0.8', changefreq: 'monthly' },
   { loc: '/services/website-redesign', priority: '0.8', changefreq: 'monthly' },
   { loc: '/customers', priority: '0.7', changefreq: 'weekly' },
