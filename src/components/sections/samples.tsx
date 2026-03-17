@@ -18,10 +18,16 @@ export function Samples({ samples }: SamplesProps) {
       <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {samples.map((sample) => (
           <Card as="article" key={sample.slug} className="overflow-hidden p-0">
-            <div
-              className="h-32 bg-slate-100 dark:bg-slate-700 bg-cover bg-center"
-              style={sample.thumbnail ? { backgroundImage: `url(${sample.thumbnail})` } : undefined}
-            />
+            {sample.thumbnail ? (
+              <img
+                src={sample.thumbnail}
+                alt={`${sample.title} website sample`}
+                loading="lazy"
+                className="h-32 w-full bg-slate-100 dark:bg-slate-700 object-cover"
+              />
+            ) : (
+              <div className="h-32 bg-slate-100 dark:bg-slate-700" />
+            )}
             <div className="p-5">
               <p className="text-xs uppercase tracking-wide text-accent-text dark:text-orange-400">Sample</p>
               <h3 className="mt-1 font-semibold text-slate-800 dark:text-slate-100">{sample.title}</h3>

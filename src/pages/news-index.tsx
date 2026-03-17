@@ -37,6 +37,12 @@ export function NewsIndexPage() {
           ))}
         </div>
       </Section>
+
+      <nav aria-label="Related pages" className="flex flex-wrap gap-4 text-sm">
+        <a href="/customers" className="text-accent hover:underline">Browse sample sites &rarr;</a>
+        <a href="/services/web-design-penticton" className="text-accent hover:underline">Web design in Penticton &rarr;</a>
+        <a href="/services/website-redesign" className="text-accent hover:underline">Website redesign guide &rarr;</a>
+      </nav>
     </div>
   )
 }
