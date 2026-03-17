@@ -28,10 +28,32 @@
         "name": "CodeBG",
         "url": "https://codebg.com/",
         "image": "https://codebg.com/og-image.webp",
-        "description": "Small business web development and one-page websites for local businesses.",
-        "areaServed": ["Penticton", "British Columbia", "Canada"],
+        "description": "Small business web development and one-page websites for local businesses in Penticton, BC and across Canada.",
+        "areaServed": [
+          {"@type": "City", "name": "Penticton", "containedInPlace": {"@type": "AdministrativeArea", "name": "British Columbia"}},
+          {"@type": "Country", "name": "Canada"}
+        ],
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Penticton",
+          "addressRegion": "BC",
+          "addressCountry": "CA"
+        },
         "priceRange": "$49+",
-        "email": "hello@codebg.com"
+        "email": "hello@codebg.com",
+        "knowsAbout": ["web design", "small business websites", "website redesign", "one-page websites"],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Web Development Services",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {"@type": "Service", "name": "One-Page Business Website", "description": "Single-page, 5-section website professionally delivered."},
+              "price": "49",
+              "priceCurrency": "CAD"
+            }
+          ]
+        }
       }
     </script>
 
