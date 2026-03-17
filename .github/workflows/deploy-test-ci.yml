@@ -101,6 +101,7 @@ jobs:
           set -euo pipefail
           ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -s << 'SCRIPT'
             set -euo pipefail
+            sudo rm -f /etc/nginx/sites-enabled/codebg /etc/nginx/sites-available/codebg
             sudo cp ~/projects/codebg/infra/nginx/codebg.com.conf /etc/nginx/sites-available/codebg.com
             sudo ln -sf /etc/nginx/sites-available/codebg.com /etc/nginx/sites-enabled/codebg.com
             sudo cp ~/projects/codebg/infra/nginx/sample-apps.codebg.com.conf /etc/nginx/sites-available/sample-apps.codebg.com
