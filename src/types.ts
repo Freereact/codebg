@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 export type FormState = {
   name: string
   email: string
@@ -20,4 +22,12 @@ export type NewsEntry = {
   date?: string
   href: string
   linkLabel?: string
+  body?: ReactNode
+}
+
+export type ServiceEntry = {
+  slug: string
+  title: string
+  description: string
+  body?: ReactNode
 }

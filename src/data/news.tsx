@@ -9,6 +9,29 @@ export const newsEntries: NewsEntry[] = [
     date: 'Mar 2026',
     href: '/news/nemoclaw-by-nvidia',
     linkLabel: 'Read article',
+    body: (
+      <>
+        <p>
+          Confirmed from public sources: NVIDIA NemoClaw is presented as an alpha
+          open-source stack/plugin for secure OpenClaw deployment with OpenShell.
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>
+            Repo:{' '}
+            <a
+              href="https://github.com/NVIDIA/NemoClaw"
+              target="_blank"
+              rel="noreferrer"
+              className="text-accent hover:underline"
+            >
+              github.com/NVIDIA/NemoClaw
+            </a>
+          </li>
+          <li>Status: Alpha</li>
+          <li>Focus: sandbox policy controls and secure runtime setup</li>
+        </ul>
+      </>
+    ),
   },
   {
     slug: 'dynamic-sample-catalog',
