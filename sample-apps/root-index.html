@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sample Sites | CodeBG</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; padding: 2rem 1rem; }
+    .container { max-width: 72rem; margin: 0 auto; }
+    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: .5rem; }
+    .subtitle { color: #64748b; margin-bottom: 2rem; }
+    .grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .card { background: #fff; border-radius: .75rem; overflow: hidden; box-shadow: 0 1px 3px rgb(0 0 0 / .1); transition: box-shadow .2s; text-decoration: none; color: inherit; display: block; }
+    .card:hover { box-shadow: 0 4px 12px rgb(0 0 0 / .15); }
+    .thumb { height: 8rem; background: #e2e8f0; object-fit: cover; width: 100%; display: block; }
+    .body { padding: 1.25rem; }
+    .label { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: #6366f1; font-weight: 600; }
+    .title { font-size: 1.05rem; font-weight: 600; margin-top: .25rem; }
+    .desc { font-size: .875rem; color: #64748b; margin-top: .5rem; line-height: 1.5; }
+    .tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+    .tag { background: #eef2ff; color: #4338ca; font-size: .7rem; padding: .25rem .625rem; border-radius: 9999px; }
+    .back { display: inline-block; margin-top: 2rem; color: #6366f1; text-decoration: none; font-size: .875rem; }
+    .back:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sample sites by business type</h1>
+    <p class="subtitle">Explore live examples and pick the structure that best matches your business.</p>
+    <div class="grid" id="grid"></div>
+    <a class="back" href="https://codebg.com/customers/">&#8592; Back to CodeBG</a>
+  </div>
+  <script>
+    fetch('/samples.json')
+      .then(r => r.json())
+      .then(samples => {
+        const grid = document.getElementById('grid');
+        samples.forEach(s => {
+          const a = document.createElement('a');
+          a.className = 'card';
+          a.href = '/' + s.slug + '/';
+          const thumbHtml = s.thumbnail
+            ? '<img class="thumb" src="' + s.thumbnail + '" alt="' + s.title + '" loading="lazy" />'
+            : '<div class="thumb"></div>';
+          const tagsHtml = (s.tags || []).map(t => '<span class="tag">' + t + '</span>').join('');
+          a.innerHTML =
+            thumbHtml +
+            '<div class="body">' +
+              '<p class="label">Sample</p>' +
+              '<h2 class="title">' + s.title + '</h2>' +
+              '<p class="desc">' + s.description + '</p>' +
+              (tagsHtml ? '<div class="tags">' + tagsHtml + '</div>' : '') +
+            '</div>';
+          grid.appendChild(a);
+        });
+      })
+      .catch(function() {});
+  </script>
+</body>
+</html>

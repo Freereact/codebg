@@ -99,6 +99,7 @@ jobs:
             done
             echo ']' >> /tmp/samples.json
             cp /tmp/samples.json /var/www/sample-apps/samples.json
+            cp root-index.html /var/www/sample-apps/index.html
           SCRIPT
 
       - name: Deploy nginx config

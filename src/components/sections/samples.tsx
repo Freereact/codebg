@@ -14,7 +14,7 @@ export function Samples({ samples }: SamplesProps) {
       id="samples"
       heading="Sample sites by business type"
       description="Explore live examples and pick the structure that best matches your business."
-      headerRight={<CtaLink href="https://sample-apps.codebg.com/">View all samples</CtaLink>}
+      headerRight={<CtaLink href="/customers/">View all samples</CtaLink>}
     >
       {/* Desktop grid */}
       <div className="mt-6 hidden md:grid gap-5 sm:grid-cols-2 xl:grid-cols-3 stagger-children">
