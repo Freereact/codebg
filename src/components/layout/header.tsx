@@ -6,7 +6,7 @@ import { cn } from '../../lib/utils'
 
 interface HeaderProps {
   activeSection?: string
-  onContactClick: () => void
+  onContactClick?: () => void
 }
 
 export function Header({ activeSection, onContactClick }: HeaderProps) {
@@ -28,7 +28,7 @@ export function Header({ activeSection, onContactClick }: HeaderProps) {
               href={link.href}
               className={cn(
                 'transition-colors hover:text-accent',
-                activeSection === link.href.slice(1) && 'font-medium text-accent',
+                activeSection === link.href.replace('/#', '') && 'font-medium text-accent',
               )}
             >
               {link.label}
@@ -37,9 +37,15 @@ export function Header({ activeSection, onContactClick }: HeaderProps) {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button size="default" onClick={onContactClick} className="hidden md:inline-flex">
-            Contact
-          </Button>
+          {onContactClick ? (
+            <Button size="default" onClick={onContactClick} className="hidden md:inline-flex">
+              Contact
+            </Button>
+          ) : (
+            <Button size="default" asChild className="hidden md:inline-flex">
+              <a href="/#contact">Contact</a>
+            </Button>
+          )}
 
           <button
             className="flex h-10 w-10 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10 md:hidden"
@@ -61,7 +67,7 @@ export function Header({ activeSection, onContactClick }: HeaderProps) {
                 href={link.href}
                 className={cn(
                   'rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/10 hover:text-accent',
-                  activeSection === link.href.slice(1) && 'font-medium text-accent',
+                  activeSection === link.href.replace('/#', '') && 'font-medium text-accent',
                 )}
                 onClick={closeMobileMenu}
               >
@@ -69,9 +75,15 @@ export function Header({ activeSection, onContactClick }: HeaderProps) {
               </a>
             ))}
             <div className="mt-2 border-t border-slate-700 pt-3">
-              <Button size="default" className="w-full" onClick={() => { closeMobileMenu(); onContactClick() }}>
-                Get started
-              </Button>
+              {onContactClick ? (
+                <Button size="default" className="w-full" onClick={() => { closeMobileMenu(); onContactClick() }}>
+                  Get started
+                </Button>
+              ) : (
+                <Button size="default" asChild className="w-full" onClick={closeMobileMenu}>
+                  <a href="/#contact">Get started</a>
+                </Button>
+              )}
             </div>
           </div>
         </nav>

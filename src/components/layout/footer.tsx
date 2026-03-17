@@ -10,10 +10,10 @@ export function Footer() {
             <p className="mt-1 text-sm text-slate-400">Simple web development for Canadian businesses.</p>
           </div>
           <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
-            <a href="#services" className="transition-colors hover:text-accent">Services</a>
-            <a href="#samples" className="transition-colors hover:text-accent">Samples</a>
-            <a href="#pricing" className="transition-colors hover:text-accent">Pricing</a>
-            <a href="#contact" className="transition-colors hover:text-accent">Contact</a>
+            <a href="/#services" className="transition-colors hover:text-accent">Services</a>
+            <a href="/#samples" className="transition-colors hover:text-accent">Samples</a>
+            <a href="/#pricing" className="transition-colors hover:text-accent">Pricing</a>
+            <a href="/#contact" className="transition-colors hover:text-accent">Contact</a>
           </nav>
         </div>
         <div className="mt-6 border-t border-slate-700 pt-5 text-center text-sm text-slate-500">
