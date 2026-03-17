@@ -1,4 +1,5 @@
 import { Check, DollarSign } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
 import { useDocumentMeta } from '../hooks/use-document-meta'
 import { useScrollReveal } from '../hooks/use-scroll-reveal'
 import { Breadcrumbs } from '../components/ui/breadcrumbs'
@@ -6,6 +7,7 @@ import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { AnimatedCounter } from '../components/ui/animated-counter'
 import { Carousel } from '../components/ui/carousel'
+import type { ContactOutletContext } from '../components/layout/root-layout'
 
 const included = [
   'Custom single-page website (5 sections)',
@@ -50,6 +52,7 @@ const costBreakdown = [
 ]
 
 export function PricingPage() {
+  const { openContactModal } = useOutletContext<ContactOutletContext>()
   const compRef = useScrollReveal<HTMLDivElement>()
   const costRef = useScrollReveal<HTMLDivElement>()
   const faqRef = useScrollReveal<HTMLDivElement>()
@@ -92,8 +95,8 @@ export function PricingPage() {
             AI powered by human expertise delivers a professional 5-section website at low cost — in days, not weeks.
           </p>
           <div className="mt-6">
-            <Button size="lg" className="pulse-glow" asChild>
-              <a href="/#contact">Request your build</a>
+            <Button size="lg" className="pulse-glow" onClick={openContactModal}>
+              Request your build
             </Button>
           </div>
         </div>

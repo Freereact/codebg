@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom'
 import { Facebook, Instagram, Linkedin } from 'lucide-react'
 
 const socialLinks = [
@@ -6,7 +7,13 @@ const socialLinks = [
   { icon: Linkedin, href: '#', label: 'LinkedIn' },
 ]
 
-export function Footer() {
+interface FooterProps {
+  onContactClick?: () => void
+}
+
+export function Footer({ onContactClick }: FooterProps) {
+  const { pathname } = useLocation()
+  const isHome = pathname === '/'
   return (
     <footer className="border-t border-slate-700 bg-shell text-slate-300">
       <div className="mx-auto max-w-6xl px-6 py-8">
@@ -22,7 +29,11 @@ export function Footer() {
               <a href="/#services" className="transition-colors hover:text-accent">Services</a>
               <a href="/#samples" className="transition-colors hover:text-accent">Samples</a>
               <a href="/#pricing" className="transition-colors hover:text-accent">Pricing</a>
-              <a href="/#contact" className="transition-colors hover:text-accent">Contact</a>
+              {!isHome && onContactClick ? (
+                <button onClick={onContactClick} className="transition-colors hover:text-accent">Contact</button>
+              ) : (
+                <a href="/#contact" className="transition-colors hover:text-accent">Contact</a>
+              )}
             </nav>
             <div className="flex gap-3">
               {socialLinks.map((s) => (

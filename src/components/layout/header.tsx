@@ -29,6 +29,15 @@ export function Header({ onContactClick }: HeaderProps) {
     onContactClick()
   }
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!isHome && href === '/#contact') {
+      e.preventDefault()
+      handleContactClick()
+    } else {
+      closeMobileMenu()
+    }
+  }
+
   return (
     <header className="sticky top-0 z-40 border-b border-slate-700 bg-shell text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -41,6 +50,7 @@ export function Header({ onContactClick }: HeaderProps) {
             <a
               key={link.href}
               href={link.href}
+              onClick={(e) => handleNavClick(e, link.href)}
               className={cn(
                 'transition-colors hover:text-accent',
                 isHome && activeSection === link.href.replace('/#', '') && 'font-medium text-accent',
@@ -86,7 +96,7 @@ export function Header({ onContactClick }: HeaderProps) {
                   'rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/10 hover:text-accent',
                   isHome && activeSection === link.href.replace('/#', '') && 'font-medium text-accent',
                 )}
-                onClick={closeMobileMenu}
+                onClick={(e) => handleNavClick(e, link.href)}
               >
                 {link.label}
               </a>

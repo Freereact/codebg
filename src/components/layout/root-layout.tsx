@@ -33,7 +33,7 @@ export function RootLayout() {
           <Outlet context={contactForm} />
         </main>
 
-        <Footer />
+        <Footer onContactClick={contactForm.openContactModal} />
       </div>
 
       <ContactModal
