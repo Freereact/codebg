@@ -90,15 +90,8 @@ jobs:
               rsync -a --delete "$dir" "/var/www/sample-apps/$slug/"
             done
 
-            # Generate samples.json from meta.json files
-            echo '[' > /tmp/samples.json
-            first=true
-            for meta in src/customers/*/meta.json; do
-              if [ "$first" = true ]; then first=false; else echo ',' >> /tmp/samples.json; fi
-              cat "$meta" >> /tmp/samples.json
-            done
-            echo ']' >> /tmp/samples.json
-            cp /tmp/samples.json /var/www/sample-apps/samples.json
+            # Generate samples.json (with hero thumbnails from built assets)
+            node generate-samples-json.mjs /var/www/sample-apps/samples.json
             cp root-index.html /var/www/sample-apps/index.html
           SCRIPT
 

@@ -34,7 +34,8 @@
   <script>
     fetch('/samples.json')
       .then(r => r.json())
-      .then(samples => {
+      .then(data => {
+        const samples = data.samples || data;
         const grid = document.getElementById('grid');
         samples.forEach(s => {
           const a = document.createElement('a');

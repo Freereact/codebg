@@ -28,9 +28,10 @@ export function HomePage() {
       try {
         const res = await fetch('https://sample-apps.codebg.com/samples.json', { cache: 'no-store' })
         if (!res.ok) return
-        const data = (await res.json()) as { samples?: SampleEntry[] }
-        if (mounted && data.samples && data.samples.length) {
-          setSamples(data.samples)
+        const json = await res.json()
+        const list: SampleEntry[] = json.samples ?? (Array.isArray(json) ? json : [])
+        if (mounted && list.length) {
+          setSamples(list)
         }
       } catch {
         // keep fallback samples
