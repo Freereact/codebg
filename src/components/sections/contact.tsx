@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Section } from '../ui/section'
 import { Button } from '../ui/button'
 import type { FormState } from '../../types'
@@ -13,15 +13,18 @@ interface ContactProps {
 
 export function Contact({ onSubmit, sent, error }: ContactProps) {
   const [form, setForm] = useState<FormState>(initialForm)
+  const prevSent = useRef(sent)
+
+  // Reset form fields when a submission succeeds
+  useEffect(() => {
+    if (sent && !prevSent.current) setForm(initialForm)
+    prevSent.current = sent
+  }, [sent])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     onSubmit(form)
   }
-
-  useEffect(() => {
-    if (sent) setForm(initialForm)
-  }, [sent])
 
   return (
     <Section id="contact" heading="Contact" description="Tell us what you need. Affordable AI-powered development — we'll reply with a plan fast.">
@@ -40,7 +43,6 @@ export function Contact({ onSubmit, sent, error }: ContactProps) {
         </label>
         <div className="md:col-span-2 flex items-center gap-3">
           <Button type="submit" size="lg">Send request</Button>
-          {sent && <span className="text-sm font-medium text-emerald-700">Thanks &mdash; request queued successfully.</span>}
         </div>
         {error && <p className="md:col-span-2 text-sm text-red-600">{error}</p>}
       </form>

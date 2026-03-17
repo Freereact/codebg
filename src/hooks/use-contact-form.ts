@@ -180,6 +180,8 @@ export function useContactForm() {
     setTurnstileToken('')
   }
 
+  const dismissSent = () => setSent(false)
+
   return {
     scrollToContact,
     handleContactSubmit,
@@ -191,6 +193,7 @@ export function useContactForm() {
     closeContactModal,
     sending,
     sent,
+    dismissSent,
     error,
     turnstileToken,
     captchaStatus,
