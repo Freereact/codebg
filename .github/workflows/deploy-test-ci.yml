@@ -71,6 +71,11 @@ jobs:
             VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY' npm run build
             mkdir -p /var/www/codebg
             rsync -a --delete dist/ /var/www/codebg/
+
+            # Remove pre-rendered customers/ dir — the SPA route handles
+            # /customers client-side; the directory triggers an nginx 301
+            # to /customers/index.html which breaks React Router.
+            rm -rf /var/www/codebg/customers/
           SCRIPT
 
       - name: Deploy sample apps
