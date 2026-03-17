@@ -4,13 +4,40 @@ on:
   push:
     branches: ["test-ci"]
 
+concurrency:
+  group: deploy-test-ci
+  cancel-in-progress: true
+
 jobs:
   quality-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm install && npm run build
-      - run: cd backend && npm install && npm test && npm run build
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            sample-apps/package-lock.json
+            backend/package-lock.json
+
+      - name: Build frontend
+        run: npm ci && npm run build
+
+      - name: Build sample apps (all customers)
+        run: |
+          cd sample-apps
+          npm ci
+          bash build-all.sh
+
+      - name: Test & build backend
+        run: |
+          cd backend
+          npm ci
+          npm test
+          npm run build
 
   deploy:
     runs-on: ubuntu-latest
@@ -18,73 +45,110 @@ jobs:
     environment: test-ci
     steps:
       - uses: actions/checkout@v4
-      - name: Setup SSH key
+
+      - name: Setup SSH
         run: |
+          set -euo pipefail
           mkdir -p ~/.ssh
           echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
-      - name: Deploy on VM
+
+      - name: Deploy frontend
         env:
           TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
+        run: |
+          set -euo pipefail
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -s << 'SCRIPT'
+            set -euo pipefail
+            cd ~/projects/codebg
+            git fetch --all --prune
+            git checkout -B test-ci origin/test-ci
+            git reset --hard origin/test-ci
+
+            # Build frontend
+            npm ci
+            VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY' npm run build
+            mkdir -p /var/www/codebg
+            rsync -a --delete --exclude='customers/' dist/ /var/www/codebg/
+          SCRIPT
+
+      - name: Deploy sample apps
+        run: |
+          set -euo pipefail
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -s << 'SCRIPT'
+            set -euo pipefail
+            cd ~/projects/codebg/sample-apps
+            npm ci
+            bash build-all.sh
+
+            # Sync each customer build to /var/www/codebg/customers/<slug>/
+            mkdir -p /var/www/codebg/customers
+            for dir in dist/*/; do
+              slug=$(basename "$dir")
+              mkdir -p "/var/www/codebg/customers/$slug"
+              rsync -a --delete "$dir" "/var/www/codebg/customers/$slug/"
+            done
+
+            # Generate samples.json from meta.json files
+            echo '[' > /tmp/samples.json
+            first=true
+            for meta in src/customers/*/meta.json; do
+              if [ "$first" = true ]; then first=false; else echo ',' >> /tmp/samples.json; fi
+              cat "$meta" >> /tmp/samples.json
+            done
+            echo ']' >> /tmp/samples.json
+            cp /tmp/samples.json /var/www/codebg/customers/samples.json
+          SCRIPT
+
+      - name: Deploy nginx config
+        run: |
+          set -euo pipefail
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -s << 'SCRIPT'
+            set -euo pipefail
+            sudo cp ~/projects/codebg/infra/nginx/codebg.com.conf /etc/nginx/sites-available/codebg.com
+            sudo ln -sf /etc/nginx/sites-available/codebg.com /etc/nginx/sites-enabled/codebg.com
+            sudo nginx -t
+            sudo systemctl reload nginx
+          SCRIPT
+
+      - name: Deploy backend
+        env:
           TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
         run: |
-          test -n "$TURNSTILE_SITE_KEY" && test -n "$TURNSTILE_SECRET_KEY" && test -n "$RESEND_API_KEY" && test -n "$MAIL_FROM" && test -n "$MAIL_TO"
-          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
-            set -e
-            mkdir -p ~/projects
-            if [ ! -d ~/projects/codebg/.git ]; then git clone https://github.com/Freereact/codebg.git ~/projects/codebg; fi
-            cd ~/projects/codebg
-            git fetch --all --prune
-            git reset --hard
-            git clean -fd
-            git checkout -B test-ci origin/test-ci
-            git reset --hard origin/test-ci
-            rm -rf node_modules
-            npm install
-            export VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY'
-            echo 'VITE_TURNSTILE_SITE_KEY=$TURNSTILE_SITE_KEY' > .env.production
-            npm run build
-            mkdir -p /var/www/codebg
-            rsync -a --delete --exclude='customers/' dist/ /var/www/codebg/
-            systemctl reload nginx || nginx -s reload
-            if ! command -v docker >/dev/null 2>&1; then
-              sudo apt-get update -y
-              sudo apt-get install -y docker.io
-              sudo systemctl enable --now docker
-              sudo usermod -aG docker $USER || true
-            fi
-            set +e
-            sudo docker network create codebg-backend >/dev/null 2>&1 || true
-            sudo docker rm -f codebg-api codebg-worker codebg-rabbitmq codebg-redis >/dev/null 2>&1 || true
-            sudo docker run -d --name codebg-redis --network codebg-backend redis:7-alpine redis-server --appendonly yes
-            sudo docker run -d --name codebg-rabbitmq --user 0:0 --network codebg-backend rabbitmq:3.13-management-alpine
-            for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
-              sudo docker exec codebg-rabbitmq rabbitmq-diagnostics -q ping && break || true
-              sleep 2
-            done
+          set -euo pipefail
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -s << SCRIPT
+            set -euo pipefail
             cd ~/projects/codebg/backend
-            sudo docker build -t codebg-backend:latest .
-            : > /tmp/codebg-backend.env
-            echo 'PORT=8787' >> /tmp/codebg-backend.env
-            echo 'REDIS_URL=redis://codebg-redis:6379' >> /tmp/codebg-backend.env
-            echo 'RABBITMQ_URL=amqp://codebg-rabbitmq:5672' >> /tmp/codebg-backend.env
-            echo 'RABBITMQ_QUEUE=email_jobs' >> /tmp/codebg-backend.env
-            echo 'TURNSTILE_SECRET_KEY=$TURNSTILE_SECRET_KEY' >> /tmp/codebg-backend.env
-            echo 'RESEND_API_KEY=$RESEND_API_KEY' >> /tmp/codebg-backend.env
-            echo 'MAIL_FROM=$MAIL_FROM' >> /tmp/codebg-backend.env
-            echo 'MAIL_TO=$MAIL_TO' >> /tmp/codebg-backend.env
-            echo 'ALLOWED_ORIGINS=https://codebg.com' >> /tmp/codebg-backend.env
-            echo 'MAX_EMAILS_PER_DAY=100' >> /tmp/codebg-backend.env
-            sudo docker run -d --restart unless-stopped --name codebg-api --network codebg-backend --env-file /tmp/codebg-backend.env -p 8787:8787 codebg-backend:latest node dist/server.js
-            sudo docker run -d --restart unless-stopped --name codebg-worker --network codebg-backend --env-file /tmp/codebg-backend.env codebg-backend:latest node dist/worker.js
-            for i in 1 2 3 4 5 6 7 8 9 10; do
-              curl -fsS http://127.0.0.1:8787/healthz || true && break || true
-              sleep 2
-            done
-            curl -fsS http://127.0.0.1:8787/healthz || true
-            set -e
-          "
+
+            # Write .env for docker compose
+            cat > .env << EOF
+          PORT=8787
+          REDIS_URL=redis://codebg-redis:6379
+          RABBITMQ_URL=amqp://codebg-rabbitmq:5672
+          RABBITMQ_QUEUE=email_jobs
+          TURNSTILE_SECRET_KEY=$TURNSTILE_SECRET_KEY
+          RESEND_API_KEY=$RESEND_API_KEY
+          MAIL_FROM=$MAIL_FROM
+          MAIL_TO=$MAIL_TO
+          ALLOWED_ORIGINS=https://codebg.com
+          MAX_EMAILS_PER_DAY=100
+          EOF
+
+            # Build and start services
+            sudo docker compose up -d --build --wait
+          SCRIPT
+
+      - name: Verify deployment
+        run: |
+          set -euo pipefail
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -s << 'SCRIPT'
+            set -euo pipefail
+            # Verify API health
+            curl -fsS http://127.0.0.1:8787/healthz
+            echo ""
+            echo "Deployment verified successfully."
+          SCRIPT

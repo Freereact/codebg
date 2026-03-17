@@ -6,14 +6,21 @@ services:
     env_file:
       - .env
     ports:
-      - "8787:8787"
-    restart: always
+      - "127.0.0.1:8787:8787"
+    restart: unless-stopped
     depends_on:
-      - rabbitmq
-      - redis
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - codebg-backend
-      - hst-map-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8787/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   codebg-worker:
     build: .
@@ -21,29 +28,37 @@ services:
     command: ["node", "dist/worker.js"]
     env_file:
       - .env
-    restart: always
+    restart: unless-stopped
     depends_on:
-      - rabbitmq
-      - redis
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - codebg-backend
 
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: codebg-rabbitmq
-    restart: always
+    restart: unless-stopped
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     networks:
       - codebg-backend
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   redis:
     image: redis:7-alpine
     container_name: codebg-redis
-    restart: always
+    restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
     networks:
       - codebg-backend
@@ -51,6 +66,3 @@ services:
 networks:
   codebg-backend:
     driver: bridge
-  hst-map-net:
-    external: true
-    name: hst-cluster_hst-map-net
