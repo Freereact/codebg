@@ -14,7 +14,7 @@ export function CtaLink({
   return (
     <a
       className={cn(
-        'text-sm font-medium text-accent-text hover:text-accent-text-hover',
+        'text-sm font-medium text-accent-text hover:text-accent-text-hover dark:text-orange-400 dark:hover:text-orange-300',
         className,
       )}
       {...props}

@@ -5,6 +5,9 @@
 :root {
   color-scheme: light;
 }
+.dark {
+  color-scheme: dark;
+}
 
 html {
   scroll-behavior: smooth;
@@ -23,6 +26,9 @@ body {
   color: theme('colors.gray.800');
   font-family: Roboto, Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
+.dark body {
+  color: theme('colors.gray.200');
+}
 
 .app-shell {
   margin: 16px;
@@ -31,15 +37,26 @@ body {
   border: 1px solid theme('colors.shell-border');
   overflow: hidden;
 }
+.dark .app-shell {
+  background: #1a1d23;
+  border-color: #2a2f36;
+}
 
 .section-card {
   border-radius: 20px;
   background: theme('colors.surface');
   border: 1px solid theme('colors.surface-border');
 }
+.dark .section-card {
+  background: #22262d;
+  border-color: #3a414b;
+}
 
 .input {
   @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-accent transition-colors;
+}
+.dark .input {
+  @apply border-slate-600 bg-slate-800 text-slate-100;
 }
 
 /* Card hover lift effect */
@@ -49,10 +66,16 @@ body {
 .card-hover:hover {
   @apply shadow-md -translate-y-0.5 border-slate-300;
 }
+.dark .card-hover:hover {
+  @apply border-slate-500;
+}
 
 /* Section header accent bar */
 .section-heading {
   @apply text-2xl font-semibold text-slate-800;
+}
+.dark .section-heading {
+  @apply text-slate-100;
 }
 .section-heading::after {
   content: '';

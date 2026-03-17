@@ -38,9 +38,9 @@ export function CaptchaModal({
       aria-modal="true"
       aria-labelledby="captcha-title"
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <h3 id="captcha-title" className="text-lg font-semibold text-slate-800">Verify and confirm</h3>
-        <p className="mt-1 text-sm text-slate-600">Complete the security check, then confirm send.</p>
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-2xl">
+        <h3 id="captcha-title" className="text-lg font-semibold text-slate-800 dark:text-slate-100">Verify and confirm</h3>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Complete the security check, then confirm send.</p>
         <div id="turnstile-widget" className="mt-4 min-h-[72px]" />
         {captchaStatus === 'loading' && <p className="mt-2 text-xs text-slate-500">Loading security check&hellip;</p>}
         {captchaStatus === 'failed' && <p className="mt-2 text-xs text-red-600">Security widget failed to load. Try refreshing the page.</p>}

@@ -19,17 +19,17 @@ export function Samples({ samples }: SamplesProps) {
         {samples.map((sample) => (
           <Card as="article" key={sample.slug} className="overflow-hidden p-0">
             <div
-              className="h-32 bg-slate-100 bg-cover bg-center"
+              className="h-32 bg-slate-100 dark:bg-slate-700 bg-cover bg-center"
               style={sample.thumbnail ? { backgroundImage: `url(${sample.thumbnail})` } : undefined}
             />
             <div className="p-5">
-              <p className="text-xs uppercase tracking-wide text-accent-text">Sample</p>
-              <h3 className="mt-1 font-semibold text-slate-800">{sample.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{sample.description}</p>
+              <p className="text-xs uppercase tracking-wide text-accent-text dark:text-orange-400">Sample</p>
+              <h3 className="mt-1 font-semibold text-slate-800 dark:text-slate-100">{sample.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{sample.description}</p>
               {sample.tags?.length ? (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {sample.tags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs text-indigo-700">{tag}</span>
+                    <span key={tag} className="rounded-full bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 text-xs text-indigo-700 dark:text-indigo-300">{tag}</span>
                   ))}
                 </div>
               ) : null}

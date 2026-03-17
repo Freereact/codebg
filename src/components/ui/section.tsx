@@ -23,7 +23,7 @@ export function Section({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="section-heading">{heading}</h2>
-            {description && <p className="mt-4 text-slate-600">{description}</p>}
+            {description && <p className="mt-4 text-slate-600 dark:text-slate-400">{description}</p>}
           </div>
           {headerRight}
         </div>
