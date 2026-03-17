@@ -1,4 +1,5 @@
 import type { CustomerConfig } from '../../types'
+import heroImage from './assets/dental-hero.jpg'
 
 export const config: CustomerConfig = {
   name: 'Penticton Dentist Group',
@@ -11,7 +12,7 @@ export const config: CustomerConfig = {
     eyebrow: 'Trusted Family Dentistry • Penticton, BC',
     headline: 'Comfort-first dental care with safe, low-pain procedures.',
     description: 'From routine cleanings to restorative care, our team focuses on gentle treatment, clear communication, and modern techniques to keep your visits stress-free.',
-    image: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?auto=format&fit=crop&w=1600&q=80',
+    image: heroImage,
     cta: { label: 'Request Appointment' },
     overlay: 'light',
   },

@@ -1,4 +1,5 @@
 import type { CustomerConfig } from '../../types'
+import heroImage from './assets/winery-hero.jpg'
 
 export const config: CustomerConfig = {
   name: 'Penticton Sun Wine Group',
@@ -11,7 +12,7 @@ export const config: CustomerConfig = {
     eyebrow: 'Penticton, BC • Local Winery Experience',
     headline: 'Small-batch wines crafted under the Okanagan sun.',
     description: 'Penticton Sun Wine Group offers approachable, premium wines with a warm tasting-room experience. Discover crisp whites, bold reds, and seasonal releases made for every table.',
-    image: 'https://images.unsplash.com/photo-1516594915697-87eb3b1c14ea?auto=format&fit=crop&w=1600&q=80',
+    image: heroImage,
     cta: { label: 'Plan your visit' },
     overlay: 'light',
   },
