@@ -5,7 +5,6 @@ import { Breadcrumbs } from '../components/ui/breadcrumbs'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { AnimatedCounter } from '../components/ui/animated-counter'
-import { Carousel } from '../components/ui/carousel'
 
 const stats = [
   { end: 49, prefix: '$', suffix: '', label: 'Starting price (CAD)' },
@@ -37,21 +36,6 @@ const values = [
   },
 ]
 
-const testimonials = [
-  {
-    quote: 'Got our site live in 48 hours. Couldn\'t believe the price — or the quality.',
-    author: 'Local auto shop owner',
-  },
-  {
-    quote: 'Clean, fast, and exactly what we needed. No fluff, no upsells.',
-    author: 'Bakery service manager',
-  },
-  {
-    quote: 'The AI-powered process meant we spent less time in meetings and more time running our business.',
-    author: 'Dental practice coordinator',
-  },
-]
-
 export function AboutPage() {
   const revealRef = useScrollReveal<HTMLDivElement>()
   const statsRef = useScrollReveal<HTMLDivElement>()
@@ -73,14 +57,15 @@ export function AboutPage() {
         />
 
         <p className="mt-4 inline-flex rounded-full border border-accent-soft-border bg-accent-soft/95 dark:bg-orange-950/60 dark:border-orange-800/50 px-3 py-1 text-xs font-medium text-accent-text dark:text-orange-400">
-          Why CodeBG
+          Local. Human. AI-efficient.
         </p>
         <h1 className="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-50 md:text-4xl">
-          AI powered by human expertise — affordable web development, delivered fast.
+          A local developer you can talk to — using AI to keep your costs low.
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-          Low-cost development meets fast, agile delivery. We combine 10+ years of hands-on expertise
-          with AI to build professional websites at a fraction of the traditional cost — no shortcuts on quality.
+          CodeBG is a one-person, community-focused web studio. 10+ years of hands-on development
+          experience, powered by AI tools to cut build time and cost — so you get a professional
+          website with real human attention at a fraction of the traditional price.
         </p>
 
         <div
@@ -115,24 +100,6 @@ export function AboutPage() {
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{v.text}</p>
             </Card>
           ))}
-        </div>
-      </div>
-
-      <div className="section-card p-8 md:p-10">
-        <h2 className="section-heading">What clients say</h2>
-        <div className="mt-6">
-          <Carousel autoPlay interval={6000} showArrows={false}>
-            {testimonials.map((t) => (
-              <blockquote key={t.author} className="px-2">
-                <p className="text-lg italic leading-relaxed text-slate-700 dark:text-slate-300">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <footer className="mt-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  — {t.author}
-                </footer>
-              </blockquote>
-            ))}
-          </Carousel>
         </div>
       </div>
 
