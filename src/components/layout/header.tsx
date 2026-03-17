@@ -1,27 +1,40 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Menu, X, Sun, Moon } from 'lucide-react'
 import { Button } from '../ui/button'
 import { navLinks } from '../../data/nav-links'
+import { useThemeContext } from '../../contexts/theme-context'
+import { useActiveSection } from '../../hooks/use-active-section'
 import { cn } from '../../lib/utils'
 
-interface HeaderProps {
-  activeSection?: string
-  onContactClick?: () => void
-  theme?: 'light' | 'dark'
-  onToggleTheme?: () => void
-}
+const sectionIds = ['about', 'services', 'process', 'samples', 'news', 'pricing', 'contact']
 
-export function Header({ activeSection, onContactClick, theme, onToggleTheme }: HeaderProps) {
+export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { theme, toggleTheme } = useThemeContext()
+  const { pathname } = useLocation()
+
+  const isHome = pathname === '/'
+  const stableSectionIds = useMemo(() => sectionIds, [])
+  const activeSection = useActiveSection(isHome ? stableSectionIds : [])
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
+
+  const handleContactClick = () => {
+    closeMobileMenu()
+    if (isHome) {
+      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      window.location.href = '/#contact'
+    }
+  }
 
   return (
     <header className="sticky top-0 z-10 border-b border-slate-700 bg-shell text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <div className="text-lg font-semibold tracking-wide">
+        <a href="/" className="text-lg font-semibold tracking-wide">
           Code<span className="text-accent">BG</span>
-        </div>
+        </a>
 
         <nav className="hidden gap-6 text-sm md:flex">
           {navLinks.map((link) => (
@@ -30,7 +43,7 @@ export function Header({ activeSection, onContactClick, theme, onToggleTheme }: 
               href={link.href}
               className={cn(
                 'transition-colors hover:text-accent',
-                activeSection === link.href.replace('/#', '') && 'font-medium text-accent',
+                isHome && activeSection === link.href.replace('/#', '') && 'font-medium text-accent',
               )}
             >
               {link.label}
@@ -39,25 +52,17 @@ export function Header({ activeSection, onContactClick, theme, onToggleTheme }: 
         </nav>
 
         <div className="flex items-center gap-3">
-          {onToggleTheme && (
-            <button
-              onClick={onToggleTheme}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10"
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            >
-              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
-          )}
+          <button
+            onClick={toggleTheme}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10"
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
 
-          {onContactClick ? (
-            <Button size="default" onClick={onContactClick} className="hidden md:inline-flex">
-              Contact
-            </Button>
-          ) : (
-            <Button size="default" asChild className="hidden md:inline-flex">
-              <a href="/#contact">Contact</a>
-            </Button>
-          )}
+          <Button size="default" className="hidden md:inline-flex" onClick={handleContactClick}>
+            Contact
+          </Button>
 
           <button
             className="flex h-10 w-10 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10 md:hidden"
@@ -79,7 +84,7 @@ export function Header({ activeSection, onContactClick, theme, onToggleTheme }: 
                 href={link.href}
                 className={cn(
                   'rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/10 hover:text-accent',
-                  activeSection === link.href.replace('/#', '') && 'font-medium text-accent',
+                  isHome && activeSection === link.href.replace('/#', '') && 'font-medium text-accent',
                 )}
                 onClick={closeMobileMenu}
               >
@@ -87,15 +92,9 @@ export function Header({ activeSection, onContactClick, theme, onToggleTheme }: 
               </a>
             ))}
             <div className="mt-2 border-t border-slate-700 pt-3">
-              {onContactClick ? (
-                <Button size="default" className="w-full" onClick={() => { closeMobileMenu(); onContactClick() }}>
-                  Get started
-                </Button>
-              ) : (
-                <Button size="default" asChild className="w-full" onClick={closeMobileMenu}>
-                  <a href="/#contact">Get started</a>
-                </Button>
-              )}
+              <Button size="default" className="w-full" onClick={handleContactClick}>
+                Get started
+              </Button>
             </div>
           </div>
         </nav>

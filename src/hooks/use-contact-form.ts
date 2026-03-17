@@ -1,19 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Header } from './components/layout/header'
-import { Footer } from './components/layout/footer'
-import { Hero } from './components/sections/hero'
-import { Services } from './components/sections/services'
-import { Process } from './components/sections/process'
-import { Samples } from './components/sections/samples'
-import { News } from './components/sections/news'
-import { Pricing } from './components/sections/pricing'
-import { SeoResources } from './components/sections/seo-resources'
-import { Contact } from './components/sections/contact'
-import { CaptchaModal } from './components/sections/captcha-modal'
-import { useActiveSection } from './hooks/use-active-section'
-import { useTheme } from './hooks/use-theme'
-import { fallbackSamples } from './data/samples'
-import type { FormState, SampleEntry } from './types'
+import { useEffect, useRef, useState } from 'react'
+import type { FormState } from '../types'
 
 declare global {
   interface Window {
@@ -49,27 +35,19 @@ function loadTurnstileScript(): Promise<void> {
   })
 }
 
-const sectionIds = ['about', 'services', 'process', 'samples', 'news', 'pricing', 'contact']
-
-export default function App() {
+export function useContactForm() {
   const [showCaptchaModal, setShowCaptchaModal] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState('')
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const [captchaStatus, setCaptchaStatus] = useState<'idle' | 'loading' | 'ready' | 'failed'>('idle')
-  const [samples, setSamples] = useState<SampleEntry[]>(fallbackSamples)
   const widgetIdRef = useRef<string | null>(null)
   const pendingFormRef = useRef<FormState | null>(null)
 
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'https://codebg.com'
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
 
-  const stableSectionIds = useMemo(() => sectionIds, [])
-  const activeSection = useActiveSection(stableSectionIds)
-  const { theme, toggleTheme } = useTheme()
-
-  // Turnstile init
   useEffect(() => {
     let cancelled = false
 
@@ -117,29 +95,6 @@ export default function App() {
       cancelled = true
     }
   }, [showCaptchaModal, siteKey])
-
-  // Load samples
-  useEffect(() => {
-    let mounted = true
-
-    async function loadSamples() {
-      try {
-        const res = await fetch('/customers/samples.json', { cache: 'no-store' })
-        if (!res.ok) return
-        const data = (await res.json()) as { samples?: SampleEntry[] }
-        if (mounted && data.samples && data.samples.length) {
-          setSamples(data.samples)
-        }
-      } catch {
-        // keep fallback samples
-      }
-    }
-
-    void loadSamples()
-    return () => {
-      mounted = false
-    }
-  }, [])
 
   const scrollToContact = () => {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -205,35 +160,21 @@ export default function App() {
     }
   }
 
-  return (
-    <div className="app-shell">
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-accent focus:px-4 focus:py-2 focus:text-white">
-        Skip to main content
-      </a>
+  const closeCaptchaModal = () => {
+    setShowCaptchaModal(false)
+    setTurnstileToken('')
+  }
 
-      <Header activeSection={activeSection} onContactClick={scrollToContact} theme={theme} onToggleTheme={toggleTheme} />
-
-      <main id="main-content" className="mx-auto max-w-6xl space-y-10 px-4 py-10 md:px-6 md:py-12">
-        <Hero onContactClick={scrollToContact} />
-        <Services />
-        <Process />
-        <Samples samples={samples} />
-        <News />
-        <Pricing onContactClick={scrollToContact} />
-        <SeoResources />
-        <Contact onSubmit={handleContactSubmit} sent={sent} error={error} />
-      </main>
-
-      <CaptchaModal
-        open={showCaptchaModal}
-        onClose={() => { setShowCaptchaModal(false); setTurnstileToken('') }}
-        onConfirm={submitVerified}
-        sending={sending}
-        turnstileToken={turnstileToken}
-        captchaStatus={captchaStatus}
-      />
-
-      <Footer />
-    </div>
-  )
+  return {
+    scrollToContact,
+    handleContactSubmit,
+    submitVerified,
+    closeCaptchaModal,
+    showCaptchaModal,
+    sending,
+    sent,
+    error,
+    turnstileToken,
+    captchaStatus,
+  }
 }
