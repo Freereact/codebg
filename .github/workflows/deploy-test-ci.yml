@@ -70,7 +70,8 @@ jobs:
             npm ci
             VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY' npm run build
             mkdir -p /var/www/codebg
-            rsync -a --delete --exclude='customers/' dist/ /var/www/codebg/
+            rsync -a --delete dist/ /var/www/codebg/
+            rm -rf /var/www/codebg/customers/
           SCRIPT
 
       - name: Deploy sample apps
