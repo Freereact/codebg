@@ -48,9 +48,9 @@ export function PricingPage() {
   const faqRef = useScrollReveal<HTMLDivElement>()
 
   useDocumentMeta({
-    title: 'Pricing — Professional Websites from $49 CAD | CodeBG',
+    title: 'Pricing — Low-Cost Professional Websites from $49 CAD | CodeBG',
     description:
-      'AI-powered web development starting at $49 CAD. Get a professional single-page website delivered in days, not weeks.',
+      'Affordable AI-powered web development from $49 CAD. Low-cost, fast and agile delivery — professional websites in days, not weeks.',
   })
 
   return (
@@ -64,11 +64,11 @@ export function PricingPage() {
         />
 
         <h1 className="mt-4 text-3xl font-bold text-slate-900 dark:text-slate-50 md:text-4xl">
-          Transparent pricing, powered by AI efficiency
+          Low-cost web development, powered by AI efficiency
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-          Web development with AI reduces your cost and optimizes price. No hidden fees, no hourly
-          surprises — just a clear deliverable at a fair price.
+          AI powered by human expertise means affordable websites without compromise. No hidden fees,
+          no hourly surprises — just fast, agile delivery at a low cost.
         </p>
       </div>
 
@@ -82,7 +82,7 @@ export function PricingPage() {
           </p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">CAD · Starting price</p>
           <p className="mt-4 max-w-md text-slate-700 dark:text-slate-300">
-            A professionally built, 5-section website delivered in days. AI makes it possible.
+            AI powered by human expertise delivers a professional 5-section website at low cost — in days, not weeks.
           </p>
           <div className="mt-6">
             <Button size="lg" className="pulse-glow" asChild>

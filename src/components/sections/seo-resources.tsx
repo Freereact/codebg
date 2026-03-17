@@ -6,7 +6,7 @@ export function SeoResources() {
     <Section
       id="seo"
       heading="Local web design resources"
-      description="Helpful pages for search and planning your project."
+      description="Affordable web design resources for planning your project."
     >
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <Card as="a" href="/services/web-design-penticton" variant="link" className="rounded-xl">

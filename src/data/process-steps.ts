@@ -29,9 +29,9 @@ export const processSteps: ProcessStep[] = [
   {
     number: 3,
     title: 'Build',
-    summary: 'We implement a polished, performant single-page site.',
+    summary: 'We build a polished, performant site — fast and at low cost.',
     details: [
-      'AI code generation accelerates development — reducing your build cost.',
+      'AI powered by human expertise accelerates development — keeping costs low and delivery agile.',
       'Every component is hand-reviewed for quality, accessibility, and performance.',
       'Modern stack: React, Tailwind, Vite — fast by default.',
     ],
@@ -39,7 +39,7 @@ export const processSteps: ProcessStep[] = [
   {
     number: 4,
     title: 'Launch',
-    summary: 'You review, approve, and go live quickly.',
+    summary: 'You review, approve, and go live — fast and agile.',
     details: [
       'Preview your live site before it goes public.',
       'One-click deployment through our CI pipeline.',

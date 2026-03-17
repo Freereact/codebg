@@ -24,7 +24,7 @@ export function Contact({ onSubmit, sent, error }: ContactProps) {
   }, [sent])
 
   return (
-    <Section id="contact" heading="Contact" description="Tell us what you need. We'll reply with a practical plan.">
+    <Section id="contact" heading="Contact" description="Tell us what you need. Affordable AI-powered development — we'll reply with a plan fast.">
       <form className="mt-6 grid gap-5 md:grid-cols-2" onSubmit={handleSubmit}>
         <label className="space-y-1.5">
           <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Name</span>

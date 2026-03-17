@@ -45,8 +45,8 @@ const aiAdvantages = [
     desc: 'AI-assisted responsive testing catches layout issues before they reach production.',
   },
   {
-    title: 'Optimized pricing',
-    desc: 'We pass AI productivity gains directly to you. Same quality, lower invoice.',
+    title: 'Low-cost development',
+    desc: 'We pass AI productivity gains directly to you. Professional quality at an affordable price.',
   },
 ]
 
@@ -55,9 +55,9 @@ export function ServicesIndexPage() {
   const extrasRef = useScrollReveal<HTMLDivElement>()
 
   useDocumentMeta({
-    title: 'Services — AI-Powered Web Development | CodeBG',
+    title: 'Services — Affordable AI-Powered Web Development | CodeBG',
     description:
-      'Single-page websites built with AI: mobile-first design, fast deployment, and pricing that reflects real efficiency gains.',
+      'Low-cost single-page websites built with AI and human expertise. Mobile-first design, fast and agile delivery — from $49 CAD.',
   })
 
   return (
@@ -71,11 +71,11 @@ export function ServicesIndexPage() {
         />
 
         <h1 className="mt-4 text-3xl font-bold text-slate-900 dark:text-slate-50 md:text-4xl">
-          Everything you need in a single-page site
+          Affordable, professionally built single-page websites
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-          AI-powered development means you get a professional, conversion-focused website at a
-          price that used to be impossible. Here&apos;s what&apos;s included.
+          Low-cost development powered by AI, guided by human expertise. Fast and agile delivery
+          of conversion-focused websites at a price that used to be impossible.
         </p>
       </div>
 
@@ -137,7 +137,7 @@ export function ServicesIndexPage() {
           Starting from $49 CAD
         </h2>
         <p className="mt-2 text-slate-700 dark:text-slate-300">
-          Web development with AI reduces your cost and optimizes price.
+          AI powered by human expertise. Low cost. Agile delivery.
         </p>
         <div className="mt-6">
           <Button size="lg" className="pulse-glow" asChild>

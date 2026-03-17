@@ -3,23 +3,23 @@ import type { ServiceEntry } from '../types'
 export const servicePages: ServiceEntry[] = [
   {
     slug: 'web-design-penticton',
-    title: 'Web Design in Penticton, BC',
-    description: 'CodeBG builds fast, conversion-focused websites for local businesses with clear structure and pricing.',
+    title: 'Affordable Web Design in Penticton, BC',
+    description: 'Low-cost, AI-powered web development for Penticton businesses. AI powered by human expertise — fast and agile delivery from $49 CAD.',
     body: (
       <p>
-        CodeBG builds fast, conversion-focused websites for local businesses
-        with clear structure and pricing.
+        Low-cost, AI-powered web development for Penticton businesses. Built by
+        AI, perfected by humans — fast and agile delivery from $49 CAD.
       </p>
     ),
   },
   {
     slug: 'website-redesign',
-    title: 'Small Business Website Redesign',
-    description: 'We redesign outdated pages into modern section-based layouts with better UX and conversions.',
+    title: 'Affordable Small Business Website Redesign',
+    description: 'Low-cost website redesign powered by AI and human expertise. Modern layouts, better UX, and fast agile delivery.',
     body: (
       <p>
-        We redesign outdated pages into modern section-based layouts with better
-        UX and conversions.
+        Affordable website redesign powered by AI and human expertise. Modern
+        section-based layouts with better UX — delivered fast and at low cost.
       </p>
     ),
   },
