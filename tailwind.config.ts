@@ -6,10 +6,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#1f232a',
-        accent: '#f97316',
+        shell: '#2a2f36',
+        'shell-border': '#3a414b',
+        surface: '#f6f6f3',
+        'surface-border': '#d8d8d2',
+        accent: {
+          DEFAULT: '#f97316',
+          hover: '#ea580c',
+          soft: '#fff7ed',
+          'soft-border': '#fdba74',
+          text: '#c2410c',
+          'text-hover': '#9a3412',
+        },
         title: '#e6f4ff',
-        panel: '#2a2f38',
       },
     },
   },
