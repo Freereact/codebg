@@ -6,6 +6,10 @@
   color-scheme: light;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body,
 #root {
@@ -34,5 +38,36 @@ body {
 }
 
 .input {
-  @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-orange-500;
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-orange-500 transition-colors;
+}
+
+/* Card hover lift effect */
+.card-hover {
+  @apply transition-all duration-200;
+}
+.card-hover:hover {
+  @apply shadow-md -translate-y-0.5 border-slate-300;
+}
+
+/* Section header accent bar */
+.section-heading {
+  @apply text-2xl font-semibold text-slate-800;
+}
+.section-heading::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 3px;
+  background: #f97316;
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+/* Mobile menu animation */
+.mobile-nav-enter {
+  animation: slideDown 0.2s ease-out;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
