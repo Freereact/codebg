@@ -1,4 +1,5 @@
 import { Layout, Smartphone, Rocket, Code2, Palette, BarChart3 } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
 import { useDocumentMeta } from '../hooks/use-document-meta'
 import { useScrollReveal } from '../hooks/use-scroll-reveal'
 import { Breadcrumbs } from '../components/ui/breadcrumbs'
@@ -6,6 +7,7 @@ import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Carousel } from '../components/ui/carousel'
 import { services } from '../data/services'
+import type { ContactOutletContext } from '../components/layout/root-layout'
 
 const iconMap: Record<string, React.ReactNode> = {
   Layout: <Layout size={22} />,
@@ -51,6 +53,7 @@ const aiAdvantages = [
 ]
 
 export function ServicesIndexPage() {
+  const { openContactModal } = useOutletContext<ContactOutletContext>()
   const detailRef = useScrollReveal<HTMLDivElement>()
   const extrasRef = useScrollReveal<HTMLDivElement>()
 
@@ -140,8 +143,8 @@ export function ServicesIndexPage() {
           AI powered by human expertise. Low cost. Agile delivery.
         </p>
         <div className="mt-6">
-          <Button size="lg" className="pulse-glow" asChild>
-            <a href="/#contact">Request your build</a>
+          <Button size="lg" className="pulse-glow" onClick={openContactModal}>
+            Request your build
           </Button>
         </div>
       </div>

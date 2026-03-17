@@ -1,10 +1,12 @@
 import { Zap, Shield, TrendingDown, Bot } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
 import { useDocumentMeta } from '../hooks/use-document-meta'
 import { useScrollReveal } from '../hooks/use-scroll-reveal'
 import { Breadcrumbs } from '../components/ui/breadcrumbs'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { AnimatedCounter } from '../components/ui/animated-counter'
+import type { ContactOutletContext } from '../components/layout/root-layout'
 
 const stats = [
   { end: 49, prefix: '$', suffix: '', label: 'Starting price (CAD)' },
@@ -37,6 +39,7 @@ const values = [
 ]
 
 export function AboutPage() {
+  const { openContactModal } = useOutletContext<ContactOutletContext>()
   const revealRef = useScrollReveal<HTMLDivElement>()
   const statsRef = useScrollReveal<HTMLDivElement>()
 
@@ -111,8 +114,8 @@ export function AboutPage() {
           AI powered by human expertise. Low cost. Fast delivery.
         </p>
         <div className="mt-6">
-          <Button size="lg" className="pulse-glow" asChild>
-            <a href="/#contact">Get started</a>
+          <Button size="lg" className="pulse-glow" onClick={openContactModal}>
+            Get started
           </Button>
         </div>
       </div>

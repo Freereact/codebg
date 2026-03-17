@@ -1,11 +1,14 @@
+import { useOutletContext } from 'react-router-dom'
 import { useDocumentMeta } from '../hooks/use-document-meta'
 import { useScrollReveal } from '../hooks/use-scroll-reveal'
 import { Breadcrumbs } from '../components/ui/breadcrumbs'
 import { Card } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { processSteps } from '../data/process-steps'
+import type { ContactOutletContext } from '../components/layout/root-layout'
 
 export function ProcessPage() {
+  const { openContactModal } = useOutletContext<ContactOutletContext>()
   const stepsRef = useScrollReveal<HTMLDivElement>()
   const whyRef = useScrollReveal<HTMLDivElement>()
 
@@ -107,8 +110,8 @@ export function ProcessPage() {
           Tell us about your business. We&apos;ll have a plan within 24 hours.
         </p>
         <div className="mt-6">
-          <Button size="lg" className="pulse-glow" asChild>
-            <a href="/#contact">Start your brief</a>
+          <Button size="lg" className="pulse-glow" onClick={openContactModal}>
+            Start your brief
           </Button>
         </div>
       </div>

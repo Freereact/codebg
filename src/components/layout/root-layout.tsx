@@ -5,6 +5,7 @@ import { Header } from './header'
 import { Footer } from './footer'
 import { ContactModal } from '../sections/contact-modal'
 import { CaptchaModal } from '../sections/captcha-modal'
+import { Toast } from '../ui/toast'
 import { useContactForm } from '../../hooks/use-contact-form'
 
 export type ContactOutletContext = ReturnType<typeof useContactForm>
@@ -33,7 +34,7 @@ export function RootLayout() {
           <Outlet context={contactForm} />
         </main>
 
-        <Footer />
+        <Footer onContactClick={contactForm.openContactModal} />
       </div>
 
       <ContactModal
@@ -55,6 +56,13 @@ export function RootLayout() {
         sending={contactForm.sending}
         turnstileToken={contactForm.turnstileToken}
         captchaStatus={contactForm.captchaStatus}
+      />
+
+      <Toast
+        visible={contactForm.sent}
+        message="Thanks — your request has been sent successfully!"
+        variant="success"
+        onDismiss={contactForm.dismissSent}
       />
     </ThemeProvider>
   )
