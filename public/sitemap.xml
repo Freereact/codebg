@@ -73,6 +73,12 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://sample-apps.codebg.com/skaha-beach-cafe/</loc>
+    <lastmod>2026-03-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://sample-apps.codebg.com/winery/</loc>
     <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
