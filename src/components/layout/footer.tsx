@@ -7,7 +7,7 @@ export function Footer() {
             <div className="text-lg font-semibold text-white">
               Code<span className="text-accent">BG</span>
             </div>
-            <p className="mt-1 text-sm text-slate-400">Simple web development for Canadian businesses.</p>
+            <p className="mt-1 text-sm text-slate-400">Low-cost AI web development for Canadian businesses.</p>
           </div>
           <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
             <a href="/#services" className="transition-colors hover:text-accent">Services</a>
@@ -17,7 +17,7 @@ export function Footer() {
           </nav>
         </div>
         <div className="mt-6 border-t border-slate-700 pt-5 text-center text-sm text-slate-500">
-          &copy; {new Date().getFullYear()} CodeBG &mdash; simple web development.
+          &copy; {new Date().getFullYear()} CodeBG &mdash; affordable AI web development.
         </div>
       </div>
     </footer>

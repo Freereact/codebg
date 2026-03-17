@@ -10,9 +10,9 @@ export function ProcessPage() {
   const whyRef = useScrollReveal<HTMLDivElement>()
 
   useDocumentMeta({
-    title: 'Our Process — From Brief to Launch in Days | CodeBG',
+    title: 'Process — Fast, Agile Website Delivery in Days | CodeBG',
     description:
-      'A transparent 4-step process: brief, draft, build, launch. AI accelerates every phase so you get a professional site faster and cheaper.',
+      'A fast, agile 4-step process: brief, draft, build, launch. AI powered by human expertise delivers low-cost professional websites in days.',
   })
 
   return (
@@ -26,11 +26,11 @@ export function ProcessPage() {
         />
 
         <h1 className="mt-4 text-3xl font-bold text-slate-900 dark:text-slate-50 md:text-4xl">
-          From brief to launch in four clear steps
+          Fast and agile — from brief to launch in days
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-          No black boxes. You see exactly where your project stands at every phase. AI helps us move
-          faster — and we pass that speed directly to your timeline and price.
+          Agile, transparent, and affordable. AI powered by human expertise moves every phase faster —
+          and we pass that speed directly to your timeline and cost.
         </p>
       </div>
 

@@ -10,11 +10,11 @@ export const services: ServiceItem[] = [
   {
     slug: 'single-page',
     title: 'Single-page structure',
-    summary: 'A focused 5-section layout tailored to your business goals.',
+    summary: 'An affordable, focused 5-section layout tailored to your business goals.',
     icon: 'Layout',
     details: [
       'Every section is conversion-focused: hero, services, social proof, pricing, and contact.',
-      'AI helps us iterate on structure and copy faster, passing the savings directly to you.',
+      'AI powered by human expertise lets us iterate faster, keeping development costs low.',
       'No bloated multi-page site — one sharp page that does the job.',
     ],
   },
@@ -32,11 +32,11 @@ export const services: ServiceItem[] = [
   {
     slug: 'fast-deploy',
     title: 'Fast deployment',
-    summary: 'Versioned delivery with CI-ready workflow for future updates.',
+    summary: 'Fast, agile delivery with CI-ready workflow for future updates.',
     icon: 'Rocket',
     details: [
       'Automated build pipeline: push code, run tests, deploy — no manual steps.',
-      'AI-powered code generation means your site ships in days, not weeks.',
+      'AI-powered code generation means fast and agile delivery — your site ships in days, not weeks.',
       'Version-controlled so every change is tracked and reversible.',
     ],
   },

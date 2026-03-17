@@ -17,22 +17,22 @@ const stats = [
 const values = [
   {
     icon: <TrendingDown size={20} />,
-    title: 'Lower costs',
-    text: 'AI-assisted development eliminates repetitive work, cutting build time and your invoice.',
+    title: 'Low-cost development',
+    text: 'AI eliminates repetitive work, cutting build time and your invoice — affordable websites without compromise.',
   },
   {
     icon: <Zap size={20} />,
-    title: 'Faster delivery',
-    text: 'Automated pipelines and AI code generation mean your site ships in days, not weeks.',
+    title: 'Fast, agile delivery',
+    text: 'Automated pipelines and AI code generation mean your site ships in days, not weeks. Agile and iterative.',
   },
   {
     icon: <Shield size={20} />,
-    title: 'Expert oversight',
-    text: 'Every line of AI-generated code is reviewed by a developer with 10+ years of experience.',
+    title: 'Human expertise at every step',
+    text: 'AI powered by human craft — every line of code is reviewed by a developer with 10+ years of experience.',
   },
   {
     icon: <Bot size={20} />,
-    title: 'AI-optimized pricing',
+    title: 'Affordable by design',
     text: 'We pass AI productivity gains directly to you — professional quality at a fraction of the traditional cost.',
   },
 ]
@@ -57,9 +57,9 @@ export function AboutPage() {
   const statsRef = useScrollReveal<HTMLDivElement>()
 
   useDocumentMeta({
-    title: 'About CodeBG — AI-Powered Web Development That Reduces Your Cost',
+    title: 'About — Low-Cost AI Web Development Backed by Human Expertise | CodeBG',
     description:
-      'CodeBG combines 10+ years of web development expertise with AI to deliver professional websites faster and at a fraction of the traditional cost.',
+      'AI powered by human expertise. CodeBG delivers affordable small business websites with fast, agile delivery — 10+ years of experience, from $49 CAD.',
   })
 
   return (
@@ -76,11 +76,11 @@ export function AboutPage() {
           Why CodeBG
         </p>
         <h1 className="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-50 md:text-4xl">
-          Web development with AI reduces your cost and optimizes price.
+          AI powered by human expertise — affordable web development, delivered fast.
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-          We combine 10+ years of hands-on web development with modern AI tools to build professional
-          websites faster and cheaper. No shortcuts on quality — just smarter tooling that benefits you.
+          Low-cost development meets fast, agile delivery. We combine 10+ years of hands-on expertise
+          with AI to build professional websites at a fraction of the traditional cost — no shortcuts on quality.
         </p>
 
         <div
@@ -99,7 +99,7 @@ export function AboutPage() {
       </div>
 
       <div ref={revealRef} className="section-card p-8 md:p-10 reveal-fade-up">
-        <h2 className="section-heading">How AI powers better pricing</h2>
+        <h2 className="section-heading">How AI keeps development costs low</h2>
         <p className="mt-4 text-slate-600 dark:text-slate-400">
           Traditional web development bills you for every hour of manual work. We use AI to automate the
           repetitive parts — scaffolding, responsive testing, copy iterations — so our experts focus
@@ -141,7 +141,7 @@ export function AboutPage() {
           Ready to get your site built?
         </h2>
         <p className="mt-2 text-slate-700 dark:text-slate-300">
-          Professional quality. AI-optimized price. Delivered in days.
+          AI powered by human expertise. Low cost. Fast delivery.
         </p>
         <div className="mt-6">
           <Button size="lg" className="pulse-glow" asChild>
