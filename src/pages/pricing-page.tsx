@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react'
+import { Check, DollarSign } from 'lucide-react'
 import { useDocumentMeta } from '../hooks/use-document-meta'
 import { useScrollReveal } from '../hooks/use-scroll-reveal'
 import { Breadcrumbs } from '../components/ui/breadcrumbs'
@@ -43,8 +43,15 @@ const faqs = [
   },
 ]
 
+const costBreakdown = [
+  { item: '.ca domain name', cost: '~$15/year', note: 'Your own Canadian web address' },
+  { item: 'CodeBG website build', cost: 'From $49', note: 'Professional 5-section site' },
+  { item: 'Hosting on Netlify', cost: 'Free', note: 'Fast, reliable static hosting' },
+]
+
 export function PricingPage() {
   const compRef = useScrollReveal<HTMLDivElement>()
+  const costRef = useScrollReveal<HTMLDivElement>()
   const faqRef = useScrollReveal<HTMLDivElement>()
 
   useDocumentMeta({
@@ -125,6 +132,37 @@ export function PricingPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div ref={costRef} className="section-card p-8 md:p-10 reveal-fade-up">
+        <h2 className="section-heading">Total cost to get online</h2>
+        <p className="mt-4 text-slate-600 dark:text-slate-400">
+          Everything you need to launch your small business online — no surprises, no monthly fees for your website.
+        </p>
+        <div className="mt-6 space-y-3">
+          {costBreakdown.map((c) => (
+            <div
+              key={c.item}
+              className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-700 p-4"
+            >
+              <div>
+                <p className="font-medium text-slate-800 dark:text-slate-100">{c.item}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{c.note}</p>
+              </div>
+              <p className="text-lg font-bold text-slate-800 dark:text-slate-100">{c.cost}</p>
+            </div>
+          ))}
+          <div className="flex items-center justify-between rounded-xl border border-accent bg-accent-soft dark:bg-orange-950/30 dark:border-orange-800/50 p-4">
+            <div className="flex items-center gap-2">
+              <DollarSign size={20} className="text-accent" />
+              <p className="font-semibold text-accent-text dark:text-orange-400">Total to launch</p>
+            </div>
+            <p className="text-xl font-bold text-accent">Under $100 CAD</p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+          Your site is built deployment-ready. Netlify offers free hosting for static sites — just connect your repository and you're live.
+        </p>
       </div>
 
       <div ref={faqRef} className="section-card p-8 md:p-10 reveal-fade-up">
