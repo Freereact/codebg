@@ -4,14 +4,12 @@ import { CtaLink } from '../ui/cta-link'
 import { newsEntries } from '../../data/news'
 
 export function News() {
-  const latestHref = newsEntries[0]?.href
-
   return (
     <Section
       id="news"
       heading="News"
       description="Latest updates from our stack, tools, and workflows."
-      headerRight={latestHref ? <CtaLink href={latestHref}>View latest post</CtaLink> : undefined}
+      headerRight={<CtaLink href="/news/">View all news</CtaLink>}
     >
       <div className="mt-6 grid gap-5 sm:grid-cols-2 md:grid-cols-3">
         {newsEntries.map((entry) => (
