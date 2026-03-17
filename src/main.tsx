@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { RootLayout } from './components/layout/root-layout'
 import { HomePage } from './pages/home-page'
+import { AboutPage } from './pages/about-page'
+import { ServicesIndexPage } from './pages/services-index'
+import { ProcessPage } from './pages/process-page'
+import { PricingPage } from './pages/pricing-page'
 import { NewsArticlePage } from './pages/news-article'
 import { ServicePage } from './pages/service-page'
 import { NewsIndexPage } from './pages/news-index'
@@ -16,6 +20,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route element={<RootLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/services" element={<ServicesIndexPage />} />
+          <Route path="/process" element={<ProcessPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/news" element={<NewsIndexPage />} />
           <Route path="/news/:slug" element={<NewsArticlePage />} />
           <Route path="/customers" element={<CustomersIndexPage />} />

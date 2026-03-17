@@ -1,11 +1,14 @@
 import * as React from 'react'
 import { cn } from '../../lib/utils'
+import { useScrollReveal } from '../../hooks/use-scroll-reveal'
 
 export interface SectionProps extends React.HTMLAttributes<HTMLElement> {
   id: string
   heading?: string
   description?: string
   headerRight?: React.ReactNode
+  animate?: boolean
+  stagger?: boolean
 }
 
 export function Section({
@@ -15,10 +18,19 @@ export function Section({
   headerRight,
   className,
   children,
+  animate = true,
+  stagger = false,
   ...props
 }: SectionProps) {
+  const ref = useScrollReveal<HTMLElement>()
+
   return (
-    <section id={id} className={cn('section-card p-8 md:p-10', className)} {...props}>
+    <section
+      id={id}
+      ref={animate ? ref : undefined}
+      className={cn('section-card p-8 md:p-10', animate && 'reveal-fade-up', className)}
+      {...props}
+    >
       {heading && (
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -28,7 +40,7 @@ export function Section({
           {headerRight}
         </div>
       )}
-      {children}
+      {stagger ? <div className="stagger-children">{children}</div> : children}
     </section>
   )
 }
