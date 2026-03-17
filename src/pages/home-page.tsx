@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useOutletContext } from 'react-router-dom'
 import { Hero } from '../components/sections/hero'
 import { Services } from '../components/sections/services'
 import { Process } from '../components/sections/process'
@@ -7,25 +8,18 @@ import { News } from '../components/sections/news'
 import { Pricing } from '../components/sections/pricing'
 import { SeoResources } from '../components/sections/seo-resources'
 import { Contact } from '../components/sections/contact'
-import { CaptchaModal } from '../components/sections/captcha-modal'
-import { useContactForm } from '../hooks/use-contact-form'
 import { fallbackSamples } from '../data/samples'
 import type { SampleEntry } from '../types'
+import type { ContactOutletContext } from '../components/layout/root-layout'
 
 export function HomePage() {
   const [samples, setSamples] = useState<SampleEntry[]>(fallbackSamples)
   const {
     scrollToContact,
     handleContactSubmit,
-    submitVerified,
-    closeCaptchaModal,
-    showCaptchaModal,
-    sending,
     sent,
     error,
-    turnstileToken,
-    captchaStatus,
-  } = useContactForm()
+  } = useOutletContext<ContactOutletContext>()
 
   useEffect(() => {
     let mounted = true
@@ -50,26 +44,15 @@ export function HomePage() {
   }, [])
 
   return (
-    <>
-      <div className="mx-auto max-w-6xl space-y-10">
-        <Hero onContactClick={scrollToContact} />
-        <Services />
-        <Process />
-        <Samples samples={samples} />
-        <News />
-        <Pricing onContactClick={scrollToContact} />
-        <SeoResources />
-        <Contact onSubmit={handleContactSubmit} sent={sent} error={error} />
-      </div>
-
-      <CaptchaModal
-        open={showCaptchaModal}
-        onClose={closeCaptchaModal}
-        onConfirm={submitVerified}
-        sending={sending}
-        turnstileToken={turnstileToken}
-        captchaStatus={captchaStatus}
-      />
-    </>
+    <div className="mx-auto max-w-6xl space-y-10">
+      <Hero onContactClick={scrollToContact} />
+      <Services />
+      <Process />
+      <Samples samples={samples} />
+      <News />
+      <Pricing onContactClick={scrollToContact} />
+      <SeoResources />
+      <Contact onSubmit={handleContactSubmit} sent={sent} error={error} />
+    </div>
   )
 }

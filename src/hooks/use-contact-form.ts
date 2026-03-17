@@ -36,6 +36,7 @@ function loadTurnstileScript(): Promise<void> {
 }
 
 export function useContactForm() {
+  const [showContactModal, setShowContactModal] = useState(false)
   const [showCaptchaModal, setShowCaptchaModal] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState('')
   const [sending, setSending] = useState(false)
@@ -100,6 +101,19 @@ export function useContactForm() {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  const openContactModal = () => {
+    setSent(false)
+    setError('')
+    setShowContactModal(true)
+  }
+
+  const closeContactModal = () => {
+    setShowContactModal(false)
+    setShowCaptchaModal(false)
+    setTurnstileToken('')
+    setError('')
+  }
+
   const handleContactSubmit = (form: FormState) => {
     setError('')
     setSent(false)
@@ -152,6 +166,7 @@ export function useContactForm() {
       pendingFormRef.current = null
       setTurnstileToken('')
       setShowCaptchaModal(false)
+      setShowContactModal(false)
       if (window.turnstile && widgetIdRef.current) window.turnstile.reset(widgetIdRef.current)
     } catch {
       setError('Network error while sending request.')
@@ -171,6 +186,9 @@ export function useContactForm() {
     submitVerified,
     closeCaptchaModal,
     showCaptchaModal,
+    showContactModal,
+    openContactModal,
+    closeContactModal,
     sending,
     sent,
     error,
