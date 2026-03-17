@@ -66,7 +66,7 @@ jobs:
             set -euo pipefail
             cd ~/projects/codebg
             git fetch --all --prune
-            git checkout -B test-ci origin/test-ci
+            git checkout -f -B test-ci origin/test-ci
             git reset --hard origin/test-ci
 
             # Build frontend
