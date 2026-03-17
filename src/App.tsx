@@ -11,6 +11,7 @@ import { SeoResources } from './components/sections/seo-resources'
 import { Contact } from './components/sections/contact'
 import { CaptchaModal } from './components/sections/captcha-modal'
 import { useActiveSection } from './hooks/use-active-section'
+import { useTheme } from './hooks/use-theme'
 import { fallbackSamples } from './data/samples'
 import type { FormState, SampleEntry } from './types'
 
@@ -66,6 +67,7 @@ export default function App() {
 
   const stableSectionIds = useMemo(() => sectionIds, [])
   const activeSection = useActiveSection(stableSectionIds)
+  const { theme, toggleTheme } = useTheme()
 
   // Turnstile init
   useEffect(() => {
@@ -209,7 +211,7 @@ export default function App() {
         Skip to main content
       </a>
 
-      <Header activeSection={activeSection} onContactClick={scrollToContact} />
+      <Header activeSection={activeSection} onContactClick={scrollToContact} theme={theme} onToggleTheme={toggleTheme} />
 
       <main id="main-content" className="mx-auto max-w-6xl space-y-10 px-4 py-10 md:px-6 md:py-12">
         <Hero onContactClick={scrollToContact} />

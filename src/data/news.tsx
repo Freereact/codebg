@@ -38,7 +38,7 @@ export const newsEntries: NewsEntry[] = [
     title: 'Sample catalog now updates dynamically',
     description: 'Main site sample cards now load from a shared JSON catalog for faster updates.',
     category: 'Platform',
-    href: '/customers/index.html',
+    href: '/customers',
     linkLabel: 'Open samples',
   },
   {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Sun, Moon } from 'lucide-react'
 import { Button } from '../ui/button'
 import { navLinks } from '../../data/nav-links'
 import { cn } from '../../lib/utils'
@@ -7,9 +7,11 @@ import { cn } from '../../lib/utils'
 interface HeaderProps {
   activeSection?: string
   onContactClick?: () => void
+  theme?: 'light' | 'dark'
+  onToggleTheme?: () => void
 }
 
-export function Header({ activeSection, onContactClick }: HeaderProps) {
+export function Header({ activeSection, onContactClick, theme, onToggleTheme }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
@@ -37,6 +39,16 @@ export function Header({ activeSection, onContactClick }: HeaderProps) {
         </nav>
 
         <div className="flex items-center gap-3">
+          {onToggleTheme && (
+            <button
+              onClick={onToggleTheme}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10"
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
+          )}
+
           {onContactClick ? (
             <Button size="default" onClick={onContactClick} className="hidden md:inline-flex">
               Contact

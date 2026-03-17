@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Header } from './header'
 import { Footer } from './footer'
 
@@ -9,12 +10,47 @@ interface SubPageLayoutProps {
   children: React.ReactNode
 }
 
+function setMetaTag(attr: string, key: string, content: string) {
+  let el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`)
+  if (!el) {
+    el = document.createElement('meta')
+    el.setAttribute(attr, key)
+    document.head.appendChild(el)
+  }
+  el.content = content
+}
+
 export function SubPageLayout({ title, kicker, meta, children }: SubPageLayoutProps) {
+  const location = useLocation()
+
   useEffect(() => {
-    document.title = meta?.title ?? `${title} | CodeBG`
-    const desc = document.querySelector<HTMLMetaElement>('meta[name="description"]')
-    if (desc && meta?.description) desc.content = meta.description
-  }, [title, meta])
+    const pageTitle = meta?.title ?? `${title} | CodeBG`
+    const pageDesc = meta?.description ?? ''
+    const pageUrl = `https://codebg.com${location.pathname}`
+    const pageImage = 'https://codebg.com/og-image.webp'
+
+    document.title = pageTitle
+
+    setMetaTag('name', 'description', pageDesc)
+    setMetaTag('property', 'og:title', pageTitle)
+    setMetaTag('property', 'og:description', pageDesc)
+    setMetaTag('property', 'og:url', pageUrl)
+    setMetaTag('property', 'og:image', pageImage)
+    setMetaTag('property', 'og:type', 'website')
+    setMetaTag('property', 'og:site_name', 'CodeBG')
+    setMetaTag('name', 'twitter:card', 'summary_large_image')
+    setMetaTag('name', 'twitter:title', pageTitle)
+    setMetaTag('name', 'twitter:description', pageDesc)
+    setMetaTag('name', 'twitter:image', pageImage)
+
+    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    if (!canonical) {
+      canonical = document.createElement('link')
+      canonical.rel = 'canonical'
+      document.head.appendChild(canonical)
+    }
+    canonical.href = pageUrl
+  }, [title, meta, location.pathname])
 
   return (
     <div className="app-shell">
