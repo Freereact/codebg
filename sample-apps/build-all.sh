@@ -13,7 +13,7 @@ for customer in "${!SLUG_MAP[@]}"; do
   slug="${SLUG_MAP[$customer]}"
   echo "Building $customer → dist/$slug/"
   VITE_CUSTOMER="$customer" npx vite build \
-    --base="/customers/$slug/" \
+    --base="/$slug/" \
     --outDir="dist/$slug"
 done
 

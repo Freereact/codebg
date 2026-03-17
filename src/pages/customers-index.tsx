@@ -19,7 +19,7 @@ export function CustomersIndexPage() {
 
     async function loadSamples() {
       try {
-        const res = await fetch('/customers/samples.json', { cache: 'no-store' })
+        const res = await fetch('https://sample-apps.codebg.com/samples.json', { cache: 'no-store' })
         if (!res.ok) return
         const data = (await res.json()) as { samples?: SampleEntry[] }
         if (mounted && data.samples && data.samples.length) {
@@ -67,7 +67,7 @@ export function CustomersIndexPage() {
                     ))}
                   </div>
                 ) : null}
-                <CtaLink href={`/customers/${sample.slug}/`} className="mt-4 inline-block">
+                <CtaLink href={`https://sample-apps.codebg.com/${sample.slug}/`} className="mt-4 inline-block">
                   Open sample
                 </CtaLink>
               </div>

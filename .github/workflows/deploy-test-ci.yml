@@ -70,7 +70,7 @@ jobs:
             npm ci
             VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY' npm run build
             mkdir -p /var/www/codebg
-            rsync -a --delete --exclude='customers/' dist/ /var/www/codebg/
+            rsync -a --delete dist/ /var/www/codebg/
           SCRIPT
 
       - name: Deploy sample apps
@@ -82,12 +82,12 @@ jobs:
             npm ci
             bash build-all.sh
 
-            # Sync each customer build to /var/www/codebg/customers/<slug>/
-            mkdir -p /var/www/codebg/customers
+            # Sync each customer build to /var/www/sample-apps/<slug>/
+            mkdir -p /var/www/sample-apps
             for dir in dist/*/; do
               slug=$(basename "$dir")
-              mkdir -p "/var/www/codebg/customers/$slug"
-              rsync -a --delete "$dir" "/var/www/codebg/customers/$slug/"
+              mkdir -p "/var/www/sample-apps/$slug"
+              rsync -a --delete "$dir" "/var/www/sample-apps/$slug/"
             done
 
             # Generate samples.json from meta.json files
@@ -98,7 +98,7 @@ jobs:
               cat "$meta" >> /tmp/samples.json
             done
             echo ']' >> /tmp/samples.json
-            cp /tmp/samples.json /var/www/codebg/customers/samples.json
+            cp /tmp/samples.json /var/www/sample-apps/samples.json
           SCRIPT
 
       - name: Deploy nginx config
@@ -108,8 +108,11 @@ jobs:
             set -euo pipefail
             sudo cp ~/projects/codebg/infra/nginx/codebg.com.conf /etc/nginx/sites-available/codebg.com
             sudo ln -sf /etc/nginx/sites-available/codebg.com /etc/nginx/sites-enabled/codebg.com
+            sudo cp ~/projects/codebg/infra/nginx/sample-apps.codebg.com.conf /etc/nginx/sites-available/sample-apps.codebg.com
+            sudo ln -sf /etc/nginx/sites-available/sample-apps.codebg.com /etc/nginx/sites-enabled/sample-apps.codebg.com
             sudo nginx -t
             sudo systemctl reload nginx
+            sudo certbot --nginx -d codebg.com -d www.codebg.com -d sample-apps.codebg.com --expand --non-interactive --agree-tos
           SCRIPT
 
       - name: Deploy backend

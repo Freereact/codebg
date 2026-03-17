@@ -18,11 +18,11 @@ const urls = [
   { loc: '/services/web-design-penticton', priority: '0.8', changefreq: 'monthly' },
   { loc: '/services/website-redesign', priority: '0.8', changefreq: 'monthly' },
   { loc: '/customers', priority: '0.7', changefreq: 'weekly' },
-  { loc: '/customers/autoshop/', priority: '0.5', changefreq: 'monthly' },
-  { loc: '/customers/dental-cabinet/', priority: '0.5', changefreq: 'monthly' },
-  { loc: '/customers/winery/', priority: '0.5', changefreq: 'monthly' },
-  { loc: '/customers/massage-service/', priority: '0.5', changefreq: 'monthly' },
-  { loc: '/customers/bakery-service/', priority: '0.5', changefreq: 'monthly' },
+  { loc: 'https://sample-apps.codebg.com/autoshop/', priority: '0.5', changefreq: 'monthly', absolute: true },
+  { loc: 'https://sample-apps.codebg.com/dental-cabinet/', priority: '0.5', changefreq: 'monthly', absolute: true },
+  { loc: 'https://sample-apps.codebg.com/winery/', priority: '0.5', changefreq: 'monthly', absolute: true },
+  { loc: 'https://sample-apps.codebg.com/massage-service/', priority: '0.5', changefreq: 'monthly', absolute: true },
+  { loc: 'https://sample-apps.codebg.com/bakery-service/', priority: '0.5', changefreq: 'monthly', absolute: true },
   { loc: '/news', priority: '0.7', changefreq: 'weekly' },
   { loc: '/news/nemoclaw-by-nvidia', priority: '0.6', changefreq: 'monthly' },
   { loc: '/news/dynamic-sample-catalog', priority: '0.6', changefreq: 'monthly' },
@@ -34,7 +34,7 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
 ${urls
   .map(
     (u) => `  <url>
-    <loc>${SITE}${u.loc}</loc>
+    <loc>${u.absolute ? u.loc : `${SITE}${u.loc}`}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>

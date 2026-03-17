@@ -26,7 +26,7 @@ export function HomePage() {
 
     async function loadSamples() {
       try {
-        const res = await fetch('/customers/samples.json', { cache: 'no-store' })
+        const res = await fetch('https://sample-apps.codebg.com/samples.json', { cache: 'no-store' })
         if (!res.ok) return
         const data = (await res.json()) as { samples?: SampleEntry[] }
         if (mounted && data.samples && data.samples.length) {
