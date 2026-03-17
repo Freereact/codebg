@@ -9,7 +9,11 @@ import { cn } from '../../lib/utils'
 
 const sectionIds = ['about', 'services', 'process', 'samples', 'news', 'pricing', 'contact']
 
-export function Header() {
+interface HeaderProps {
+  onContactClick: () => void
+}
+
+export function Header({ onContactClick }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { theme, toggleTheme } = useThemeContext()
   const { pathname } = useLocation()
@@ -22,15 +26,11 @@ export function Header() {
 
   const handleContactClick = () => {
     closeMobileMenu()
-    if (isHome) {
-      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } else {
-      window.location.href = '/#contact'
-    }
+    onContactClick()
   }
 
   return (
-    <header className="sticky top-0 z-10 border-b border-slate-700 bg-shell text-white">
+    <header className="sticky top-0 z-40 border-b border-slate-700 bg-shell text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <a href="/" className="text-lg font-semibold tracking-wide">
           Code<span className="text-accent">BG</span>
