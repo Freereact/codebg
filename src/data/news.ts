@@ -7,7 +7,7 @@ export const newsEntries: NewsEntry[] = [
     description: 'Verified summary of NVIDIA NemoClaw in OpenClaw deployment context.',
     category: 'NVIDIA',
     date: 'Mar 2026',
-    href: '/news/nemoclaw-by-nvidia.html',
+    href: '/news/nemoclaw-by-nvidia',
     linkLabel: 'Read article',
   },
   {
@@ -15,7 +15,7 @@ export const newsEntries: NewsEntry[] = [
     title: 'Sample catalog now updates dynamically',
     description: 'Main site sample cards now load from a shared JSON catalog for faster updates.',
     category: 'Platform',
-    href: '/customers/index.html',
+    href: '/customers',
     linkLabel: 'Open samples',
   },
   {
@@ -23,7 +23,7 @@ export const newsEntries: NewsEntry[] = [
     title: 'New local service pages are live',
     description: 'Added focused pages for Penticton web design and small business redesign.',
     category: 'SEO',
-    href: '/services/web-design-penticton.html',
+    href: '/services/web-design-penticton',
     linkLabel: 'Read page',
   },
 ]
