@@ -39,6 +39,8 @@ jobs:
             if [ ! -d ~/projects/codebg/.git ]; then git clone https://github.com/Freereact/codebg.git ~/projects/codebg; fi
             cd ~/projects/codebg
             git fetch --all --prune
+            git reset --hard
+            git clean -fd
             git checkout -B test-ci origin/test-ci
             git reset --hard origin/test-ci
             rm -rf node_modules
