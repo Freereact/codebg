@@ -24,7 +24,10 @@ jobs:
             backend/package-lock.json
 
       - name: Build frontend
-        run: npm ci && npm run build
+        run: |
+          npm ci
+          node scripts/generate-fallback-samples.mjs
+          npm run build
 
       - name: Build sample apps (all customers)
         run: |
@@ -68,6 +71,7 @@ jobs:
 
             # Build frontend
             npm ci
+            node scripts/generate-fallback-samples.mjs
             VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY' npm run build
             mkdir -p /var/www/codebg
             rsync -a --delete dist/ /var/www/codebg/
