@@ -72,10 +72,9 @@ jobs:
             mkdir -p /var/www/codebg
             rsync -a --delete dist/ /var/www/codebg/
 
-            # Remove pre-rendered customers/ dir — the SPA route handles
-            # /customers client-side; the directory triggers an nginx 301
-            # to /customers/index.html which breaks React Router.
-            rm -rf /var/www/codebg/customers/
+            # Overwrite pre-rendered customers/index.html with the SPA root
+            # so nginx serves the real SPA and React Router handles /customers
+            cp /var/www/codebg/index.html /var/www/codebg/customers/index.html
           SCRIPT
 
       - name: Deploy sample apps
