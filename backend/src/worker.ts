@@ -4,7 +4,12 @@ import { config } from './config.js'
 import type { EmailJob } from './types.js'
 
 const redis = new Redis(config.redisUrl)
+redis.on('error', (err) => console.error('[redis] connection error', err))
+
 const amqpConn = await amqp.connect(config.rabbitUrl)
+amqpConn.on('error', (err) => console.error('[amqp] connection error', err))
+amqpConn.on('close', () => console.warn('[amqp] connection closed'))
+
 const channel = await amqpConn.createChannel()
 await channel.assertQueue(config.queueName, { durable: true })
 
@@ -57,3 +62,26 @@ channel.consume(
 )
 
 console.log('codebg-worker started')
+
+let isShuttingDown = false
+async function shutdown() {
+  if (isShuttingDown) return
+  isShuttingDown = true
+
+  console.log('Worker shutting down gracefully...')
+
+  // Force exit after 10s if draining takes too long
+  setTimeout(() => {
+    console.error('Worker forced shutdown after timeout')
+    process.exit(1)
+  }, 10_000).unref()
+
+  try { await channel.close() } catch { /* already closed */ }
+  try { await amqpConn.close() } catch { /* already closed */ }
+  try { await redis.quit() } catch { /* already closed */ }
+  console.log('Worker shutdown complete')
+  process.exit(0)
+}
+
+process.on('SIGTERM', shutdown)
+process.on('SIGINT', shutdown)

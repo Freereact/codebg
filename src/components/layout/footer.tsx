@@ -2,9 +2,9 @@ import { useLocation } from 'react-router-dom'
 import { Facebook, Instagram, Linkedin } from 'lucide-react'
 
 const socialLinks = [
-  { icon: Facebook, href: '#', label: 'Facebook' },
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Linkedin, href: '#', label: 'LinkedIn' },
+  { icon: Facebook, label: 'Facebook' },
+  { icon: Instagram, label: 'Instagram' },
+  { icon: Linkedin, label: 'LinkedIn' },
 ]
 
 interface FooterProps {
@@ -37,16 +37,15 @@ export function Footer({ onContactClick }: FooterProps) {
             </nav>
             <div className="flex gap-3">
               {socialLinks.map((s) => (
-                <a
+                <span
                   key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="text-slate-400 transition-colors hover:text-accent"
+                  role="img"
+                  title="Working on our online presence — stay tuned!"
+                  aria-label={`${s.label} — coming soon`}
+                  className="cursor-default text-slate-400"
                 >
                   <s.icon size={18} />
-                </a>
+                </span>
               ))}
             </div>
           </div>

@@ -6,6 +6,7 @@ import { Process } from '../components/sections/process'
 import { Samples } from '../components/sections/samples'
 import { News } from '../components/sections/news'
 import { Pricing } from '../components/sections/pricing'
+import { Testimonials } from '../components/sections/testimonials'
 import { SeoResources } from '../components/sections/seo-resources'
 import { Contact } from '../components/sections/contact'
 import { fallbackSamples } from '../data/samples'
@@ -52,6 +53,7 @@ export function HomePage() {
       <Samples samples={samples} />
       <News />
       <Pricing onContactClick={scrollToContact} />
+      <Testimonials onContactClick={scrollToContact} />
       <SeoResources />
       <Contact onSubmit={handleContactSubmit} sent={sent} error={error} />
     </div>

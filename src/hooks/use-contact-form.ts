@@ -7,7 +7,12 @@ declare global {
       render: (selector: string, opts: Record<string, unknown>) => string
       reset: (id: string) => void
     }
+    gtag?: (...args: [string, string, Record<string, unknown>?]) => void
   }
+}
+
+function trackEvent(action: string, params?: Record<string, unknown>) {
+  window.gtag?.('event', action, params)
 }
 
 function loadTurnstileScript(): Promise<void> {
@@ -105,6 +110,7 @@ export function useContactForm() {
     setSent(false)
     setError('')
     setShowContactModal(true)
+    trackEvent('contact_form_open')
   }
 
   const closeContactModal = () => {
@@ -130,6 +136,7 @@ export function useContactForm() {
     pendingFormRef.current = form
     setTurnstileToken('')
     setShowCaptchaModal(true)
+    trackEvent('contact_form_submit')
   }
 
   const submitVerified = async () => {
@@ -159,6 +166,7 @@ export function useContactForm() {
       const data = (await res.json()) as { ok: boolean; error?: string }
       if (!res.ok || !data.ok) {
         setError(data.error ?? 'Failed to submit request.')
+        trackEvent('contact_form_error', { reason: data.error ?? 'api_error' })
         return
       }
 
@@ -168,8 +176,10 @@ export function useContactForm() {
       setShowCaptchaModal(false)
       setShowContactModal(false)
       if (window.turnstile && widgetIdRef.current) window.turnstile.reset(widgetIdRef.current)
+      trackEvent('contact_form_verified_send')
     } catch {
       setError('Network error while sending request.')
+      trackEvent('contact_form_error', { reason: 'network' })
     } finally {
       setSending(false)
     }

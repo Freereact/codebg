@@ -18,9 +18,14 @@ app.use(cors({
 }))
 
 const redis = new Redis(config.redisUrl)
+redis.on('error', (err) => console.error('[redis] connection error', err))
+
+let amqpConn: amqp.ChannelModel | null = null
 let channel: amqp.Channel | null = null
 try {
-  const amqpConn = await amqp.connect(config.rabbitUrl)
+  amqpConn = await amqp.connect(config.rabbitUrl)
+  amqpConn.on('error', (err: Error) => { console.error('[amqp] connection error', err); channel = null })
+  amqpConn.on('close', () => { console.warn('[amqp] connection closed'); channel = null })
   channel = await amqpConn.createChannel()
   await channel.assertQueue(config.queueName, { durable: true })
   console.log('RabbitMQ queue ready')
@@ -118,6 +123,30 @@ app.post('/api/email-job', async (req, res) => {
   }
 })
 
-app.listen(config.port, () => {
+const server = app.listen(config.port, () => {
   console.log(`codebg-api listening on :${config.port}`)
 })
+
+let isShuttingDown = false
+async function shutdown() {
+  if (isShuttingDown) return
+  isShuttingDown = true
+
+  console.log('Shutting down gracefully...')
+  server.close(async () => {
+    try { await channel?.close() } catch { /* already closed */ }
+    try { await amqpConn?.close() } catch { /* already closed */ }
+    try { await redis.quit() } catch { /* already closed */ }
+    console.log('Shutdown complete')
+    process.exit(0)
+  })
+
+  // Force exit after 10s if draining takes too long
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout')
+    process.exit(1)
+  }, 10_000).unref()
+}
+
+process.on('SIGTERM', shutdown)
+process.on('SIGINT', shutdown)
