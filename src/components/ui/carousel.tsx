@@ -26,9 +26,12 @@ export function Carousel({
   const total = children.length
   const timerRef = useRef<ReturnType<typeof setInterval>>()
 
-  const goTo = useCallback((idx: number) => {
-    setCurrent(((idx % total) + total) % total)
-  }, [total])
+  const goTo = useCallback(
+    (idx: number) => {
+      setCurrent(((idx % total) + total) % total)
+    },
+    [total],
+  )
 
   const next = useCallback(() => goTo(current + 1), [current, goTo])
   const prev = useCallback(() => goTo(current - 1), [current, goTo])

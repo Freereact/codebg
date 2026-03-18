@@ -15,12 +15,7 @@ import type { ContactOutletContext } from '../components/layout/root-layout'
 
 export function HomePage() {
   const [samples, setSamples] = useState<SampleEntry[]>(fallbackSamples)
-  const {
-    scrollToContact,
-    handleContactSubmit,
-    sent,
-    error,
-  } = useOutletContext<ContactOutletContext>()
+  const { scrollToContact, handleContactSubmit, sent, error } = useOutletContext<ContactOutletContext>()
 
   useEffect(() => {
     let mounted = true

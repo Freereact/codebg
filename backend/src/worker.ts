@@ -76,9 +76,21 @@ async function shutdown() {
     process.exit(1)
   }, 10_000).unref()
 
-  try { await channel.close() } catch { /* already closed */ }
-  try { await amqpConn.close() } catch { /* already closed */ }
-  try { await redis.quit() } catch { /* already closed */ }
+  try {
+    await channel.close()
+  } catch {
+    /* already closed */
+  }
+  try {
+    await amqpConn.close()
+  } catch {
+    /* already closed */
+  }
+  try {
+    await redis.quit()
+  } catch {
+    /* already closed */
+  }
   console.log('Worker shutdown complete')
   process.exit(0)
 }

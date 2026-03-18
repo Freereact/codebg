@@ -26,13 +26,23 @@ export function Footer({ onContactClick }: FooterProps) {
           </div>
           <div className="flex flex-col items-center gap-4 sm:items-end">
             <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
-              <a href="/#services" className="transition-colors hover:text-accent">Services</a>
-              <a href="/#samples" className="transition-colors hover:text-accent">Samples</a>
-              <a href="/#pricing" className="transition-colors hover:text-accent">Pricing</a>
+              <a href="/#services" className="transition-colors hover:text-accent">
+                Services
+              </a>
+              <a href="/#samples" className="transition-colors hover:text-accent">
+                Samples
+              </a>
+              <a href="/#pricing" className="transition-colors hover:text-accent">
+                Pricing
+              </a>
               {!isHome && onContactClick ? (
-                <button onClick={onContactClick} className="transition-colors hover:text-accent">Contact</button>
+                <button onClick={onContactClick} className="transition-colors hover:text-accent">
+                  Contact
+                </button>
               ) : (
-                <a href="/#contact" className="transition-colors hover:text-accent">Contact</a>
+                <a href="/#contact" className="transition-colors hover:text-accent">
+                  Contact
+                </a>
               )}
             </nav>
             <div className="group relative flex gap-3">

@@ -64,7 +64,12 @@ export function CustomersIndexPage() {
                 {sample.tags?.length ? (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {sample.tags.map((tag) => (
-                      <span key={tag} className="rounded-full bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 text-xs text-indigo-700 dark:text-indigo-300">{tag}</span>
+                      <span
+                        key={tag}
+                        className="rounded-full bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 text-xs text-indigo-700 dark:text-indigo-300"
+                      >
+                        {tag}
+                      </span>
                     ))}
                   </div>
                 ) : null}
@@ -78,9 +83,15 @@ export function CustomersIndexPage() {
       </Section>
 
       <nav aria-label="Related pages" className="flex flex-wrap gap-4 text-sm">
-        <a href="/news" className="text-accent hover:underline">Latest news &rarr;</a>
-        <a href="/services/web-design-penticton" className="text-accent hover:underline">Web design in Penticton &rarr;</a>
-        <a href="/services/website-redesign" className="text-accent hover:underline">Website redesign guide &rarr;</a>
+        <a href="/news" className="text-accent hover:underline">
+          Latest news &rarr;
+        </a>
+        <a href="/services/web-design-penticton" className="text-accent hover:underline">
+          Web design in Penticton &rarr;
+        </a>
+        <a href="/services/website-redesign" className="text-accent hover:underline">
+          Website redesign guide &rarr;
+        </a>
       </nav>
     </div>
   )

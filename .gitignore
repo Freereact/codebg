@@ -17,3 +17,6 @@ sample-apps/node_modules/
 
 # Dev info (local notes)
 dev_info/
+
+# Dev infrastructure records
+dev_infra/

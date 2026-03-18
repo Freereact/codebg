@@ -42,11 +42,7 @@ export function NewsArticlePage() {
           },
         },
       }}
-      breadcrumbs={[
-        { label: 'Home', href: '/' },
-        { label: 'News', href: '/news' },
-        { label: entry.title },
-      ]}
+      breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'News', href: '/news' }, { label: entry.title }]}
     >
       {entry.body ?? <p>{entry.description}</p>}
 
@@ -57,11 +53,15 @@ export function NewsArticlePage() {
           <ul className="mt-2 space-y-1 text-sm">
             {relatedArticles.map((a) => (
               <li key={a.slug}>
-                <a href={a.href} className="text-accent hover:underline">{a.title}</a>
+                <a href={a.href} className="text-accent hover:underline">
+                  {a.title}
+                </a>
               </li>
             ))}
             <li>
-              <a href="/customers" className="text-accent hover:underline">View sample sites</a>
+              <a href="/customers" className="text-accent hover:underline">
+                View sample sites
+              </a>
             </li>
           </ul>
         </>

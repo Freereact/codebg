@@ -29,15 +29,9 @@ export function ArticleLayout({ title, kicker, meta, breadcrumbs, children }: Ar
     <div className="mx-auto max-w-3xl">
       <div className="section-card p-8 md:p-10">
         {breadcrumbs && <Breadcrumbs items={breadcrumbs} />}
-        {kicker && (
-          <p className="text-xs uppercase tracking-wide text-accent-text dark:text-orange-400">
-            {kicker}
-          </p>
-        )}
+        {kicker && <p className="text-xs uppercase tracking-wide text-accent-text dark:text-orange-400">{kicker}</p>}
         <h1 className="section-heading mt-1">{title}</h1>
-        <div className="mt-4 space-y-4 leading-relaxed text-slate-600 dark:text-slate-300">
-          {children}
-        </div>
+        <div className="mt-4 space-y-4 leading-relaxed text-slate-600 dark:text-slate-300">{children}</div>
         <p className="mt-6">
           <a href="/" className="text-sm font-medium text-accent hover:underline">
             &larr; Back to CodeBG

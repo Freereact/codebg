@@ -18,4 +18,9 @@ export const config = {
   mailTo: required('MAIL_TO'),
   allowedOrigins: (process.env.ALLOWED_ORIGINS ?? 'https://codebg.com').split(',').map((s) => s.trim()),
   maxPerDay: Number(process.env.MAX_EMAILS_PER_DAY ?? 100),
+  databaseUrl: required('DATABASE_URL'),
+  jwtSecret: required('JWT_SECRET'),
+  frontendUrl: required('FRONTEND_URL'),
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+  magicLinkExpiryMinutes: Number(process.env.MAGIC_LINK_EXPIRY_MINUTES ?? 15),
 }

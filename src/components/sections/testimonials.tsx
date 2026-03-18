@@ -23,14 +23,12 @@ export function Testimonials({ onContactClick }: TestimonialsProps) {
               "Our first review is still loading&hellip;"
             </p>
             <p className="text-sm text-slate-400 dark:text-slate-500">
-              We're a new studio growing one project at a time. Our testimonials section is
-              a bit empty — but our enthusiasm is full.
+              We're a new studio growing one project at a time. Our testimonials section is a bit empty — but our
+              enthusiasm is full.
             </p>
           </div>
         </Card>
-        <p className="text-slate-600 dark:text-slate-400">
-          Want to be our first happy client?
-        </p>
+        <p className="text-slate-600 dark:text-slate-400">Want to be our first happy client?</p>
         <Button size="lg" onClick={onContactClick}>
           Let's build something together
         </Button>

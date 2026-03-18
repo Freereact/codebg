@@ -12,11 +12,7 @@ const iconMap: Record<string, React.ReactNode> = {
 
 export function Services() {
   return (
-    <Section
-      id="services"
-      heading="What's included"
-      headerRight={<CtaLink href="/services">All services</CtaLink>}
-    >
+    <Section id="services" heading="What's included" headerRight={<CtaLink href="/services">All services</CtaLink>}>
       <div className="mt-6 grid gap-5 sm:grid-cols-2 md:grid-cols-3 stagger-children">
         {services.map((svc) => (
           <Card as="article" key={svc.slug}>

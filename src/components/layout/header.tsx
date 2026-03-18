@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { Menu, X, Sun, Moon } from 'lucide-react'
 import { Button } from '../ui/button'
 import { navLinks } from '../../data/nav-links'
 import { useThemeContext } from '../../contexts/theme-context'
+import { useAuth } from '../../contexts/auth-context'
 import { useActiveSection } from '../../hooks/use-active-section'
 import { cn } from '../../lib/utils'
 
@@ -16,7 +17,9 @@ interface HeaderProps {
 export function Header({ onContactClick }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { theme, toggleTheme } = useThemeContext()
+  const { state: authState } = useAuth()
   const { pathname } = useLocation()
+  const isAuthenticated = authState.status === 'authenticated'
 
   const isHome = pathname === '/'
   const stableSectionIds = useMemo(() => sectionIds, [])
@@ -69,6 +72,13 @@ export function Header({ onContactClick }: HeaderProps) {
           >
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
+
+          <Link
+            to={isAuthenticated ? '/' : '/login'}
+            className="hidden text-sm transition-colors hover:text-accent md:inline-flex"
+          >
+            {isAuthenticated ? 'Dashboard' : 'Sign in'}
+          </Link>
 
           <Button size="default" className="hidden md:inline-flex" onClick={handleContactClick}>
             Contact

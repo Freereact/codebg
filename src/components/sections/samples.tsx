@@ -57,7 +57,12 @@ function SampleCard({ sample }: { sample: SampleEntry }) {
         {sample.tags?.length ? (
           <div className="mt-3 flex flex-wrap gap-2">
             {sample.tags.map((tag) => (
-              <span key={tag} className="rounded-full bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 text-xs text-indigo-700 dark:text-indigo-300">{tag}</span>
+              <span
+                key={tag}
+                className="rounded-full bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 text-xs text-indigo-700 dark:text-indigo-300"
+              >
+                {tag}
+              </span>
             ))}
           </div>
         ) : null}

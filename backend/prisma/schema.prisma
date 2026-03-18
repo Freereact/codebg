@@ -1,0 +1,237 @@
+// CodeBG Database Schema — Prisma ORM
+// Mirrors migrations/001_initial_schema.sql
+// Engine: PostgreSQL 17 (DigitalOcean Managed)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// 1. users
+// ============================================================================
+
+model User {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String
+  name             String
+  phone            String?
+  businessInfo     Json      @default("{}") @map("business_info")
+  stripeCustomerId String?   @map("stripe_customer_id")
+  role             String    @default("client")
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  projects        Project[]
+  subscriptions   Subscription[]
+  payments        Payment[]
+  authTokens      AuthToken[]
+  contentRequests ContentRequest[]
+  adminNotes      AdminNote[]
+
+  @@unique([email], map: "users_email_active_idx")
+  @@index([role], map: "users_role_idx")
+  @@index([createdAt(sort: Desc)], map: "users_created_at_idx")
+  @@map("users")
+}
+
+// ============================================================================
+// 2. projects
+// ============================================================================
+
+model Project {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  templateSlug    String?   @map("template_slug")
+  siteConfig      Json      @default("{}") @map("site_config")
+  domain          String?
+  subdomain       String?
+  status          String    @default("lead")
+  setupFeeCents   Int?      @map("setup_fee_cents")
+  planTier        String?   @map("plan_tier")
+  paidAt          DateTime? @map("paid_at") @db.Timestamptz
+  briefReceivedAt DateTime? @map("brief_received_at") @db.Timestamptz
+  draftReadyAt    DateTime? @map("draft_ready_at") @db.Timestamptz
+  launchedAt      DateTime? @map("launched_at") @db.Timestamptz
+  cancelledAt     DateTime? @map("cancelled_at") @db.Timestamptz
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  subscriptions   Subscription[]
+  payments        Payment[]
+  contentRequests ContentRequest[]
+  adminNotes      AdminNote[]
+
+  @@index([status], map: "projects_status_idx")
+  @@index([userId], map: "projects_user_id_idx")
+  @@index([updatedAt(sort: Desc)], map: "projects_updated_at_idx")
+  @@map("projects")
+}
+
+// ============================================================================
+// 3. subscriptions
+// ============================================================================
+
+model Subscription {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId             String    @map("project_id") @db.Uuid
+  userId                String    @map("user_id") @db.Uuid
+  stripeSubscriptionId  String    @map("stripe_subscription_id")
+  stripePriceId         String?   @map("stripe_price_id")
+  status                String    @default("active")
+  planTier              String    @map("plan_tier")
+  amountCents           Int       @map("amount_cents")
+  currentPeriodStart    DateTime? @map("current_period_start") @db.Timestamptz
+  currentPeriodEnd      DateTime? @map("current_period_end") @db.Timestamptz
+  cancelAtPeriodEnd     Boolean   @default(false) @map("cancel_at_period_end")
+  cancelledAt           DateTime? @map("cancelled_at") @db.Timestamptz
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  payments Payment[]
+
+  @@unique([stripeSubscriptionId], map: "subscriptions_stripe_id_idx")
+  @@index([userId], map: "subscriptions_user_id_idx")
+  @@index([status], map: "subscriptions_status_idx")
+  @@map("subscriptions")
+}
+
+// ============================================================================
+// 4. payments
+// ============================================================================
+
+model Payment {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                 String    @map("user_id") @db.Uuid
+  projectId              String?   @map("project_id") @db.Uuid
+  subscriptionId         String?   @map("subscription_id") @db.Uuid
+  stripePaymentIntentId  String?   @map("stripe_payment_intent_id")
+  stripeInvoiceId        String?   @map("stripe_invoice_id")
+  amountCents            Int       @map("amount_cents")
+  currency               String    @default("cad")
+  paymentType            String    @map("payment_type")
+  status                 String    @default("pending")
+  description            String?
+  stripeReceiptUrl       String?   @map("stripe_receipt_url")
+  paidAt                 DateTime? @map("paid_at") @db.Timestamptz
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  project      Project?      @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt(sort: Desc)], map: "payments_user_id_idx")
+  @@index([createdAt(sort: Desc)], map: "payments_created_at_idx")
+  @@index([status], map: "payments_status_idx")
+  @@map("payments")
+}
+
+// ============================================================================
+// 5. email_jobs
+// ============================================================================
+
+model EmailJob {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobType        String    @default("contact_form") @map("job_type")
+  senderName     String?   @map("sender_name")
+  senderEmail    String?   @map("sender_email")
+  message        String?
+  recipientEmail String?   @map("recipient_email")
+  subject        String?
+  bodyText       String?   @map("body_text")
+  bodyHtml       String?   @map("body_html")
+  status         String    @default("queued")
+  attempts       Int       @default(0)
+  maxAttempts    Int       @default(3) @map("max_attempts")
+  lastError      String?   @map("last_error")
+  nextRetryAt    DateTime? @map("next_retry_at") @db.Timestamptz
+  ipAddress      String?   @map("ip_address")
+  userAgent      String?   @map("user_agent")
+  processedAt    DateTime? @map("processed_at") @db.Timestamptz
+  failedAt       DateTime? @map("failed_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([status, nextRetryAt, createdAt], map: "email_jobs_queue_idx")
+  @@index([createdAt(sort: Desc)], map: "email_jobs_created_at_idx")
+  @@index([createdAt], map: "email_jobs_daily_count_idx")
+  @@map("email_jobs")
+}
+
+// ============================================================================
+// 6. auth_tokens
+// ============================================================================
+
+model AuthToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  usedAt    DateTime? @map("used_at") @db.Timestamptz
+  ipAddress String?   @map("ip_address")
+  userAgent String?   @map("user_agent")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tokenHash], map: "auth_tokens_hash_idx")
+  @@index([expiresAt], map: "auth_tokens_expires_idx")
+  @@index([userId, createdAt(sort: Desc)], map: "auth_tokens_user_id_idx")
+  @@map("auth_tokens")
+}
+
+// ============================================================================
+// 7. content_requests
+// ============================================================================
+
+model ContentRequest {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId     String    @map("project_id") @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  title         String
+  description   String
+  attachments   Json      @default("[]")
+  status        String    @default("pending")
+  adminResponse String?   @map("admin_response")
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([projectId, createdAt(sort: Desc)], map: "content_requests_project_idx")
+  @@index([status, createdAt], map: "content_requests_status_idx")
+  @@index([userId, createdAt(sort: Desc)], map: "content_requests_user_idx")
+  @@map("content_requests")
+}
+
+// ============================================================================
+// 8. admin_notes
+// ============================================================================
+
+model AdminNote {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  projectId String?  @map("project_id") @db.Uuid
+  content   String
+  isPinned  Boolean  @default(false) @map("is_pinned")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)], map: "admin_notes_user_idx")
+  @@index([projectId, createdAt(sort: Desc)], map: "admin_notes_project_idx")
+  @@index([isPinned(sort: Desc), createdAt(sort: Desc)], map: "admin_notes_pinned_idx")
+  @@map("admin_notes")
+}

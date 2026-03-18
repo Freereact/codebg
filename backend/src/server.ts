@@ -2,20 +2,27 @@ import crypto from 'node:crypto'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 import amqp from 'amqplib'
 import { Redis } from 'ioredis'
 import { config } from './config.js'
 import { emailJobSchema, isAllowedOrigin } from './validation.js'
 import { verifyTurnstile } from './turnstile.js'
+import { prisma } from './db.js'
+import { authRouter, jwtMiddleware } from './auth/index.js'
 import type { EmailJob } from './types.js'
 
 const app = express()
 app.use(helmet())
 app.use(express.json({ limit: '200kb' }))
-app.use(cors({
-  origin: (origin, cb) => cb(null, origin ? isAllowedOrigin(origin, config.allowedOrigins) : false),
-  credentials: false,
-}))
+app.use(cookieParser())
+app.use(
+  cors({
+    origin: (origin, cb) => cb(null, origin ? isAllowedOrigin(origin, config.allowedOrigins) : false),
+    credentials: true,
+  }),
+)
+app.use(jwtMiddleware)
 
 const redis = new Redis(config.redisUrl)
 redis.on('error', (err) => console.error('[redis] connection error', err))
@@ -24,8 +31,14 @@ let amqpConn: amqp.ChannelModel | null = null
 let channel: amqp.Channel | null = null
 try {
   amqpConn = await amqp.connect(config.rabbitUrl)
-  amqpConn.on('error', (err: Error) => { console.error('[amqp] connection error', err); channel = null })
-  amqpConn.on('close', () => { console.warn('[amqp] connection closed'); channel = null })
+  amqpConn.on('error', (err: Error) => {
+    console.error('[amqp] connection error', err)
+    channel = null
+  })
+  amqpConn.on('close', () => {
+    console.warn('[amqp] connection closed')
+    channel = null
+  })
   channel = await amqpConn.createChannel()
   await channel.assertQueue(config.queueName, { durable: true })
   console.log('RabbitMQ queue ready')
@@ -59,6 +72,8 @@ app.get('/healthz', (_req, res) => {
   res.json({ ok: true })
 })
 
+app.use('/api/auth', authRouter)
+
 app.post('/api/email-job', async (req, res) => {
   const origin = req.headers.origin
   if (!isAllowedOrigin(origin, config.allowedOrigins)) {
@@ -90,7 +105,7 @@ app.post('/api/email-job', async (req, res) => {
     email: parsed.data.email,
     message: parsed.data.message,
     createdAt: new Date().toISOString(),
-    ip: req.ip ?? "unknown",
+    ip: req.ip ?? 'unknown',
     userAgent: req.get('user-agent') ?? 'unknown',
   }
 
@@ -134,9 +149,26 @@ async function shutdown() {
 
   console.log('Shutting down gracefully...')
   server.close(async () => {
-    try { await channel?.close() } catch { /* already closed */ }
-    try { await amqpConn?.close() } catch { /* already closed */ }
-    try { await redis.quit() } catch { /* already closed */ }
+    try {
+      await channel?.close()
+    } catch {
+      /* already closed */
+    }
+    try {
+      await amqpConn?.close()
+    } catch {
+      /* already closed */
+    }
+    try {
+      await redis.quit()
+    } catch {
+      /* already closed */
+    }
+    try {
+      await prisma.$disconnect()
+    } catch {
+      /* already closed */
+    }
     console.log('Shutdown complete')
     process.exit(0)
   })

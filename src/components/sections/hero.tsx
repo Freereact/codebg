@@ -26,11 +26,13 @@ export function Hero({ onContactClick }: HeroProps) {
           Your local web team — AI-built, human-perfected.
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300 md:text-xl">
-          A local developer with 10+ years of experience, using AI to build professional websites
-          fast and affordably. Personal service, real human craft — your site live in days, not weeks.
+          A local developer with 10+ years of experience, using AI to build professional websites fast and affordably.
+          Personal service, real human craft — your site live in days, not weeks.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Button size="lg" className="pulse-glow" onClick={onContactClick}>Get your site started</Button>
+          <Button size="lg" className="pulse-glow" onClick={onContactClick}>
+            Get your site started
+          </Button>
           <Button size="lg" variant="ghost" asChild>
             <a href="#samples">View samples</a>
           </Button>

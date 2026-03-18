@@ -1,0 +1,11 @@
+import type { Request } from 'express'
+
+export interface JwtPayload {
+  sub: string // user id
+  email: string
+  role: string
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: JwtPayload
+}

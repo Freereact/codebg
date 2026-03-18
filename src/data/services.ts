@@ -43,6 +43,4 @@ export const services: ServiceItem[] = [
 ]
 
 /** Legacy tuple format for backward compat */
-export const serviceTuples = services.map(
-  (s) => [s.title, s.summary] as const,
-)
+export const serviceTuples = services.map((s) => [s.title, s.summary] as const)

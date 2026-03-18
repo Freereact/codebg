@@ -37,11 +37,7 @@ export function ServicePage() {
           },
         },
       }}
-      breadcrumbs={[
-        { label: 'Home', href: '/' },
-        { label: 'Services' },
-        { label: entry.title },
-      ]}
+      breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Services' }, { label: entry.title }]}
     >
       {entry.body ?? <p>{entry.description}</p>}
 
@@ -50,14 +46,20 @@ export function ServicePage() {
       <ul className="mt-2 space-y-1 text-sm">
         {relatedServices.map((s) => (
           <li key={s.slug}>
-            <a href={`/services/${s.slug}`} className="text-accent hover:underline">{s.title}</a>
+            <a href={`/services/${s.slug}`} className="text-accent hover:underline">
+              {s.title}
+            </a>
           </li>
         ))}
         <li>
-          <a href="/customers" className="text-accent hover:underline">View sample sites</a>
+          <a href="/customers" className="text-accent hover:underline">
+            View sample sites
+          </a>
         </li>
         <li>
-          <a href="/news" className="text-accent hover:underline">Latest news</a>
+          <a href="/news" className="text-accent hover:underline">
+            Latest news
+          </a>
         </li>
       </ul>
     </ArticleLayout>

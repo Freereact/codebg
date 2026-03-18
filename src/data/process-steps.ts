@@ -43,12 +43,10 @@ export const processSteps: ProcessStep[] = [
     details: [
       'Preview your live site before it goes public.',
       'One-click deployment through our CI pipeline.',
-      'Post-launch support included — we don\'t disappear after go-live.',
+      "Post-launch support included — we don't disappear after go-live.",
     ],
   },
 ]
 
 /** Legacy tuple format for backward compat */
-export const processStepTuples = processSteps.map(
-  (s) => [`${s.number}. ${s.title}`, s.summary] as const,
-)
+export const processStepTuples = processSteps.map((s) => [`${s.number}. ${s.title}`, s.summary] as const)

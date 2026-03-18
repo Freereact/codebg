@@ -64,16 +64,13 @@ export function ContactModal({
       }}
     >
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-800">
-        <h3
-          id="contact-modal-title"
-          className="text-lg font-semibold text-slate-800 dark:text-slate-100"
-        >
+        <h3 id="contact-modal-title" className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           {showCaptcha ? 'Verify and confirm' : 'Get in touch'}
         </h3>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           {showCaptcha
             ? 'Complete the security check, then confirm send.'
-            : 'Tell us about your project. We\'ll reply with a plan fast.'}
+            : "Tell us about your project. We'll reply with a plan fast."}
         </p>
 
         {!showCaptcha ? (
@@ -126,9 +123,7 @@ export function ContactModal({
               <p className="mt-2 text-xs text-slate-500">Loading security check&hellip;</p>
             )}
             {captchaStatus === 'failed' && (
-              <p className="mt-2 text-xs text-red-600">
-                Security widget failed to load. Try refreshing the page.
-              </p>
+              <p className="mt-2 text-xs text-red-600">Security widget failed to load. Try refreshing the page.</p>
             )}
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
             <div className="mt-5 flex justify-end gap-2">

@@ -66,19 +66,14 @@ export function PricingPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-10">
       <div className="section-card p-8 md:p-10">
-        <Breadcrumbs
-          items={[
-            { label: 'Home', href: '/' },
-            { label: 'Pricing' },
-          ]}
-        />
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Pricing' }]} />
 
         <h1 className="mt-4 text-3xl font-bold text-slate-900 dark:text-slate-50 md:text-4xl">
           Low-cost web development, powered by AI efficiency
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-          AI powered by human expertise means affordable websites without compromise. No hidden fees,
-          no hourly surprises — just fast, agile delivery at a low cost.
+          AI powered by human expertise means affordable websites without compromise. No hidden fees, no hourly
+          surprises — just fast, agile delivery at a low cost.
         </p>
       </div>
 
@@ -124,7 +119,9 @@ export function PricingPage() {
               }`}
             >
               <div>
-                <p className={`font-medium ${c.highlight ? 'text-accent-text dark:text-orange-400' : 'text-slate-800 dark:text-slate-100'}`}>
+                <p
+                  className={`font-medium ${c.highlight ? 'text-accent-text dark:text-orange-400' : 'text-slate-800 dark:text-slate-100'}`}
+                >
                   {c.label}
                 </p>
                 <p className="text-sm text-slate-500 dark:text-slate-400">{c.time}</p>
@@ -164,7 +161,8 @@ export function PricingPage() {
           </div>
         </div>
         <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-          Your site is built deployment-ready. Netlify offers free hosting for static sites — just connect your repository and you're live.
+          Your site is built deployment-ready. Netlify offers free hosting for static sites — just connect your
+          repository and you're live.
         </p>
       </div>
 

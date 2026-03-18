@@ -12,8 +12,8 @@ export const newsEntries: NewsEntry[] = [
     body: (
       <>
         <p>
-          Confirmed from public sources: NVIDIA NemoClaw is presented as an alpha
-          open-source stack/plugin for secure OpenClaw deployment with OpenShell.
+          Confirmed from public sources: NVIDIA NemoClaw is presented as an alpha open-source stack/plugin for secure
+          OpenClaw deployment with OpenShell.
         </p>
         <ul className="list-disc space-y-1 pl-5">
           <li>

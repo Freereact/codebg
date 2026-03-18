@@ -12,13 +12,18 @@ export function Pricing({ onContactClick }: PricingProps) {
     <Section id="pricing" heading="Pricing" headerRight={<CtaLink href="/pricing">See full details</CtaLink>}>
       <div className="mt-6">
         <Card variant="featured">
-          <p className="text-sm font-medium uppercase tracking-wide text-accent-text dark:text-orange-400">Starting price</p>
+          <p className="text-sm font-medium uppercase tracking-wide text-accent-text dark:text-orange-400">
+            Starting price
+          </p>
           <p className="mt-2 text-5xl font-bold text-slate-900 dark:text-slate-50">From $49</p>
           <p className="mt-3 max-w-lg text-slate-700 dark:text-slate-300">
-            Single-page, 5-section website. AI powered by human expertise — low-cost development with fast, agile delivery.
+            Single-page, 5-section website. AI powered by human expertise — low-cost development with fast, agile
+            delivery.
           </p>
           <div className="mt-6">
-            <Button size="lg" className="pulse-glow" onClick={onContactClick}>Request your build</Button>
+            <Button size="lg" className="pulse-glow" onClick={onContactClick}>
+              Request your build
+            </Button>
           </div>
         </Card>
       </div>

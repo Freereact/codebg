@@ -1,16 +1,10 @@
 import { cn } from '../../lib/utils'
 
-export interface CtaLinkProps
-  extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+export interface CtaLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   arrow?: boolean
 }
 
-export function CtaLink({
-  className,
-  children,
-  arrow = true,
-  ...props
-}: CtaLinkProps) {
+export function CtaLink({ className, children, arrow = true, ...props }: CtaLinkProps) {
   return (
     <a
       className={cn(

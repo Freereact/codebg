@@ -5,11 +5,7 @@ import { processSteps } from '../../data/process-steps'
 
 export function Process() {
   return (
-    <Section
-      id="process"
-      heading="How we build"
-      headerRight={<CtaLink href="/process">Full process</CtaLink>}
-    >
+    <Section id="process" heading="How we build" headerRight={<CtaLink href="/process">Full process</CtaLink>}>
       <p className="mt-4 text-slate-600 dark:text-slate-400">
         We build with{' '}
         <a

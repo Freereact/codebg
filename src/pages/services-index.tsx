@@ -66,19 +66,14 @@ export function ServicesIndexPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-10">
       <div className="section-card p-8 md:p-10">
-        <Breadcrumbs
-          items={[
-            { label: 'Home', href: '/' },
-            { label: 'Services' },
-          ]}
-        />
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Services' }]} />
 
         <h1 className="mt-4 text-3xl font-bold text-slate-900 dark:text-slate-50 md:text-4xl">
           Affordable, professionally built single-page websites
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-          Low-cost development powered by AI, guided by human expertise. Fast and agile delivery
-          of conversion-focused websites at a price that used to be impossible.
+          Low-cost development powered by AI, guided by human expertise. Fast and agile delivery of conversion-focused
+          websites at a price that used to be impossible.
         </p>
       </div>
 
@@ -136,9 +131,7 @@ export function ServicesIndexPage() {
       </div>
 
       <div className="section-card bg-gradient-to-br from-accent-soft to-amber-50 dark:from-orange-950/40 dark:to-amber-950/30 p-8 md:p-10 text-center">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
-          Starting from $49 CAD
-        </h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Starting from $49 CAD</h2>
         <p className="mt-2 text-slate-700 dark:text-slate-300">
           AI powered by human expertise. Low cost. Agile delivery.
         </p>

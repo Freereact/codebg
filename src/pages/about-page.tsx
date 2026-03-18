@@ -52,12 +52,7 @@ export function AboutPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-10">
       <div className="section-card p-8 md:p-10">
-        <Breadcrumbs
-          items={[
-            { label: 'Home', href: '/' },
-            { label: 'About' },
-          ]}
-        />
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
 
         <p className="mt-4 inline-flex rounded-full border border-accent-soft-border bg-accent-soft/95 dark:bg-orange-950/60 dark:border-orange-800/50 px-3 py-1 text-xs font-medium text-accent-text dark:text-orange-400">
           Local. Human. AI-efficient.
@@ -66,15 +61,12 @@ export function AboutPage() {
           A local developer you can talk to — using AI to keep your costs low.
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-          CodeBG is a one-person, community-focused web studio. 10+ years of hands-on development
-          experience, powered by AI tools to cut build time and cost — so you get a professional
-          website with real human attention at a fraction of the traditional price.
+          CodeBG is a one-person, community-focused web studio. 10+ years of hands-on development experience, powered by
+          AI tools to cut build time and cost — so you get a professional website with real human attention at a
+          fraction of the traditional price.
         </p>
 
-        <div
-          ref={statsRef}
-          className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-4 reveal-fade-up"
-        >
+        <div ref={statsRef} className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-4 reveal-fade-up">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
               <p className="text-3xl font-bold text-accent md:text-4xl">
@@ -89,9 +81,9 @@ export function AboutPage() {
       <div ref={revealRef} className="section-card p-8 md:p-10 reveal-fade-up">
         <h2 className="section-heading">How AI keeps development costs low</h2>
         <p className="mt-4 text-slate-600 dark:text-slate-400">
-          Traditional web development bills you for every hour of manual work. We use AI to automate the
-          repetitive parts — scaffolding, responsive testing, copy iterations — so our experts focus
-          only on what matters: strategy, design decisions, and code quality.
+          Traditional web development bills you for every hour of manual work. We use AI to automate the repetitive
+          parts — scaffolding, responsive testing, copy iterations — so our experts focus only on what matters:
+          strategy, design decisions, and code quality.
         </p>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 stagger-children">
           {values.map((v) => (
@@ -107,9 +99,7 @@ export function AboutPage() {
       </div>
 
       <div className="section-card bg-gradient-to-br from-accent-soft to-amber-50 dark:from-orange-950/40 dark:to-amber-950/30 p-8 md:p-10 text-center">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
-          Ready to get your site built?
-        </h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Ready to get your site built?</h2>
         <p className="mt-2 text-slate-700 dark:text-slate-300">
           AI powered by human expertise. Low cost. Fast delivery.
         </p>

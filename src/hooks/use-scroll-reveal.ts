@@ -10,9 +10,7 @@ interface ScrollRevealOptions {
  * Adds a `.revealed` class when element enters the viewport.
  * Pair with CSS `.reveal-*` animation classes.
  */
-export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
-  options: ScrollRevealOptions = {},
-) {
+export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(options: ScrollRevealOptions = {}) {
   const ref = useRef<T>(null)
   const { threshold = 0.15, rootMargin = '0px 0px -40px 0px', once = true } = options
 
