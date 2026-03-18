@@ -23,9 +23,17 @@ jobs:
             sample-apps/package-lock.json
             backend/package-lock.json
 
-      - name: Build frontend
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Frontend lint
+        run: npm run lint
+
+      - name: Frontend format check
+        run: npx prettier --check 'src/**/*.{ts,tsx}'
+
+      - name: Frontend typecheck & build
         run: |
-          npm ci
           node scripts/generate-fallback-samples.mjs
           npm run build
 
@@ -35,14 +43,23 @@ jobs:
           npm ci
           bash build-all.sh
 
-      - name: Test & build backend
+      - name: Install backend deps
         run: |
           cd backend
           npm ci
           npx prisma generate
-          npm test
-          npm run lint
-          npm run build
+
+      - name: Backend lint
+        run: cd backend && npm run lint
+
+      - name: Backend format check
+        run: cd backend && npm run format:check
+
+      - name: Backend tests
+        run: cd backend && npm test
+
+      - name: Backend build
+        run: cd backend && npm run build
 
   deploy:
     runs-on: ubuntu-latest
