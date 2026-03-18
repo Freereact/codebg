@@ -33,8 +33,8 @@ export function LoginPage() {
         <div className="section-card p-8 text-center">
           <h1 className="mb-2 text-xl font-semibold text-slate-800 dark:text-white">Check your email</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300">
-            We sent a sign-in link to <strong className="text-slate-800 dark:text-white">{email}</strong>. Click the link in the email to
-            continue.
+            We sent a sign-in link to <strong className="text-slate-800 dark:text-white">{email}</strong>. Click the
+            link in the email to continue.
           </p>
         </div>
       </div>
