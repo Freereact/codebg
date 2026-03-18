@@ -150,7 +150,7 @@ jobs:
           EOF
 
             # Build and start services (prisma generate runs inside Docker build)
-            npx prisma db push
+            # Schema already applied via SQL migration — no prisma db push needed
             sudo docker compose up -d --build --wait
           SCRIPT
 
