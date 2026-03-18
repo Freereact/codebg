@@ -35,18 +35,24 @@ export function Footer({ onContactClick }: FooterProps) {
                 <a href="/#contact" className="transition-colors hover:text-accent">Contact</a>
               )}
             </nav>
-            <div className="flex gap-3">
+            <div className="group relative flex gap-3">
               {socialLinks.map((s) => (
                 <span
                   key={s.label}
                   role="img"
-                  title="Working on our online presence — stay tuned!"
+                  tabIndex={0}
                   aria-label={`${s.label} — coming soon`}
-                  className="cursor-default text-slate-400"
+                  className="cursor-default text-slate-400 outline-none"
                 >
                   <s.icon size={18} />
                 </span>
               ))}
+              <span
+                role="tooltip"
+                className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-800 px-2.5 py-1 text-xs text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+              >
+                Working on our online presence — stay tuned!
+              </span>
             </div>
           </div>
         </div>
