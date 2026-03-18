@@ -15,9 +15,18 @@ export default function Hero({ config }: { config: CustomerConfig }) {
       <h1>{hero.headline}</h1>
       <p>{hero.description}</p>
       <div className="actions">
-        <button>{hero.cta.label}</button>
-        {hero.secondaryCta && <button className="secondary">{hero.secondaryCta.label}</button>}
+        <button onClick={() => scrollToSection(hero.cta.scrollTo)}>{hero.cta.label}</button>
+        {hero.secondaryCta && (
+          <button className="secondary" onClick={() => scrollToSection(hero.secondaryCta!.scrollTo)}>
+            {hero.secondaryCta.label}
+          </button>
+        )}
       </div>
     </section>
   )
+}
+
+function scrollToSection(id?: string) {
+  if (!id) return
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }

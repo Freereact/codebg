@@ -14,14 +14,15 @@ export const config: CustomerConfig = {
     headline: 'Fresh eats and cold drinks, steps from the water.',
     description: 'A casual beachside cafe serving brunch, sandwiches, smoothies, and local craft beverages with panoramic views of Skaha Lake.',
     image: heroImage,
-    cta: { label: 'View menu' },
-    secondaryCta: { label: 'Find us' },
+    cta: { label: 'View menu', scrollTo: 'pricing-0' },
+    secondaryCta: { label: 'Find us', scrollTo: 'location-4' },
     overlay: 'dark',
   },
   sections: [
     {
       type: 'pricing',
       title: 'Menu highlights',
+      layout: 'list',
       items: [
         { label: 'Skaha Sunrise Bowl', price: '$16', note: 'Poached eggs, avocado, feta, cherry tomatoes on sourdough.' },
         { label: 'Beach Burger', price: '$19', note: 'Angus beef, aged cheddar, house pickles, brioche bun with fries.' },

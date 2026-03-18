@@ -14,8 +14,8 @@ export const config: CustomerConfig = {
     headline: 'Warm bread, flaky pastries, and cakes made with care.',
     description: 'Daily baked goods, custom orders, and cozy coffee pairings from your neighborhood bakery.',
     image: heroImage,
-    cta: { label: 'Order now' },
-    secondaryCta: { label: 'See menu' },
+    cta: { label: 'Order now', scrollTo: 'location-3' },
+    secondaryCta: { label: 'See menu', scrollTo: 'pricing-0' },
     overlay: 'dark',
   },
   sections: [

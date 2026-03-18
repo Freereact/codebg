@@ -11,25 +11,30 @@ import LocationHours from './components/LocationHours'
 import CtaBanner from './components/CtaBanner'
 import Footer from './components/Footer'
 
+function sectionId(section: Section, index: number): string {
+  return `${section.type}-${index}`
+}
+
 function renderSection(section: Section, config: CustomerConfig, index: number) {
-  const key = `${section.type}-${index}`
+  const key = sectionId(section, index)
+  const id = sectionId(section, index)
   switch (section.type) {
     case 'services':
-      return <ServiceGrid key={key} title={section.title} items={section.items} />
+      return <div id={id} key={key}><ServiceGrid title={section.title} items={section.items} /></div>
     case 'gallery':
-      return <Gallery key={key} title={section.title} images={section.images} />
+      return <div id={id} key={key}><Gallery title={section.title} images={section.images} /></div>
     case 'benefits':
-      return <SplitSection key={key} title={section.title} items={section.items} description={section.description} image={section.image} />
+      return <div id={id} key={key}><SplitSection title={section.title} items={section.items} description={section.description} image={section.image} imagePosition={section.imagePosition} /></div>
     case 'steps':
-      return <Steps key={key} title={section.title} steps={section.steps} />
+      return <div id={id} key={key}><Steps title={section.title} steps={section.steps} /></div>
     case 'pricing':
-      return <PricingGrid key={key} title={section.title} items={section.items} />
+      return <div id={id} key={key}><PricingGrid title={section.title} items={section.items} layout={section.layout} /></div>
     case 'testimonials':
-      return <Testimonials key={key} title={section.title} items={section.items} />
+      return <div id={id} key={key}><Testimonials title={section.title} items={section.items} /></div>
     case 'location':
-      return <LocationHours key={key} title={section.title} config={config} mapQuery={section.mapQuery} />
+      return <div id={id} key={key}><LocationHours title={section.title} config={config} mapQuery={section.mapQuery} /></div>
     case 'cta':
-      return <CtaBanner key={key} title={section.title} description={section.description} buttonLabel={section.buttonLabel} />
+      return <div id={id} key={key}><CtaBanner title={section.title} description={section.description} buttonLabel={section.buttonLabel} scrollTo={section.scrollTo} /></div>
   }
 }
 

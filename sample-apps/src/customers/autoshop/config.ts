@@ -13,8 +13,8 @@ export const config: CustomerConfig = {
     headline: 'Honest, Reliable Auto Repair in the Heart of the Okanagan.',
     description: 'From routine maintenance to complex engine diagnostics, we get you back on Highway 97 safely and affordably.',
     image: heroImage,
-    cta: { label: 'Book an Appointment' },
-    secondaryCta: { label: 'See Our Services' },
+    cta: { label: 'Book an Appointment', scrollTo: 'location-4' },
+    secondaryCta: { label: 'See Our Services', scrollTo: 'services-0' },
     overlay: 'light',
   },
   sections: [

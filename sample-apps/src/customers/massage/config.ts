@@ -14,8 +14,8 @@ export const config: CustomerConfig = {
     headline: 'Feel better in your body — one session at a time.',
     description: 'Restore Massage Therapy helps you reduce pain, improve mobility, and recharge with personalized treatment plans.',
     image: heroImage,
-    cta: { label: 'Book Your Session' },
-    secondaryCta: { label: 'View Services' },
+    cta: { label: 'Book Your Session', scrollTo: 'pricing-3' },
+    secondaryCta: { label: 'View Services', scrollTo: 'services-0' },
     overlay: 'dark',
   },
   sections: [
@@ -80,6 +80,7 @@ export const config: CustomerConfig = {
       title: 'Ready to feel better?',
       description: "Book your first appointment and let's build your recovery plan.",
       buttonLabel: 'Request appointment',
+      scrollTo: 'location-5',
     },
   ],
 }
