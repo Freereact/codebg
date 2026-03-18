@@ -73,16 +73,15 @@ export function Header({ onContactClick }: HeaderProps) {
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
-          <Link
-            to={isAuthenticated ? '/' : '/login'}
-            className="hidden text-sm transition-colors hover:text-accent md:inline-flex"
-          >
-            {isAuthenticated ? 'Dashboard' : 'Sign in'}
-          </Link>
-
           <Button size="default" className="hidden md:inline-flex" onClick={handleContactClick}>
             Contact
           </Button>
+
+          <Link to={isAuthenticated ? '/' : '/login'} className="hidden md:inline-flex">
+            <Button size="default" variant="ghost">
+              {isAuthenticated ? 'Dashboard' : 'Sign in'}
+            </Button>
+          </Link>
 
           <button
             className="flex h-10 w-10 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10 md:hidden"
@@ -111,10 +110,15 @@ export function Header({ onContactClick }: HeaderProps) {
                 {link.label}
               </a>
             ))}
-            <div className="mt-2 border-t border-slate-700 pt-3">
+            <div className="mt-2 flex flex-col gap-2 border-t border-slate-700 pt-3">
               <Button size="default" className="w-full" onClick={handleContactClick}>
                 Get started
               </Button>
+              <Link to={isAuthenticated ? '/' : '/login'} onClick={closeMobileMenu}>
+                <Button size="default" variant="ghost" className="w-full">
+                  {isAuthenticated ? 'Dashboard' : 'Sign in'}
+                </Button>
+              </Link>
             </div>
           </div>
         </nav>
