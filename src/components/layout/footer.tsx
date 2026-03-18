@@ -56,8 +56,21 @@ export function Footer({ onContactClick }: FooterProps) {
             </div>
           </div>
         </div>
-        <div className="mt-6 border-t border-slate-700 pt-5 text-center text-sm text-slate-500">
-          &copy; {new Date().getFullYear()} CodeBG &mdash; affordable AI web development.
+        <div className="mt-6 flex flex-col items-center gap-4 border-t border-slate-700 pt-5 text-center text-sm text-slate-500">
+          <a
+            href="https://www.digitalocean.com/?refcode=7f355a791090&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src="https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%202.svg"
+              alt="DigitalOcean Referral Badge"
+              width="200"
+              height="65"
+              loading="lazy"
+            />
+          </a>
+          <span>&copy; {new Date().getFullYear()} CodeBG &mdash; affordable AI web development.</span>
         </div>
       </div>
     </footer>
