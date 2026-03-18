@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/auth-context'
 import { RootLayout } from './components/layout/root-layout'
-import { AuthLayout } from './components/layout/auth-layout'
+// AuthLayout kept for future protected dashboard routes
+// import { AuthLayout } from './components/layout/auth-layout'
 import { HomePage } from './pages/home-page'
 import { AboutPage } from './pages/about-page'
 import { ServicesIndexPage } from './pages/services-index'
@@ -34,11 +35,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Route path="/news/:slug" element={<NewsArticlePage />} />
             <Route path="/customers" element={<CustomersIndexPage />} />
             <Route path="/services/:slug" element={<ServicePage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-          <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/verify" element={<VerifyPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </AuthProvider>

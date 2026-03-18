@@ -29,44 +29,48 @@ export function LoginPage() {
 
   if (sent) {
     return (
-      <div className="rounded-xl border border-slate-700 bg-shell p-8 text-center">
-        <h1 className="mb-2 text-xl font-semibold text-white">Check your email</h1>
-        <p className="text-sm text-slate-400">
-          We sent a sign-in link to <strong className="text-white">{email}</strong>. Click the link in the email to
-          continue.
-        </p>
+      <div className="mx-auto mt-12 max-w-md">
+        <div className="section-card p-8 text-center">
+          <h1 className="mb-2 text-xl font-semibold text-title">Check your email</h1>
+          <p className="text-sm text-body">
+            We sent a sign-in link to <strong className="text-title">{email}</strong>. Click the link in the email to
+            continue.
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-shell p-8">
-      <h1 className="mb-6 text-center text-xl font-semibold text-white">Sign in to CodeBG</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label htmlFor="email" className="text-sm text-slate-300">
-          Email address
-        </label>
-        <input
-          id="email"
-          type="email"
-          required
-          autoComplete="email"
-          autoFocus
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          className="input"
-          aria-describedby={error ? 'email-error' : undefined}
-        />
-        {error && (
-          <p id="email-error" role="alert" className="text-sm text-red-400">
-            {error}
-          </p>
-        )}
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Sending...' : 'Send magic link'}
-        </Button>
-      </form>
+    <div className="mx-auto mt-12 max-w-md">
+      <div className="section-card p-8">
+        <h1 className="mb-6 text-center text-xl font-semibold text-title">Sign in to CodeBG</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <label htmlFor="email" className="text-sm text-body">
+            Email address
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="input"
+            aria-describedby={error ? 'email-error' : undefined}
+          />
+          {error && (
+            <p id="email-error" role="alert" className="text-sm text-red-400">
+              {error}
+            </p>
+          )}
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Sending...' : 'Send magic link'}
+          </Button>
+        </form>
+      </div>
     </div>
   )
 }
