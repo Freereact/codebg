@@ -34,8 +34,8 @@ export function VerifyPage() {
     return (
       <div className="mx-auto mt-12 max-w-md">
         <div className="section-card p-8 text-center">
-          <h1 className="mb-2 text-xl font-semibold text-title">Verification failed</h1>
-          <p role="alert" className="mb-4 text-sm text-body">
+          <h1 className="mb-2 text-xl font-semibold text-slate-800 dark:text-white">Verification failed</h1>
+          <p role="alert" className="mb-4 text-sm text-slate-600 dark:text-slate-300">
             {error}
           </p>
           <Link to="/login" className="text-accent hover:underline">

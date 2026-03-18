@@ -31,9 +31,9 @@ export function LoginPage() {
     return (
       <div className="mx-auto mt-12 max-w-md">
         <div className="section-card p-8 text-center">
-          <h1 className="mb-2 text-xl font-semibold text-title">Check your email</h1>
-          <p className="text-sm text-body">
-            We sent a sign-in link to <strong className="text-title">{email}</strong>. Click the link in the email to
+          <h1 className="mb-2 text-xl font-semibold text-slate-800 dark:text-white">Check your email</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            We sent a sign-in link to <strong className="text-slate-800 dark:text-white">{email}</strong>. Click the link in the email to
             continue.
           </p>
         </div>
@@ -44,9 +44,9 @@ export function LoginPage() {
   return (
     <div className="mx-auto mt-12 max-w-md">
       <div className="section-card p-8">
-        <h1 className="mb-6 text-center text-xl font-semibold text-title">Sign in to CodeBG</h1>
+        <h1 className="mb-6 text-center text-xl font-semibold text-slate-800 dark:text-white">Sign in to CodeBG</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <label htmlFor="email" className="text-sm text-body">
+          <label htmlFor="email" className="text-sm text-slate-600 dark:text-slate-300">
             Email address
           </label>
           <input
