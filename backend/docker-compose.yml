@@ -7,6 +7,9 @@ services:
       - .env
     ports:
       - "127.0.0.1:8787:8787"
+    dns:
+      - 67.207.67.2
+      - 67.207.67.3
     restart: unless-stopped
     depends_on:
       rabbitmq:
@@ -28,6 +31,9 @@ services:
     command: ["node", "dist/worker.js"]
     env_file:
       - .env
+    dns:
+      - 67.207.67.2
+      - 67.207.67.3
     restart: unless-stopped
     depends_on:
       rabbitmq:

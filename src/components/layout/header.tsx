@@ -77,10 +77,11 @@ export function Header({ onContactClick }: HeaderProps) {
             Contact
           </Button>
 
-          <Link to={isAuthenticated ? '/' : '/login'} className="hidden md:inline-flex">
-            <Button size="default" variant="ghost">
-              {isAuthenticated ? 'Dashboard' : 'Sign in'}
-            </Button>
+          <Link
+            to={isAuthenticated ? '/' : '/login'}
+            className="hidden h-10 items-center rounded-md border border-white/30 px-4 text-sm font-medium text-white transition-colors hover:border-white/60 hover:bg-white/10 md:inline-flex"
+          >
+            {isAuthenticated ? 'Dashboard' : 'Sign in'}
           </Link>
 
           <button
@@ -114,10 +115,12 @@ export function Header({ onContactClick }: HeaderProps) {
               <Button size="default" className="w-full" onClick={handleContactClick}>
                 Get started
               </Button>
-              <Link to={isAuthenticated ? '/' : '/login'} onClick={closeMobileMenu}>
-                <Button size="default" variant="ghost" className="w-full">
-                  {isAuthenticated ? 'Dashboard' : 'Sign in'}
-                </Button>
+              <Link
+                to={isAuthenticated ? '/' : '/login'}
+                onClick={closeMobileMenu}
+                className="inline-flex h-10 w-full items-center justify-center rounded-md border border-white/30 px-4 text-sm font-medium text-white transition-colors hover:border-white/60 hover:bg-white/10"
+              >
+                {isAuthenticated ? 'Dashboard' : 'Sign in'}
               </Link>
             </div>
           </div>
