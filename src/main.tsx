@@ -20,6 +20,13 @@ import { VerifyPage } from './pages/verify-page'
 import { PortalDashboardPage } from './pages/portal-dashboard'
 import { NewProjectPage } from './pages/new-project'
 import { ProjectReviewPage } from './pages/project-review'
+import { AdminLayout } from './components/layout/admin-layout'
+import { RequireAdmin } from './components/auth/require-admin'
+import { AdminDashboardPage } from './pages/admin/admin-dashboard'
+import { AdminProjectsPage } from './pages/admin/admin-projects'
+import { AdminProjectDetailPage } from './pages/admin/admin-project-detail'
+import { AdminUsersPage } from './pages/admin/admin-users'
+import { AdminFeedbackPage } from './pages/admin/admin-feedback'
 import { NotFoundPage } from './pages/not-found'
 import './index.css'
 
@@ -58,6 +65,21 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
               <Route path="/portal/projects/new" element={<NewProjectPage />} />
               <Route path="/portal/projects/:id/review" element={<ProjectReviewPage />} />
+            </Route>
+
+            {/* Admin portal (admin role only) */}
+            <Route
+              element={
+                <RequireAdmin>
+                  <AdminLayout />
+                </RequireAdmin>
+              }
+            >
+              <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/projects" element={<AdminProjectsPage />} />
+              <Route path="/admin/projects/:id" element={<AdminProjectDetailPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
             </Route>
           </Routes>
         </AuthProvider>

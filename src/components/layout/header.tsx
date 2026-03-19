@@ -20,6 +20,7 @@ export function Header({ onContactClick }: HeaderProps) {
   const { state: authState } = useAuth()
   const { pathname } = useLocation()
   const isAuthenticated = authState.status === 'authenticated'
+  const isAdmin = isAuthenticated && authState.user.role === 'admin'
 
   const isHome = pathname === '/'
   const stableSectionIds = useMemo(() => sectionIds, [])
@@ -84,6 +85,15 @@ export function Header({ onContactClick }: HeaderProps) {
           <Button size="default" className="hidden md:inline-flex" onClick={handleContactClick}>
             Contact
           </Button>
+
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="hidden h-10 items-center rounded-md bg-accent/20 px-4 text-sm font-medium text-accent transition-colors hover:bg-accent/30 md:inline-flex"
+            >
+              Admin
+            </Link>
+          )}
 
           <Link
             to={isAuthenticated ? '/portal/dashboard' : '/login'}

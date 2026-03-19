@@ -1,5 +1,6 @@
 import { prisma } from '../db.js'
 import type { CreateFeedbackInput, UpdateFeedbackInput } from './feedback-validation.js'
+import { notifyAdminNewFeedback } from '../admin/notifications.js'
 
 export interface FeedbackItem {
   readonly id: string
@@ -26,6 +27,15 @@ export async function createFeedback(
       attachments: { sectionId: input.sectionId, sectionTitle: input.sectionTitle },
     },
   })
+
+  // Notify admin about new feedback (fire-and-forget)
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { subdomain: true } })
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } })
+  if (project && user) {
+    notifyAdminNewFeedback(user.email, project.subdomain ?? projectId, input.sectionTitle, input.description).catch(
+      () => {},
+    )
+  }
 
   return mapRow(row)
 }
