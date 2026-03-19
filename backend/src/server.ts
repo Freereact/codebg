@@ -61,6 +61,7 @@ async function sendViaResend(job: EmailJob): Promise<void> {
       subject: `CodeBG Contact: ${job.name}`,
       text: `Name: ${job.name}\nEmail: ${job.email}\nIP: ${job.ip}\nUA: ${job.userAgent}\n\nMessage:\n${job.message}`,
     }),
+    signal: AbortSignal.timeout(10_000),
   })
 
   if (!response.ok) {
@@ -69,8 +70,14 @@ async function sendViaResend(job: EmailJob): Promise<void> {
   }
 }
 
-app.get('/healthz', (_req, res) => {
-  res.json({ ok: true })
+app.get('/healthz', async (_req, res) => {
+  try {
+    await prisma.$queryRawUnsafe('SELECT 1')
+    await redis.ping()
+    res.json({ ok: true })
+  } catch {
+    res.status(503).json({ ok: false, error: 'unhealthy' })
+  }
 })
 
 app.use('/api/auth', authRouter)

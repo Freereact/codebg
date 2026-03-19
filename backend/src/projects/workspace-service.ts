@@ -23,7 +23,10 @@ export async function createWorkspace(input: CreateWorkspaceInput): Promise<void
   await fs.mkdir(path.join(wsDir, 'assets'), { recursive: true })
 
   await Promise.all([
-    fs.writeFile(path.join(wsDir, 'config.ts'), generateConfigTs(input)),
+    // Pure JSON data file — no user input in executable code
+    fs.writeFile(path.join(wsDir, 'overrides.json'), generateOverridesJson(input)),
+    // Safe config.ts — imports JSON, no string interpolation of user data
+    fs.writeFile(path.join(wsDir, 'config.ts'), generateSafeConfigTs(input.templateSlug)),
     fs.writeFile(path.join(wsDir, 'theme.css'), getTemplateThemeCss(input.templateSlug)),
     fs.writeFile(
       path.join(wsDir, 'meta.json'),
@@ -32,36 +35,30 @@ export async function createWorkspace(input: CreateWorkspaceInput): Promise<void
   ])
 }
 
-export async function updateWorkspaceConfig(projectId: string, input: CreateWorkspaceInput): Promise<void> {
-  const wsDir = getWorkspacePath(projectId)
-  await fs.writeFile(path.join(wsDir, 'config.ts'), generateConfigTs(input))
-  await fs.writeFile(
-    path.join(wsDir, 'meta.json'),
-    JSON.stringify({ slug: input.subdomain, title: input.businessInfo.name, projectId }, null, 2),
-  )
+function generateOverridesJson(input: CreateWorkspaceInput): string {
+  const overrides: Record<string, string> = {
+    name: input.businessInfo.name,
+    slug: input.subdomain,
+    phone: input.businessInfo.phone,
+    address: input.businessInfo.address,
+    hours: input.businessInfo.hours,
+  }
+  if (input.businessInfo.email) overrides.email = input.businessInfo.email
+  if (input.businessInfo.tagline) overrides.tagline = input.businessInfo.tagline
+  return JSON.stringify(overrides, null, 2)
 }
 
-function escapeTs(str: string): string {
-  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')
-}
-
-function generateConfigTs(input: CreateWorkspaceInput): string {
-  const { businessInfo, subdomain, templateSlug } = input
-  // Use absolute paths so Vite can resolve from any workspace location
+function generateSafeConfigTs(templateSlug: TemplateSlug): string {
+  // Only trusted values (template slug, absolute paths) go into the TS source.
+  // User-provided business info is in overrides.json (pure data, never compiled).
   const sampleAppsDir = config.sampleAppsDir
-  const templateImport = `${sampleAppsDir}/src/customers/${templateSlug}/config`
-  const typesImport = `${sampleAppsDir}/src/types`
-
-  return `import { config as templateConfig } from '${templateImport}'
-import type { CustomerConfig } from '${typesImport}'
+  return `import { config as templateConfig } from '${sampleAppsDir}/src/customers/${templateSlug}/config'
+import type { CustomerConfig } from '${sampleAppsDir}/src/types'
+import overrides from './overrides.json'
 
 export const config: CustomerConfig = {
   ...templateConfig,
-  name: '${escapeTs(businessInfo.name)}',
-  slug: '${escapeTs(subdomain)}',
-  phone: '${escapeTs(businessInfo.phone)}',
-  address: '${escapeTs(businessInfo.address)}',
-  hours: '${escapeTs(businessInfo.hours)}',${businessInfo.email ? `\n  email: '${escapeTs(businessInfo.email)}',` : ''}${businessInfo.tagline ? `\n  tagline: '${escapeTs(businessInfo.tagline)}',` : ''}
+  ...overrides,
 }
 `
 }

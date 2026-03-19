@@ -1,13 +1,30 @@
 import { Router } from 'express'
 import type { Request, Response } from 'express'
+import rateLimit from 'express-rate-limit'
 import { magicLinkSchema, verifyTokenSchema } from './validation.js'
 import { findOrCreateUser, createAndSendMagicLink, verifyMagicLinkToken, signJwt } from './auth-service.js'
 import { requireAuth } from './middleware.js'
 import type { AuthenticatedRequest } from './types.js'
 
+const magicLinkLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { ok: false, error: 'too_many_requests' },
+})
+
+const verifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { ok: false, error: 'too_many_requests' },
+})
+
 export const authRouter = Router()
 
-authRouter.post('/magic-link', async (req: Request, res: Response) => {
+authRouter.post('/magic-link', magicLinkLimiter, async (req: Request, res: Response) => {
   try {
     const parsed = magicLinkSchema.safeParse(req.body)
     if (!parsed.success) {
@@ -24,7 +41,7 @@ authRouter.post('/magic-link', async (req: Request, res: Response) => {
   }
 })
 
-authRouter.post('/verify', async (req: Request, res: Response) => {
+authRouter.post('/verify', verifyLimiter, async (req: Request, res: Response) => {
   try {
     const parsed = verifyTokenSchema.safeParse(req.body)
     if (!parsed.success) {

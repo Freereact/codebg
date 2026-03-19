@@ -3,7 +3,6 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 const mockFs = {
   mkdir: vi.fn().mockResolvedValue(undefined),
   writeFile: vi.fn().mockResolvedValue(undefined),
-  copyFile: vi.fn().mockResolvedValue(undefined),
   access: vi.fn().mockRejectedValue(new Error('ENOENT')),
 }
 
@@ -47,14 +46,46 @@ describe('createWorkspace', () => {
     expect(mockFs.mkdir).toHaveBeenCalledWith('/var/www/projects/p-1', { recursive: true })
   })
 
-  it('writes config.ts with business info', async () => {
+  it('writes overrides.json with business info (pure data, no code)', async () => {
+    await createWorkspace(input)
+    const overridesCall = mockFs.writeFile.mock.calls.find((c: string[]) => c[0].endsWith('overrides.json'))
+    expect(overridesCall).toBeDefined()
+    const data = JSON.parse(overridesCall[1] as string)
+    expect(data.name).toBe('Sunrise Bakery')
+    expect(data.phone).toBe('(250) 555-0366')
+    expect(data.address).toBe('Penticton, BC')
+  })
+
+  it('writes config.ts that imports template and overrides (no user interpolation)', async () => {
     await createWorkspace(input)
     const configCall = mockFs.writeFile.mock.calls.find((c: string[]) => c[0].endsWith('config.ts'))
     expect(configCall).toBeDefined()
     const content = configCall[1] as string
-    expect(content).toContain('Sunrise Bakery')
-    expect(content).toContain('(250) 555-0366')
-    expect(content).toContain('Penticton, BC')
+    // Must import from template, not contain raw business info
+    expect(content).toContain('templateConfig')
+    expect(content).toContain('overrides.json')
+    // Must NOT contain any user-provided strings
+    expect(content).not.toContain('Sunrise Bakery')
+    expect(content).not.toContain('(250) 555-0366')
+  })
+
+  it('overrides.json does not contain executable code even with malicious input', async () => {
+    const malicious = {
+      ...input,
+      businessInfo: {
+        ...input.businessInfo,
+        name: "'); import('child_process').exec('rm -rf /')//",
+        phone: '${process.env.JWT_SECRET}',
+      },
+    }
+    await createWorkspace(malicious)
+    const overridesCall = mockFs.writeFile.mock.calls.find((c: string[]) => c[0].endsWith('overrides.json'))
+    const raw = overridesCall[1] as string
+    // JSON.parse should succeed (valid JSON)
+    const data = JSON.parse(raw)
+    // The malicious input is safely contained as a JSON string value — not executable code
+    expect(data.name).toBe("'); import('child_process').exec('rm -rf /')//")
+    expect(data.phone).toBe('${process.env.JWT_SECRET}')
   })
 
   it('writes theme.css', async () => {

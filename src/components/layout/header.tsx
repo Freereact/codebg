@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import { Menu, X, Sun, Moon } from 'lucide-react'
 import { Button } from '../ui/button'
@@ -27,6 +27,14 @@ export function Header({ onContactClick }: HeaderProps) {
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) closeMobileMenu()
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [mobileMenuOpen])
+
   const handleContactClick = () => {
     closeMobileMenu()
     onContactClick()
@@ -44,9 +52,9 @@ export function Header({ onContactClick }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-700 bg-shell text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <a href="/" className="text-lg font-semibold tracking-wide">
+        <Link to="/" className="text-lg font-semibold tracking-wide">
           Code<span className="text-accent">BG</span>
-        </a>
+        </Link>
 
         <nav className="hidden gap-6 text-sm md:flex">
           {navLinks.map((link) => (
@@ -89,6 +97,7 @@ export function Header({ onContactClick }: HeaderProps) {
             onClick={() => setMobileMenuOpen((v) => !v)}
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav"
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -96,7 +105,7 @@ export function Header({ onContactClick }: HeaderProps) {
       </div>
 
       {mobileMenuOpen && (
-        <nav className="mobile-nav-enter border-t border-slate-700 px-6 pb-4 md:hidden">
+        <nav id="mobile-nav" className="mobile-nav-enter border-t border-slate-700 px-6 pb-4 md:hidden">
           <div className="flex flex-col gap-1 pt-2">
             {navLinks.map((link) => (
               <a

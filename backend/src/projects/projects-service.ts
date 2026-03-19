@@ -3,6 +3,7 @@ import { config } from '../config.js'
 import type { ProjectListItem, ProjectDetail, UserProfile } from './types.js'
 import { PROJECT_STATUS_LABELS as statusLabels } from './types.js'
 import type { CreateProjectBody, UpdateProjectBody, TemplateSlug } from './site-config-schema.js'
+import { businessInfoSchema } from './site-config-schema.js'
 import { generateUniqueSubdomain } from './subdomain.js'
 import { createWorkspace } from './workspace-service.js'
 import { buildProject } from './build-service.js'
@@ -186,7 +187,12 @@ export async function updateProjectSiteConfig(
   const currentConfig = (existing.siteConfig as Record<string, unknown>) ?? {}
   const currentBizInfo = (currentConfig.businessInfo as Record<string, unknown>) ?? {}
   const mergedBizInfo = { ...currentBizInfo, ...input.businessInfo }
-  const newSiteConfig = { ...currentConfig, businessInfo: mergedBizInfo }
+
+  // Re-validate merged result to prevent malformed data from reaching the workspace
+  const validatedBizInfo = businessInfoSchema.safeParse(mergedBizInfo)
+  if (!validatedBizInfo.success) return null
+
+  const newSiteConfig = { ...currentConfig, businessInfo: validatedBizInfo.data }
 
   const project = await prisma.project.update({
     where: { id: projectId },
@@ -196,7 +202,7 @@ export async function updateProjectSiteConfig(
   // Rebuild in background
   runProjectBuild(
     project.id,
-    (project.templateSlug ?? 'bakery') as TemplateSlug,
+    (project.templateSlug ?? existing.templateSlug ?? 'autoshop') as TemplateSlug,
     project.subdomain ?? projectId,
     mergedBizInfo as CreateProjectBody['businessInfo'],
   ).catch((err) => {

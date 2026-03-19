@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken'
 import type { SignOptions } from 'jsonwebtoken'
 import { prisma } from '../db.js'
 import { config } from '../config.js'
-import type { JwtPayload } from './types.js'
+import type { JwtPayload, UserRole } from './types.js'
 
-export async function findOrCreateUser(email: string): Promise<{ id: string; email: string; role: string }> {
+export async function findOrCreateUser(email: string): Promise<{ id: string; email: string; role: UserRole }> {
   const normalizedEmail = email.toLowerCase().trim()
 
   const existing = await prisma.user.findFirst({
@@ -13,7 +13,7 @@ export async function findOrCreateUser(email: string): Promise<{ id: string; ema
   })
 
   if (existing) {
-    return { id: existing.id, email: existing.email, role: existing.role }
+    return { id: existing.id, email: existing.email, role: existing.role as UserRole }
   }
 
   const created = await prisma.user.create({
@@ -24,7 +24,7 @@ export async function findOrCreateUser(email: string): Promise<{ id: string; ema
     },
   })
 
-  return { id: created.id, email: created.email, role: created.role }
+  return { id: created.id, email: created.email, role: created.role as UserRole }
 }
 
 /**
@@ -55,7 +55,7 @@ export async function createAndSendMagicLink(userId: string, email: string): Pro
  */
 export async function verifyMagicLinkToken(
   rawToken: string,
-): Promise<{ userId: string; email: string; role: string } | null> {
+): Promise<{ userId: string; email: string; role: UserRole } | null> {
   const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex')
 
   // Atomic: only updates if token exists, is unused, and not expired
@@ -80,7 +80,7 @@ export async function verifyMagicLinkToken(
   return {
     userId: authToken.user.id,
     email: authToken.user.email,
-    role: authToken.user.role,
+    role: authToken.user.role as UserRole,
   }
 }
 
@@ -116,6 +116,7 @@ async function sendMagicLinkEmail(email: string, rawToken: string): Promise<void
       subject: 'Sign in to CodeBG',
       text: `Click to sign in:\n\n${config.frontendUrl}/verify?token=${rawToken}\n\nExpires in ${config.magicLinkExpiryMinutes} minutes.`,
     }),
+    signal: AbortSignal.timeout(10_000),
   })
 
   if (!response.ok) {

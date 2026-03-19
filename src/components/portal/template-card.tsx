@@ -21,6 +21,7 @@ export function TemplateCard({ template, selected, onSelect }: TemplateCardProps
   return (
     <button
       type="button"
+      aria-pressed={selected}
       onClick={() => onSelect(template.slug)}
       className={`section-card card-hover w-full text-left transition-all ${
         selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface dark:ring-offset-[#1a1d23]' : ''

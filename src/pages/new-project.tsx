@@ -19,9 +19,15 @@ export function NewProjectPage() {
   useEffect(() => {
     fetchTemplates()
       .then((res) => {
-        if (res.ok) setTemplates(res.data)
+        if (res.ok) {
+          setTemplates(res.data)
+        } else {
+          setError('Failed to load templates')
+        }
       })
-      .catch(() => {})
+      .catch(() => {
+        setError('Failed to load templates')
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -67,6 +73,11 @@ export function NewProjectPage() {
           <p className="mb-8 text-sm text-slate-500 dark:text-slate-400">
             Choose a starting point for your website. You can customize everything later.
           </p>
+          {error && templates.length === 0 && (
+            <p role="alert" className="mb-4 text-sm text-red-400">
+              {error}
+            </p>
+          )}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {templates.map((t) => (
               <TemplateCard

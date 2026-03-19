@@ -11,6 +11,7 @@ export async function verifyTurnstile(secret: string, token: string, remoteip?: 
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
+    signal: AbortSignal.timeout(10_000),
   })
 
   if (!res.ok) return false

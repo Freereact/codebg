@@ -8,7 +8,10 @@ redis.on('error', (err) => console.error('[redis] connection error', err))
 
 const amqpConn = await amqp.connect(config.rabbitUrl)
 amqpConn.on('error', (err) => console.error('[amqp] connection error', err))
-amqpConn.on('close', () => console.warn('[amqp] connection closed'))
+amqpConn.on('close', () => {
+  console.error('[amqp] connection closed — exiting so Docker restarts us')
+  process.exit(1)
+})
 
 const channel = await amqpConn.createChannel()
 await channel.assertQueue(config.queueName, { durable: true })

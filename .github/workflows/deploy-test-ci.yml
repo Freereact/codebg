@@ -131,28 +131,30 @@ jobs:
             sudo ln -sf /etc/nginx/sites-available/sample-apps.codebg.com /etc/nginx/sites-enabled/sample-apps.codebg.com
             sudo nginx -t
             sudo systemctl reload nginx
-            sudo certbot --nginx -d codebg.com -d www.codebg.com -d sample-apps.codebg.com --expand --non-interactive --agree-tos
+            # Only run certbot if certs don't exist yet (avoid rate limits on repeated deploys)
+            if ! sudo certbot certificates 2>/dev/null | grep -q "codebg.com"; then
+              sudo certbot --nginx -d codebg.com -d www.codebg.com -d sample-apps.codebg.com --expand --non-interactive --agree-tos
+            fi
           SCRIPT
 
       - name: Write backend .env
         run: |
           set -euo pipefail
-          cat > /tmp/codebg-backend.env << 'STATICEOF'
-          PORT=8787
-          REDIS_URL=redis://codebg-redis:6379
-          RABBITMQ_URL=amqp://codebg-rabbitmq:5672
-          RABBITMQ_QUEUE=email_jobs
-          ALLOWED_ORIGINS=https://codebg.com
-          MAX_EMAILS_PER_DAY=100
-          STATICEOF
-          printf 'TURNSTILE_SECRET_KEY=%s\n' "${{ secrets.TURNSTILE_SECRET_KEY }}" >> /tmp/codebg-backend.env
-          printf 'RESEND_API_KEY=%s\n' "${{ secrets.RESEND_API_KEY }}" >> /tmp/codebg-backend.env
-          printf 'MAIL_FROM=%s\n' "${{ secrets.MAIL_FROM }}" >> /tmp/codebg-backend.env
-          printf 'MAIL_TO=%s\n' "${{ secrets.MAIL_TO }}" >> /tmp/codebg-backend.env
-          printf 'DATABASE_URL=%s\n' "${{ secrets.DATABASE_URL }}" >> /tmp/codebg-backend.env
-          printf 'JWT_SECRET=%s\n' "${{ secrets.JWT_SECRET }}" >> /tmp/codebg-backend.env
-          printf 'FRONTEND_URL=%s\n' "${{ secrets.FRONTEND_URL }}" >> /tmp/codebg-backend.env
-          scp -o StrictHostKeyChecking=no /tmp/codebg-backend.env ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/projects/codebg/backend/.env
+          {
+            echo 'PORT=8787'
+            echo 'REDIS_URL=redis://codebg-redis:6379'
+            echo 'RABBITMQ_URL=amqp://codebg-rabbitmq:5672'
+            echo 'RABBITMQ_QUEUE=email_jobs'
+            echo 'ALLOWED_ORIGINS=https://codebg.com'
+            echo 'MAX_EMAILS_PER_DAY=100'
+            printf 'TURNSTILE_SECRET_KEY=%s\n' "${{ secrets.TURNSTILE_SECRET_KEY }}"
+            printf 'RESEND_API_KEY=%s\n' "${{ secrets.RESEND_API_KEY }}"
+            printf 'MAIL_FROM=%s\n' "${{ secrets.MAIL_FROM }}"
+            printf 'MAIL_TO=%s\n' "${{ secrets.MAIL_TO }}"
+            printf 'DATABASE_URL=%s\n' "${{ secrets.DATABASE_URL }}"
+            printf 'JWT_SECRET=%s\n' "${{ secrets.JWT_SECRET }}"
+            printf 'FRONTEND_URL=%s\n' "${{ secrets.FRONTEND_URL }}"
+          } | ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "cat > ~/projects/codebg/backend/.env && chmod 600 ~/projects/codebg/backend/.env"
 
       - name: Deploy backend
         run: |

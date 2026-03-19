@@ -43,7 +43,7 @@ function PortalHeader() {
 
 export function PortalLayout() {
   return (
-    <div className="flex min-h-screen flex-col bg-surface dark:bg-[#1a1d23]">
+    <div className="flex min-h-screen flex-col bg-surface dark:bg-shell">
       <PortalHeader />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 md:px-6">
         <Outlet />

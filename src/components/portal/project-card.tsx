@@ -28,17 +28,29 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const statusColor = STATUS_COLORS[project.status] ?? STATUS_COLORS.lead
   const previewUrl = project.subdomain ? `/sites/${project.subdomain}/` : null
   const canPreview = previewUrl && (project.status === 'preview' || project.status === 'live')
   const projectName = project.subdomain ?? project.templateSlug ?? 'New project'
 
   const handleDelete = async () => {
-    if (!confirm(`Delete "${projectName}"? This cannot be undone.`)) return
     setDeleting(true)
-    const res = await deleteProjectApi(project.id)
-    if (res.ok && onDeleted) onDeleted()
+    setDeleteError('')
+    try {
+      const res = await deleteProjectApi(project.id)
+      if (res.ok && onDeleted) {
+        onDeleted()
+      } else {
+        setDeleteError('Failed to delete')
+        setConfirmingDelete(false)
+      }
+    } catch {
+      setDeleteError('Network error')
+      setConfirmingDelete(false)
+    }
     setDeleting(false)
   }
 
@@ -55,29 +67,54 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
           {project.statusLabel}
         </span>
       </div>
-      <div className="mt-3 flex items-center justify-between">
-        <p className="text-xs text-slate-400 dark:text-slate-300">Started {formatDate(project.createdAt)}</p>
-        <div className="flex items-center gap-2">
-          {canPreview && (
-            <a
-              href={previewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
-            >
-              Preview <ExternalLink size={12} />
-            </a>
-          )}
+
+      {deleteError && (
+        <p role="alert" className="mt-2 text-xs text-red-500">
+          {deleteError}
+        </p>
+      )}
+
+      {confirmingDelete ? (
+        <div className="mt-3 flex items-center gap-2">
+          <span className="text-xs text-slate-500 dark:text-slate-400">Delete this project?</span>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-            aria-label={`Delete project ${projectName}`}
+            className="rounded px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
           >
-            <Trash2 size={12} />
+            {deleting ? 'Deleting...' : 'Yes, delete'}
+          </button>
+          <button
+            onClick={() => setConfirmingDelete(false)}
+            className="rounded px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+          >
+            Cancel
           </button>
         </div>
-      </div>
+      ) : (
+        <div className="mt-3 flex items-center justify-between">
+          <p className="text-xs text-slate-400 dark:text-slate-300">Started {formatDate(project.createdAt)}</p>
+          <div className="flex items-center gap-2">
+            {canPreview && (
+              <a
+                href={previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
+              >
+                Preview <ExternalLink size={12} />
+              </a>
+            )}
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+              aria-label={`Delete project ${projectName}`}
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
