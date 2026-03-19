@@ -173,6 +173,7 @@ CREATE TABLE projects (
   -- Constraints
   CONSTRAINT projects_status_valid
     CHECK (status IN (
+      'draft', 'building', 'preview',
       'lead', 'paid', 'brief_received', 'draft_ready',
       'in_review', 'revisions', 'live', 'maintenance', 'cancelled'
     )),
@@ -650,6 +651,9 @@ CREATE OR REPLACE FUNCTION check_project_status_transition()
 RETURNS TRIGGER AS $$
 DECLARE
   allowed_transitions JSONB := '{
+    "draft":           ["building", "cancelled"],
+    "building":        ["preview", "draft"],
+    "preview":         ["lead", "paid", "live", "cancelled"],
     "lead":            ["paid", "cancelled"],
     "paid":            ["brief_received", "cancelled"],
     "brief_received":  ["draft_ready", "cancelled"],

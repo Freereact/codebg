@@ -47,10 +47,13 @@ function escapeTs(str: string): string {
 
 function generateConfigTs(input: CreateWorkspaceInput): string {
   const { businessInfo, subdomain, templateSlug } = input
-  const templateImport = `../../src/customers/${templateSlug}/config`
+  // Use absolute paths so Vite can resolve from any workspace location
+  const sampleAppsDir = config.sampleAppsDir
+  const templateImport = `${sampleAppsDir}/src/customers/${templateSlug}/config`
+  const typesImport = `${sampleAppsDir}/src/types`
 
   return `import { config as templateConfig } from '${templateImport}'
-import type { CustomerConfig } from '../../src/types'
+import type { CustomerConfig } from '${typesImport}'
 
 export const config: CustomerConfig = {
   ...templateConfig,
