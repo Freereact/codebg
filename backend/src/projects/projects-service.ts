@@ -113,29 +113,9 @@ export async function createProject(userId: string, input: CreateProjectBody): P
   })
 
   // Create workspace and trigger build (fire-and-forget)
-  createWorkspace({
-    projectId: project.id,
-    templateSlug: input.templateSlug as TemplateSlug,
-    subdomain,
-    businessInfo: input.businessInfo,
+  runProjectBuild(project.id, input.templateSlug as TemplateSlug, subdomain, input.businessInfo).catch((err) => {
+    console.error(`[projects] build pipeline failed for ${project.id}:`, err instanceof Error ? err.message : 'unknown')
   })
-    .then(() => {
-      // Update status to building and start build
-      prisma.project.update({ where: { id: project.id }, data: { status: 'building' } }).catch(() => {})
-      return buildProject(project.id, subdomain)
-    })
-    .then((result) => {
-      const newStatus = result.status === 'success' ? 'preview' : 'draft'
-      prisma.project
-        .update({
-          where: { id: project.id },
-          data: { status: newStatus, draftReadyAt: result.status === 'success' ? new Date() : undefined },
-        })
-        .catch(() => {})
-    })
-    .catch((err) => {
-      console.error(`[projects] build failed for ${project.id}:`, err instanceof Error ? err.message : 'unknown')
-    })
 
   return {
     id: project.id,
@@ -157,6 +137,40 @@ export async function createProject(userId: string, input: CreateProjectBody): P
   }
 }
 
+async function runProjectBuild(
+  projectId: string,
+  templateSlug: TemplateSlug,
+  subdomain: string,
+  businessInfo: CreateProjectBody['businessInfo'],
+): Promise<void> {
+  try {
+    await createWorkspace({ projectId, templateSlug, subdomain, businessInfo })
+    console.log(`[build] workspace created for ${projectId}`)
+
+    await prisma.project.update({ where: { id: projectId }, data: { status: 'building' } })
+    console.log(`[build] status → building for ${projectId}`)
+
+    const result = await buildProject(projectId, subdomain)
+    console.log(`[build] result for ${projectId}: ${result.status} (${result.durationMs ?? 0}ms)`)
+
+    if (result.status === 'success') {
+      await prisma.project.update({
+        where: { id: projectId },
+        data: { status: 'preview', draftReadyAt: new Date() },
+      })
+      console.log(`[build] status → preview for ${projectId}`)
+    } else {
+      // Reset to draft so user can retry
+      await prisma.project.update({ where: { id: projectId }, data: { status: 'draft' } })
+      console.error(`[build] failed for ${projectId}: ${result.message}`)
+    }
+  } catch (err) {
+    console.error(`[build] pipeline error for ${projectId}:`, err instanceof Error ? err.message : 'unknown')
+    // Try to reset status to draft
+    await prisma.project.update({ where: { id: projectId }, data: { status: 'draft' } }).catch(() => {})
+  }
+}
+
 export async function updateProjectSiteConfig(
   projectId: string,
   userId: string,
@@ -175,22 +189,18 @@ export async function updateProjectSiteConfig(
 
   const project = await prisma.project.update({
     where: { id: projectId },
-    data: { siteConfig: newSiteConfig, status: 'building' },
+    data: { siteConfig: newSiteConfig },
   })
 
   // Rebuild in background
-  updateWorkspaceConfig(project.id, {
-    projectId: project.id,
-    templateSlug: (project.templateSlug ?? 'bakery') as TemplateSlug,
-    subdomain: project.subdomain ?? projectId,
-    businessInfo: mergedBizInfo as CreateProjectBody['businessInfo'],
+  runProjectBuild(
+    project.id,
+    (project.templateSlug ?? 'bakery') as TemplateSlug,
+    project.subdomain ?? projectId,
+    mergedBizInfo as CreateProjectBody['businessInfo'],
+  ).catch((err) => {
+    console.error(`[projects] rebuild failed for ${project.id}:`, err instanceof Error ? err.message : 'unknown')
   })
-    .then(() => buildProject(project.id, project.subdomain ?? projectId))
-    .then((result) => {
-      const newStatus = result.status === 'success' ? 'preview' : 'draft'
-      prisma.project.update({ where: { id: project.id }, data: { status: newStatus } }).catch(() => {})
-    })
-    .catch(() => {})
 
   return findProjectByIdForUser(projectId, userId)
 }
