@@ -1,5 +1,5 @@
 import path from 'node:path'
-import express, { Router } from 'express'
+import { Router } from 'express'
 import type { Response } from 'express'
 import { requireAuth } from '../auth/middleware.js'
 import { config } from '../config.js'
@@ -87,10 +87,17 @@ projectsRouter.patch('/:id', requireAuth, async (req: AuthenticatedRequest, res:
   }
 })
 
+// Serve built preview — redirect bare /preview to /preview/
+projectsRouter.get('/:id/preview', requireAuth, (req: AuthenticatedRequest, res: Response) => {
+  return res.redirect(`${req.originalUrl}/`)
+})
+
 // Serve built preview files — authenticated only (free tier = private preview)
-projectsRouter.use('/:id/preview', requireAuth, async (req: AuthenticatedRequest, res: Response, next) => {
+// Handles both /preview/ (index.html) and /preview/assets/* (static files)
+projectsRouter.get('/:id/preview/*', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const idParsed = projectIdSchema.safeParse(req.params)
+    const projectId = req.params.id
+    const idParsed = projectIdSchema.safeParse({ id: projectId })
     if (!idParsed.success) {
       return res.status(400).json({ ok: false, error: 'invalid_project_id' })
     }
@@ -100,8 +107,26 @@ projectsRouter.use('/:id/preview', requireAuth, async (req: AuthenticatedRequest
       return res.status(404).json({ ok: false, error: 'project_not_found' })
     }
 
+    // Extract the file path after /preview/
+    const filePath = req.params[0] || 'index.html'
+    const fullPath = path.join(config.sitesDir, project.subdomain, filePath)
+
+    // Prevent directory traversal
     const sitePath = path.join(config.sitesDir, project.subdomain)
-    express.static(sitePath)(req, res, next)
+    if (!path.resolve(fullPath).startsWith(path.resolve(sitePath))) {
+      return res.status(403).json({ ok: false, error: 'forbidden' })
+    }
+
+    return res.sendFile(fullPath, (err) => {
+      if (err) {
+        // If file not found, serve index.html (SPA fallback)
+        res.sendFile(path.join(sitePath, 'index.html'), (err2) => {
+          if (err2) {
+            res.status(404).json({ ok: false, error: 'preview_not_found' })
+          }
+        })
+      }
+    })
   } catch (err) {
     console.error('[projects] preview error', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ ok: false, error: 'internal_error' })
