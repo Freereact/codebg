@@ -27,4 +27,11 @@ export const config = {
   sitesDir: process.env.SITES_DIR ?? '/var/www/sites',
   sampleAppsDir: process.env.SAMPLE_APPS_DIR ?? '/home/sz-server/projects/codebg/sample-apps',
   buildRateLimitSeconds: Number(process.env.BUILD_RATE_LIMIT_SECONDS ?? 300),
+  ghAppId: process.env.GH_APP_ID ?? '',
+  ghAppPrivateKey: process.env.GH_APP_PRIVATE_KEY
+    ? Buffer.from(process.env.GH_APP_PRIVATE_KEY, 'base64').toString('utf-8')
+    : '',
+  ghAppInstallationId: Number(process.env.GH_APP_INSTALLATION_ID ?? '0'),
+  ghWebhookSecret: process.env.GH_WEBHOOK_SECRET ?? '',
+  ghOrg: process.env.GH_ORG ?? 'Freereact',
 }

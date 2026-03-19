@@ -50,6 +50,7 @@ model Project {
   siteConfig      Json      @default("{}") @map("site_config")
   domain          String?
   subdomain       String?
+  githubUrl       String?   @map("github_url")
   status          String    @default("lead")
   setupFeeCents   Int?      @map("setup_fee_cents")
   planTier        String?   @map("plan_tier")

@@ -154,6 +154,10 @@ jobs:
             printf 'DATABASE_URL=%s\n' "${{ secrets.DATABASE_URL }}"
             printf 'JWT_SECRET=%s\n' "${{ secrets.JWT_SECRET }}"
             printf 'FRONTEND_URL=%s\n' "${{ secrets.FRONTEND_URL }}"
+            printf 'GH_APP_ID=%s\n' "${{ secrets.GH_APP_ID }}"
+            printf 'GH_APP_PRIVATE_KEY=%s\n' "${{ secrets.GH_APP_PRIVATE_KEY }}"
+            printf 'GH_APP_INSTALLATION_ID=%s\n' "${{ secrets.GH_APP_INSTALLATION_ID }}"
+            printf 'GH_WEBHOOK_SECRET=%s\n' "${{ secrets.GH_WEBHOOK_SECRET }}"
           } | ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "cat > ~/projects/codebg/backend/.env && chmod 600 ~/projects/codebg/backend/.env"
 
       - name: Deploy backend

@@ -9,6 +9,7 @@ import { generateUniqueSubdomain } from './subdomain.js'
 import { initProjectRepo, updateOverrides as updateRepoOverrides, getVerifiedRepoPath } from './repo-service.js'
 import { buildProject } from './build-service.js'
 import { createArchive } from './git-service.js'
+import { createGitHubRepo, pushToGitHub } from '../github/index.js'
 
 const projectListSelect = {
   id: true,
@@ -163,6 +164,17 @@ async function runProjectBuild(
         data: { status: 'preview', draftReadyAt: new Date() },
       })
       console.log(`[build] status → preview for ${projectId}`)
+
+      // Push to GitHub (fire-and-forget, don't block the build)
+      try {
+        const { cloneUrl, htmlUrl } = await createGitHubRepo(subdomain, `${businessInfo.name} — built with CodeBG`)
+        await pushToGitHub(repoPath, cloneUrl)
+        await prisma.project.update({ where: { id: projectId }, data: { githubUrl: htmlUrl } })
+        console.log(`[github] repo created for ${projectId}: ${htmlUrl}`)
+      } catch (ghErr) {
+        // GitHub push is optional — don't fail the build
+        console.error(`[github] failed for ${projectId}:`, ghErr instanceof Error ? ghErr.message : 'unknown')
+      }
     } else {
       await prisma.project.update({ where: { id: projectId }, data: { status: 'draft' } })
       console.error(`[build] failed for ${projectId}: ${result.message}`)

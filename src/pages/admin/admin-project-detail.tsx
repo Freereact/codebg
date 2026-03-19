@@ -46,6 +46,7 @@ export function AdminProjectDetailPage() {
 
   const status = project.status as string
   const subdomain = project.subdomain as string | null
+  const githubUrl = project.githubUrl as string | null
   const user = project.user as { id: string; email: string; name: string }
   const feedbackItems = (project.contentRequests ?? []) as Array<{
     id: string
@@ -134,6 +135,23 @@ export function AdminProjectDetailPage() {
           </Button>
         </div>
       </div>
+
+      {/* GitHub */}
+      {githubUrl && (
+        <div className="mb-6 section-card p-4">
+          <p className="mb-2 text-xs font-medium uppercase text-slate-400">GitHub Repository</p>
+          <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-accent hover:underline">
+            {githubUrl}
+          </a>
+          <p className="mt-2 text-xs text-slate-400">
+            Clone:{' '}
+            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              git clone {githubUrl}.git
+            </code>
+          </p>
+          <p className="mt-1 text-xs text-slate-400">Push changes → auto-rebuild → user notified</p>
+        </div>
+      )}
 
       {/* Status transitions */}
       {transitions.length > 0 && (
