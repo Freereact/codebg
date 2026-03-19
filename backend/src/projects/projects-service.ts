@@ -238,12 +238,11 @@ export async function deleteProject(projectId: string, userId: string): Promise<
   })
 
   // Clean up workspace and built site (best-effort)
-  const fs = await import('node:fs/promises')
-  const path = await import('node:path')
+  const { rm } = await import('node:fs/promises')
   const wsDir = path.join(config.projectsDir, projectId)
   const siteDir = existing.subdomain ? path.join(config.sitesDir, existing.subdomain) : null
-  await fs.rm(wsDir, { recursive: true, force: true }).catch(() => {})
-  if (siteDir) await fs.rm(siteDir, { recursive: true, force: true }).catch(() => {})
+  await rm(wsDir, { recursive: true, force: true }).catch(() => {})
+  if (siteDir) await rm(siteDir, { recursive: true, force: true }).catch(() => {})
 
   return true
 }
