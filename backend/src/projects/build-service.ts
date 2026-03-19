@@ -30,11 +30,15 @@ export async function buildProject(projectId: string, subdomain: string): Promis
     await currentLock
     const start = Date.now()
 
-    await execFileAsync('npx', ['vite', 'build', `--base=/sites/${subdomain}/`, `--outDir=${outputPath}`, '--emptyOutDir'], {
-      cwd: config.sampleAppsDir,
-      env: { ...process.env, VITE_CUSTOMER: workspacePath },
-      timeout: 60_000,
-    })
+    await execFileAsync(
+      'npx',
+      ['vite', 'build', `--base=/sites/${subdomain}/`, `--outDir=${outputPath}`, '--emptyOutDir'],
+      {
+        cwd: config.sampleAppsDir,
+        env: { ...process.env, VITE_CUSTOMER: workspacePath },
+        timeout: 60_000,
+      },
+    )
 
     return { status: 'success', durationMs: Date.now() - start }
   } catch (err) {
