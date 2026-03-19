@@ -24,7 +24,7 @@ export function ProjectCard({ project }: { project: ProjectListItem }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-base font-medium text-slate-800 dark:text-white">
-            {project.subdomain ? `${project.subdomain}.codebg.com` : project.templateSlug ?? 'New project'}
+            {project.subdomain ? `${project.subdomain}.codebg.com` : (project.templateSlug ?? 'New project')}
           </h3>
           {project.domain && (
             <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400">{project.domain}</p>

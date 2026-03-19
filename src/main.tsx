@@ -26,37 +26,37 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <ThemeProvider>
-      <AuthProvider>
-        <Routes>
-          {/* Marketing site */}
-          <Route element={<RootLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/services" element={<ServicesIndexPage />} />
-            <Route path="/process" element={<ProcessPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/news" element={<NewsIndexPage />} />
-            <Route path="/news/:slug" element={<NewsArticlePage />} />
-            <Route path="/customers" element={<CustomersIndexPage />} />
-            <Route path="/services/:slug" element={<ServicePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/verify" element={<VerifyPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
+        <AuthProvider>
+          <Routes>
+            {/* Marketing site */}
+            <Route element={<RootLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/services" element={<ServicesIndexPage />} />
+              <Route path="/process" element={<ProcessPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/news" element={<NewsIndexPage />} />
+              <Route path="/news/:slug" element={<NewsArticlePage />} />
+              <Route path="/customers" element={<CustomersIndexPage />} />
+              <Route path="/services/:slug" element={<ServicePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/verify" element={<VerifyPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
 
-          {/* Customer portal (authenticated) */}
-          <Route
-            element={
-              <RequireAuth>
-                <PortalLayout />
-              </RequireAuth>
-            }
-          >
-            <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
-            <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
-          </Route>
-        </Routes>
-      </AuthProvider>
+            {/* Customer portal (authenticated) */}
+            <Route
+              element={
+                <RequireAuth>
+                  <PortalLayout />
+                </RequireAuth>
+              }
+            >
+              <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
+              <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
+            </Route>
+          </Routes>
+        </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>,
