@@ -51,3 +51,7 @@ export async function createProject(
     body: JSON.stringify(input),
   })
 }
+
+export async function deleteProjectApi(id: string): Promise<{ ok: boolean; error?: string }> {
+  return apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
+}

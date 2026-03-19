@@ -1,5 +1,7 @@
-import { ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import { ExternalLink, Trash2 } from 'lucide-react'
 import type { ProjectListItem } from '../../types/portal'
+import { deleteProjectApi } from '../../lib/projects-api'
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
@@ -20,11 +22,25 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-export function ProjectCard({ project }: { project: ProjectListItem }) {
+interface ProjectCardProps {
+  project: ProjectListItem
+  onDeleted?: () => void
+}
+
+export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
+  const [deleting, setDeleting] = useState(false)
   const statusColor = STATUS_COLORS[project.status] ?? STATUS_COLORS.lead
   const previewUrl = project.subdomain ? `/sites/${project.subdomain}/` : null
   const canPreview = previewUrl && (project.status === 'preview' || project.status === 'live')
   const projectName = project.subdomain ?? project.templateSlug ?? 'New project'
+
+  const handleDelete = async () => {
+    if (!confirm(`Delete "${projectName}"? This cannot be undone.`)) return
+    setDeleting(true)
+    const res = await deleteProjectApi(project.id)
+    if (res.ok && onDeleted) onDeleted()
+    setDeleting(false)
+  }
 
   return (
     <div className="section-card card-hover min-h-24 p-5">
@@ -41,16 +57,26 @@ export function ProjectCard({ project }: { project: ProjectListItem }) {
       </div>
       <div className="mt-3 flex items-center justify-between">
         <p className="text-xs text-slate-400 dark:text-slate-300">Started {formatDate(project.createdAt)}</p>
-        {canPreview && (
-          <a
-            href={previewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
+        <div className="flex items-center gap-2">
+          {canPreview && (
+            <a
+              href={previewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
+            >
+              Preview <ExternalLink size={12} />
+            </a>
+          )}
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+            aria-label={`Delete project ${projectName}`}
           >
-            Preview <ExternalLink size={12} />
-          </a>
-        )}
+            <Trash2 size={12} />
+          </button>
+        </div>
       </div>
     </div>
   )

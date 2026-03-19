@@ -1,4 +1,5 @@
 import { prisma } from '../db.js'
+import { config } from '../config.js'
 import type { ProjectListItem, ProjectDetail, UserProfile } from './types.js'
 import { PROJECT_STATUS_LABELS as statusLabels } from './types.js'
 import type { CreateProjectBody, UpdateProjectBody, TemplateSlug } from './site-config-schema.js'
@@ -203,6 +204,30 @@ export async function updateProjectSiteConfig(
   })
 
   return findProjectByIdForUser(projectId, userId)
+}
+
+export async function deleteProject(projectId: string, userId: string): Promise<boolean> {
+  const existing = await prisma.project.findFirst({
+    where: { id: projectId, userId, deletedAt: null },
+    select: { id: true, subdomain: true },
+  })
+
+  if (!existing) return false
+
+  await prisma.project.update({
+    where: { id: existing.id },
+    data: { deletedAt: new Date() },
+  })
+
+  // Clean up workspace and built site (best-effort)
+  const fs = await import('node:fs/promises')
+  const path = await import('node:path')
+  const wsDir = path.join(config.projectsDir, projectId)
+  const siteDir = existing.subdomain ? path.join(config.sitesDir, existing.subdomain) : null
+  await fs.rm(wsDir, { recursive: true, force: true }).catch(() => {})
+  if (siteDir) await fs.rm(siteDir, { recursive: true, force: true }).catch(() => {})
+
+  return true
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {

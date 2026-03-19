@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ProjectListItem } from '../types/portal'
 import { fetchProjects } from '../lib/projects-api'
 
@@ -7,6 +7,7 @@ interface UseProjectsResult {
   total: number
   loading: boolean
   error: string | null
+  refetch: () => void
 }
 
 export function useProjects(): UseProjectsResult {
@@ -15,7 +16,8 @@ export function useProjects(): UseProjectsResult {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true)
     fetchProjects()
       .then((res) => {
         if (res.ok) {
@@ -33,5 +35,9 @@ export function useProjects(): UseProjectsResult {
       })
   }, [])
 
-  return { projects, total, loading, error }
+  useEffect(() => {
+    load()
+  }, [load])
+
+  return { projects, total, loading, error, refetch: load }
 }

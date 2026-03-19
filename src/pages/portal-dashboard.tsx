@@ -12,7 +12,7 @@ function getGreeting(): string {
 
 export function PortalDashboardPage() {
   const { state: authState } = useAuth()
-  const { projects, loading, error } = useProjects()
+  const { projects, loading, error, refetch } = useProjects()
 
   const email = authState.status === 'authenticated' ? authState.user.email : ''
   const name = email.includes('@') ? email.split('@')[0] : 'there'
@@ -48,7 +48,7 @@ export function PortalDashboardPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard key={project.id} project={project} onDeleted={refetch} />
           ))}
         </div>
       )}

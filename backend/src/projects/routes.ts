@@ -9,6 +9,7 @@ import {
   getUserProfile,
   createProject,
   updateProjectSiteConfig,
+  deleteProject,
 } from './projects-service.js'
 import { listProjectsQuerySchema, projectIdSchema } from './validation.js'
 import { createProjectBodySchema, updateProjectBodySchema } from './site-config-schema.js'
@@ -83,6 +84,25 @@ projectsRouter.patch('/:id', requireAuth, async (req: AuthenticatedRequest, res:
     return res.json({ ok: true, data: project })
   } catch (err) {
     console.error('[projects] update error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+projectsRouter.delete('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const parsed = projectIdSchema.safeParse(req.params)
+    if (!parsed.success) {
+      return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+    }
+
+    const deleted = await deleteProject(parsed.data.id, getUserId(req))
+    if (!deleted) {
+      return res.status(404).json({ ok: false, error: 'project_not_found' })
+    }
+
+    return res.json({ ok: true })
+  } catch (err) {
+    console.error('[projects] delete error', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ ok: false, error: 'internal_error' })
   }
 })
