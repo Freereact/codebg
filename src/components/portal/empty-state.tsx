@@ -11,7 +11,7 @@ export function EmptyProjectsState() {
         Get your business online in days, not weeks. Pick a plan and we will build your site.
       </p>
       <Button size="lg" className="min-h-[3.5rem] px-8 text-base" asChild>
-        <Link to="/pricing">Start your website</Link>
+        <Link to="/portal/projects/new">Start your website</Link>
       </Button>
     </div>
   )

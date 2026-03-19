@@ -1,0 +1,101 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import type { TemplateMeta, BusinessInfoInput } from '../types/portal'
+import { fetchTemplates, createProject } from '../lib/projects-api'
+import { TemplateCard } from '../components/portal/template-card'
+import { BusinessInfoForm } from '../components/portal/business-info-form'
+
+type WizardStep = 'template' | 'info'
+
+export function NewProjectPage() {
+  const navigate = useNavigate()
+  const [step, setStep] = useState<WizardStep>('template')
+  const [templates, setTemplates] = useState<TemplateMeta[]>([])
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [creating, setCreating] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchTemplates()
+      .then((res) => {
+        if (res.ok) setTemplates(res.data)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleTemplateSelect = (slug: string) => {
+    setSelectedSlug(slug)
+    setStep('info')
+  }
+
+  const handleBusinessInfoSubmit = async (info: BusinessInfoInput) => {
+    if (!selectedSlug) return
+    setError('')
+    setCreating(true)
+
+    try {
+      const res = await createProject({ templateSlug: selectedSlug, businessInfo: info })
+      if (res.ok) {
+        navigate('/portal/dashboard', { replace: true })
+      } else {
+        setError(res.error)
+        setCreating(false)
+      }
+    } catch {
+      setError('Something went wrong. Please try again.')
+      setCreating(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <p role="status" className="animate-pulse text-slate-500 dark:text-slate-400">
+          Loading templates...
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl">
+      {step === 'template' && (
+        <>
+          <h1 className="mb-2 text-2xl font-semibold text-slate-800 dark:text-white">Pick a template</h1>
+          <p className="mb-8 text-sm text-slate-500 dark:text-slate-400">
+            Choose a starting point for your website. You can customize everything later.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {templates.map((t) => (
+              <TemplateCard
+                key={t.slug}
+                template={t}
+                selected={selectedSlug === t.slug}
+                onSelect={handleTemplateSelect}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {step === 'info' && (
+        <>
+          <h1 className="mb-2 text-2xl font-semibold text-slate-800 dark:text-white">Your business info</h1>
+          <p className="mb-8 text-sm text-slate-500 dark:text-slate-400">
+            This info goes directly on your website. You can change it anytime.
+          </p>
+          <div className="section-card mx-auto max-w-md p-6">
+            <BusinessInfoForm onSubmit={handleBusinessInfoSubmit} onBack={() => setStep('template')} loading={creating} />
+            {error && (
+              <p role="alert" className="mt-4 text-center text-sm text-red-400">
+                {error}
+              </p>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}

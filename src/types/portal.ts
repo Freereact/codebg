@@ -20,6 +20,27 @@ export interface ProjectDetail extends ProjectListItem {
   readonly cancelledAt: string | null
 }
 
+export interface TemplateMeta {
+  readonly slug: string
+  readonly title: string
+  readonly description: string
+  readonly tags: readonly string[]
+}
+
+export interface BusinessInfoInput {
+  name: string
+  phone: string
+  address: string
+  hours: string
+  email?: string
+  tagline?: string
+}
+
+export interface CreateProjectInput {
+  templateSlug: string
+  businessInfo: BusinessInfoInput
+}
+
 export interface PaginatedResponse<T> {
   readonly ok: true
   readonly data: readonly T[]

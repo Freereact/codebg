@@ -1,5 +1,8 @@
 /** Human-readable status labels for the frontend */
 export const PROJECT_STATUS_LABELS: Record<string, string> = {
+  draft: 'Setting up',
+  building: 'Building preview',
+  preview: 'Preview ready',
   lead: 'Getting started',
   paid: 'Payment received',
   brief_received: 'Brief submitted',

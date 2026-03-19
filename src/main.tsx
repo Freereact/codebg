@@ -18,6 +18,7 @@ import { CustomersIndexPage } from './pages/customers-index'
 import { LoginPage } from './pages/login-page'
 import { VerifyPage } from './pages/verify-page'
 import { PortalDashboardPage } from './pages/portal-dashboard'
+import { NewProjectPage } from './pages/new-project'
 import { NotFoundPage } from './pages/not-found'
 import './index.css'
 
@@ -54,6 +55,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             >
               <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
               <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
+              <Route path="/portal/projects/new" element={<NewProjectPage />} />
             </Route>
           </Routes>
         </AuthProvider>

@@ -16,6 +16,25 @@ vi.mock('../src/db.js', () => ({
   prisma: mockPrisma,
 }))
 
+vi.mock('../src/config.js', () => ({
+  config: {
+    projectsDir: '/tmp/test-projects',
+    sitesDir: '/tmp/test-sites',
+    sampleAppsDir: '/tmp/test-sample-apps',
+    buildRateLimitSeconds: 300,
+  },
+}))
+
+vi.mock('../src/projects/workspace-service.js', () => ({
+  createWorkspace: vi.fn().mockResolvedValue(undefined),
+  updateWorkspaceConfig: vi.fn().mockResolvedValue(undefined),
+  getWorkspacePath: vi.fn().mockReturnValue('/tmp/test-projects/test'),
+}))
+
+vi.mock('../src/projects/build-service.js', () => ({
+  buildProject: vi.fn().mockResolvedValue({ status: 'success', durationMs: 100 }),
+}))
+
 const { listProjectsForUser, findProjectByIdForUser, getUserProfile } = await import(
   '../src/projects/projects-service.js'
 )
