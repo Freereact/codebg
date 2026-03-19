@@ -157,8 +157,45 @@ export function ProjectReviewPage() {
           )}
 
           {!selectedSection && (
-            <div className="p-4 text-center text-sm text-slate-400">
-              Click on any section in the preview to leave feedback.
+            <div className="border-b border-slate-200 p-4 dark:border-slate-700">
+              <p className="mb-3 text-xs text-slate-400">Click a section in the preview, or leave general feedback:</p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  setSelectedSection({ id: 'general', title: 'General feedback' })
+                }}
+              >
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="General feedback about the site..."
+                  rows={3}
+                  className="input mb-2 resize-none text-sm"
+                />
+                <Button
+                  type="button"
+                  size="default"
+                  disabled={submitting || !comment.trim()}
+                  className="w-full"
+                  onClick={async () => {
+                    if (!id || !comment.trim()) return
+                    setSubmitting(true)
+                    const res = await createFeedback(id, {
+                      sectionId: 'general',
+                      sectionTitle: 'General feedback',
+                      description: comment.trim(),
+                    })
+                    if (res.ok) {
+                      setFeedback((prev) => [res.data, ...prev])
+                      setComment('')
+                    }
+                    setSubmitting(false)
+                  }}
+                >
+                  <Send size={14} className="mr-1" />
+                  {submitting ? 'Sending...' : 'Send general feedback'}
+                </Button>
+              </form>
             </div>
           )}
 
