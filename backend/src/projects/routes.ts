@@ -1,6 +1,8 @@
-import { Router } from 'express'
+import path from 'node:path'
+import express, { Router } from 'express'
 import type { Response } from 'express'
 import { requireAuth } from '../auth/middleware.js'
+import { config } from '../config.js'
 import {
   listProjectsForUser,
   findProjectByIdForUser,
@@ -81,6 +83,27 @@ projectsRouter.patch('/:id', requireAuth, async (req: AuthenticatedRequest, res:
     return res.json({ ok: true, data: project })
   } catch (err) {
     console.error('[projects] update error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+// Serve built preview files — authenticated only (free tier = private preview)
+projectsRouter.use('/:id/preview', requireAuth, async (req: AuthenticatedRequest, res: Response, next) => {
+  try {
+    const idParsed = projectIdSchema.safeParse(req.params)
+    if (!idParsed.success) {
+      return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+    }
+
+    const project = await findProjectByIdForUser(idParsed.data.id, getUserId(req))
+    if (!project || !project.subdomain) {
+      return res.status(404).json({ ok: false, error: 'project_not_found' })
+    }
+
+    const sitePath = path.join(config.sitesDir, project.subdomain)
+    express.static(sitePath)(req, res, next)
+  } catch (err) {
+    console.error('[projects] preview error', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ ok: false, error: 'internal_error' })
   }
 })

@@ -5,8 +5,16 @@ services:
     command: ["node", "dist/server.js"]
     env_file:
       - .env
+    environment:
+      - PROJECTS_DIR=/var/www/projects
+      - SITES_DIR=/var/www/sites
+      - SAMPLE_APPS_DIR=/mnt/sample-apps
     ports:
       - "127.0.0.1:8787:8787"
+    volumes:
+      - /root/projects/codebg/sample-apps:/mnt/sample-apps
+      - /var/www/projects:/var/www/projects
+      - /var/www/sites:/var/www/sites
     dns:
       - 67.207.67.2
       - 67.207.67.3
