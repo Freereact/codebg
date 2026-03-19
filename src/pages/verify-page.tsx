@@ -20,7 +20,7 @@ export function VerifyPage() {
       .then((res) => {
         if (res.ok && res.user) {
           setUser(res.user)
-          navigate('/', { replace: true })
+          navigate('/portal/dashboard', { replace: true })
         } else {
           setError(res.error ?? 'Invalid or expired link')
         }

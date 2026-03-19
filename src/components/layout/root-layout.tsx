@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { ThemeProvider } from '../../contexts/theme-context'
 import { Header } from './header'
 import { Footer } from './footer'
 import { ContactModal } from '../sections/contact-modal'
@@ -19,7 +18,7 @@ export function RootLayout() {
   }, [pathname])
 
   return (
-    <ThemeProvider>
+    <>
       <div className="app-shell">
         <a
           href="#main-content"
@@ -64,6 +63,6 @@ export function RootLayout() {
         variant="success"
         onDismiss={contactForm.dismissSent}
       />
-    </ThemeProvider>
+    </>
   )
 }

@@ -78,7 +78,7 @@ export function Header({ onContactClick }: HeaderProps) {
           </Button>
 
           <Link
-            to={isAuthenticated ? '/' : '/login'}
+            to={isAuthenticated ? '/portal/dashboard' : '/login'}
             className="hidden h-10 items-center rounded-md border border-white/30 px-4 text-sm font-medium text-white transition-colors hover:border-white/60 hover:bg-white/10 md:inline-flex"
           >
             {isAuthenticated ? 'Dashboard' : 'Sign in'}
@@ -116,7 +116,7 @@ export function Header({ onContactClick }: HeaderProps) {
                 Get started
               </Button>
               <Link
-                to={isAuthenticated ? '/' : '/login'}
+                to={isAuthenticated ? '/portal/dashboard' : '/login'}
                 onClick={closeMobileMenu}
                 className="inline-flex h-10 w-full items-center justify-center rounded-md border border-white/30 px-4 text-sm font-medium text-white transition-colors hover:border-white/60 hover:bg-white/10"
               >

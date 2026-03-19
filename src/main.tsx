@@ -1,10 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ThemeProvider } from './contexts/theme-context'
 import { AuthProvider } from './contexts/auth-context'
 import { RootLayout } from './components/layout/root-layout'
-// AuthLayout kept for future protected dashboard routes
-// import { AuthLayout } from './components/layout/auth-layout'
+import { PortalLayout } from './components/layout/portal-layout'
+import { RequireAuth } from './components/auth/require-auth'
 import { HomePage } from './pages/home-page'
 import { AboutPage } from './pages/about-page'
 import { ServicesIndexPage } from './pages/services-index'
@@ -16,6 +17,7 @@ import { NewsIndexPage } from './pages/news-index'
 import { CustomersIndexPage } from './pages/customers-index'
 import { LoginPage } from './pages/login-page'
 import { VerifyPage } from './pages/verify-page'
+import { PortalDashboardPage } from './pages/portal-dashboard'
 import { NotFoundPage } from './pages/not-found'
 import './index.css'
 
@@ -23,8 +25,10 @@ import './index.css'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
+      <ThemeProvider>
       <AuthProvider>
         <Routes>
+          {/* Marketing site */}
           <Route element={<RootLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
@@ -39,8 +43,21 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Route path="/verify" element={<VerifyPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
+
+          {/* Customer portal (authenticated) */}
+          <Route
+            element={
+              <RequireAuth>
+                <PortalLayout />
+              </RequireAuth>
+            }
+          >
+            <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
+            <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
+          </Route>
         </Routes>
       </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>,
 )

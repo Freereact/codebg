@@ -1,12 +1,20 @@
 import { useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { requestMagicLink } from '../lib/auth-api'
+import { useAuth } from '../contexts/auth-context'
 import { Button } from '../components/ui/button'
 
 export function LoginPage() {
+  const { state: authState } = useAuth()
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Redirect to portal if already logged in
+  if (authState.status === 'authenticated') {
+    return <Navigate to="/portal/dashboard" replace />
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
