@@ -10,6 +10,7 @@ import {
   createProject,
   updateProjectSiteConfig,
   deleteProject,
+  downloadProject,
 } from './projects-service.js'
 import { listProjectsQuerySchema, projectIdSchema } from './validation.js'
 import { createProjectBodySchema, updateProjectBodySchema } from './site-config-schema.js'
@@ -84,6 +85,33 @@ projectsRouter.patch('/:id', requireAuth, async (req: AuthenticatedRequest, res:
     return res.json({ ok: true, data: project })
   } catch (err) {
     console.error('[projects] update error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+projectsRouter.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const parsed = projectIdSchema.safeParse(req.params)
+    if (!parsed.success) {
+      return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+    }
+
+    const project = await findProjectByIdForUser(parsed.data.id, getUserId(req))
+    if (!project) {
+      return res.status(404).json({ ok: false, error: 'project_not_found' })
+    }
+
+    const zipBuffer = await downloadProject(parsed.data.id, getUserId(req))
+    if (!zipBuffer) {
+      return res.status(404).json({ ok: false, error: 'project_not_found' })
+    }
+
+    const filename = `${project.subdomain ?? 'project'}.zip`
+    res.setHeader('Content-Type', 'application/zip')
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    return res.send(zipBuffer)
+  } catch (err) {
+    console.error('[projects] download error', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ ok: false, error: 'internal_error' })
   }
 })

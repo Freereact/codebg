@@ -25,14 +25,19 @@ vi.mock('../src/config.js', () => ({
   },
 }))
 
-vi.mock('../src/projects/workspace-service.js', () => ({
-  createWorkspace: vi.fn().mockResolvedValue(undefined),
-  updateWorkspaceConfig: vi.fn().mockResolvedValue(undefined),
-  getWorkspacePath: vi.fn().mockReturnValue('/tmp/test-projects/test'),
+vi.mock('../src/projects/repo-service.js', () => ({
+  initProjectRepo: vi.fn().mockResolvedValue({ repoPath: '/tmp/test-projects/test', commitHash: 'abc123' }),
+  updateOverrides: vi.fn().mockResolvedValue({ commitHash: 'def456' }),
+  getVerifiedRepoPath: vi.fn().mockResolvedValue('/tmp/test-projects/test'),
+  ensureNodeModulesSymlink: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('../src/projects/build-service.js', () => ({
   buildProject: vi.fn().mockResolvedValue({ status: 'success', durationMs: 100 }),
+}))
+
+vi.mock('../src/projects/git-service.js', () => ({
+  createArchive: vi.fn().mockResolvedValue(Buffer.from('zipdata')),
 }))
 
 const { listProjectsForUser, findProjectByIdForUser, getUserProfile } = await import(

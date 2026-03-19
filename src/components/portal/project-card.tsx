@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ExternalLink, Trash2 } from 'lucide-react'
+import { ExternalLink, Trash2, Download } from 'lucide-react'
 import type { ProjectListItem } from '../../types/portal'
 import { deleteProjectApi } from '../../lib/projects-api'
 
@@ -103,6 +103,15 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
                 className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
               >
                 Preview <ExternalLink size={12} />
+              </a>
+            )}
+            {canPreview && (
+              <a
+                href={`/api/projects/${project.id}/download`}
+                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+                aria-label={`Download project ${projectName}`}
+              >
+                <Download size={12} />
               </a>
             )}
             <button

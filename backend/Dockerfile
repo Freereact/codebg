@@ -15,6 +15,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 FROM node:22-alpine AS runtime
+RUN apk add --no-cache git
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/dist ./dist

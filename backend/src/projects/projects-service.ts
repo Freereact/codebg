@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { prisma } from '../db.js'
 import { config } from '../config.js'
 import type { ProjectListItem, ProjectDetail, UserProfile } from './types.js'
@@ -5,8 +6,9 @@ import { PROJECT_STATUS_LABELS as statusLabels } from './types.js'
 import type { CreateProjectBody, UpdateProjectBody, TemplateSlug } from './site-config-schema.js'
 import { businessInfoSchema } from './site-config-schema.js'
 import { generateUniqueSubdomain } from './subdomain.js'
-import { createWorkspace } from './workspace-service.js'
+import { initProjectRepo, updateOverrides as updateRepoOverrides, getVerifiedRepoPath } from './repo-service.js'
 import { buildProject } from './build-service.js'
+import { createArchive } from './git-service.js'
 
 const projectListSelect = {
   id: true,
@@ -146,13 +148,13 @@ async function runProjectBuild(
   businessInfo: CreateProjectBody['businessInfo'],
 ): Promise<void> {
   try {
-    await createWorkspace({ projectId, templateSlug, subdomain, businessInfo })
-    console.log(`[build] workspace created for ${projectId}`)
+    const { repoPath } = await initProjectRepo({ projectId, templateSlug, subdomain, businessInfo })
+    console.log(`[build] repo scaffolded for ${projectId}`)
 
     await prisma.project.update({ where: { id: projectId }, data: { status: 'building' } })
     console.log(`[build] status → building for ${projectId}`)
 
-    const result = await buildProject(projectId, subdomain)
+    const result = await buildProject(repoPath, subdomain)
     console.log(`[build] result for ${projectId}: ${result.status} (${result.durationMs ?? 0}ms)`)
 
     if (result.status === 'success') {
@@ -162,15 +164,22 @@ async function runProjectBuild(
       })
       console.log(`[build] status → preview for ${projectId}`)
     } else {
-      // Reset to draft so user can retry
       await prisma.project.update({ where: { id: projectId }, data: { status: 'draft' } })
       console.error(`[build] failed for ${projectId}: ${result.message}`)
     }
   } catch (err) {
     console.error(`[build] pipeline error for ${projectId}:`, err instanceof Error ? err.message : 'unknown')
-    // Try to reset status to draft
     await prisma.project.update({ where: { id: projectId }, data: { status: 'draft' } }).catch(() => {})
   }
+}
+
+/**
+ * Download project as ZIP (git archive). Verifies ownership.
+ */
+export async function downloadProject(projectId: string, userId: string): Promise<Buffer | null> {
+  const repoPath = await getVerifiedRepoPath(projectId, userId).catch(() => null)
+  if (!repoPath) return null
+  return createArchive(repoPath)
 }
 
 export async function updateProjectSiteConfig(
@@ -199,15 +208,18 @@ export async function updateProjectSiteConfig(
     data: { siteConfig: newSiteConfig },
   })
 
-  // Rebuild in background
-  runProjectBuild(
-    project.id,
-    (project.templateSlug ?? existing.templateSlug ?? 'autoshop') as TemplateSlug,
-    project.subdomain ?? projectId,
-    mergedBizInfo as CreateProjectBody['businessInfo'],
-  ).catch((err) => {
-    console.error(`[projects] rebuild failed for ${project.id}:`, err instanceof Error ? err.message : 'unknown')
-  })
+  // Update overrides.json + git commit, then rebuild
+  const repoPath = path.join(config.projectsDir, project.id)
+  updateRepoOverrides(projectId, userId, validatedBizInfo.data)
+    .then(async () => {
+      await prisma.project.update({ where: { id: projectId }, data: { status: 'building' } })
+      const result = await buildProject(repoPath, project.subdomain ?? projectId)
+      const newStatus = result.status === 'success' ? 'preview' : 'draft'
+      await prisma.project.update({ where: { id: projectId }, data: { status: newStatus } })
+    })
+    .catch((err) => {
+      console.error(`[projects] rebuild failed for ${project.id}:`, err instanceof Error ? err.message : 'unknown')
+    })
 
   return findProjectByIdForUser(projectId, userId)
 }
