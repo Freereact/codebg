@@ -1,4 +1,4 @@
-export { projectsRouter, usersRouter } from './routes.js'
+export { projectsRouter, usersRouter, feedbackRouter } from './routes.js'
 export type { ProjectListItem, ProjectDetail, UserProfile, PaginatedResponse, CommitInfo } from './types.js'
 export { PROJECT_STATUS_LABELS } from './types.js'
 export { TEMPLATE_SLUGS } from './site-config-schema.js'

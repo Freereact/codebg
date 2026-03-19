@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ExternalLink, Trash2, Download } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ExternalLink, Trash2, Download, MessageSquare } from 'lucide-react'
 import type { ProjectListItem } from '../../types/portal'
 import { deleteProjectApi } from '../../lib/projects-api'
 
@@ -104,6 +105,14 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
               >
                 Preview <ExternalLink size={12} />
               </a>
+            )}
+            {canPreview && (
+              <Link
+                to={`/portal/projects/${project.id}/review`}
+                className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30"
+              >
+                <MessageSquare size={12} /> Review
+              </Link>
             )}
             {canPreview && (
               <a

@@ -15,6 +15,9 @@ import {
 import { listProjectsQuerySchema, projectIdSchema } from './validation.js'
 import { createProjectBodySchema, updateProjectBodySchema } from './site-config-schema.js'
 import { getAllTemplates } from './template-registry.js'
+import { createFeedbackSchema, updateFeedbackSchema, feedbackIdSchema } from './feedback-validation.js'
+import { createFeedback, listFeedback, updateFeedback } from './feedback-service.js'
+import { requireAdmin } from '../auth/middleware.js'
 import type { AuthenticatedRequest } from '../auth/types.js'
 
 /** Defensively extract user sub from req.user (guaranteed by requireAuth) */
@@ -115,6 +118,69 @@ projectsRouter.get('/:id/download', requireAuth, async (req: AuthenticatedReques
     return res.status(500).json({ ok: false, error: 'internal_error' })
   }
 })
+
+// --- Feedback (content requests) ---
+
+projectsRouter.post('/:id/feedback', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const idParsed = projectIdSchema.safeParse(req.params)
+    if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+    // Verify project ownership
+    const project = await findProjectByIdForUser(idParsed.data.id, getUserId(req))
+    if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+
+    const bodyParsed = createFeedbackSchema.safeParse(req.body)
+    if (!bodyParsed.success)
+      return res.status(400).json({ ok: false, error: 'invalid_payload', issues: bodyParsed.error.issues })
+
+    const feedback = await createFeedback(idParsed.data.id, getUserId(req), bodyParsed.data)
+    return res.status(201).json({ ok: true, data: feedback })
+  } catch (err) {
+    console.error('[feedback] create error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+projectsRouter.get('/:id/feedback', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const idParsed = projectIdSchema.safeParse(req.params)
+    if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+    const project = await findProjectByIdForUser(idParsed.data.id, getUserId(req))
+    if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+
+    const items = await listFeedback(idParsed.data.id, getUserId(req))
+    return res.json({ ok: true, data: items })
+  } catch (err) {
+    console.error('[feedback] list error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+// --- Feedback admin (operator) ---
+
+export const feedbackRouter = Router()
+
+feedbackRouter.patch('/:feedbackId', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const idParsed = feedbackIdSchema.safeParse(req.params)
+    if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
+
+    const bodyParsed = updateFeedbackSchema.safeParse(req.body)
+    if (!bodyParsed.success) return res.status(400).json({ ok: false, error: 'invalid_payload' })
+
+    const updated = await updateFeedback(idParsed.data.feedbackId, bodyParsed.data)
+    if (!updated) return res.status(404).json({ ok: false, error: 'feedback_not_found' })
+
+    return res.json({ ok: true, data: updated })
+  } catch (err) {
+    console.error('[feedback] update error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+// --- Delete ---
 
 projectsRouter.delete('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {

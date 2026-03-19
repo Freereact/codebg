@@ -55,11 +55,20 @@ export async function initProjectRepo(params: InitRepoParams): Promise<{ repoPat
   // Create directory structure
   await fs.mkdir(path.join(repoPath, 'src', 'site', 'assets'), { recursive: true })
   await fs.mkdir(path.join(repoPath, 'src', 'components'), { recursive: true })
+  await fs.mkdir(path.join(repoPath, 'public'), { recursive: true })
 
   // 1. Copy shared components from sample-apps
   await copySharedSources(repoPath)
 
-  // 2. Generate root-level project files
+  // 2. Copy review overlay script for visual feedback
+  await fs
+    .cp(
+      path.join(config.sampleAppsDir, 'public', 'review-overlay.js'),
+      path.join(repoPath, 'public', 'review-overlay.js'),
+    )
+    .catch(() => {})
+
+  // 3. Generate root-level project files
   await Promise.all([
     fs.writeFile(path.join(repoPath, 'package.json'), generatePackageJson(subdomain)),
     fs.writeFile(path.join(repoPath, 'vite.config.ts'), generateViteConfig()),
@@ -274,6 +283,7 @@ function generateIndexHtml(title: string): string {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     <title>${safeTitle}</title>
     <script type="module" src="/src/main.tsx"></script>
+    <script src="/review-overlay.js"></script>
   </head>
   <body>
     <div id="root"></div>

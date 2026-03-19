@@ -41,10 +41,10 @@ function renderSection(section: Section, config: CustomerConfig, index: number) 
 export default function App({ config }: { config: CustomerConfig }) {
   return (
     <div className="page">
-      <TopBar config={config} />
-      <Hero config={config} />
+      <div id="topbar"><TopBar config={config} /></div>
+      <div id="hero"><Hero config={config} /></div>
       {config.sections.map((section, i) => renderSection(section, config, i))}
-      <Footer />
+      <div id="footer"><Footer /></div>
     </div>
   )
 }

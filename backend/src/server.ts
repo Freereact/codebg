@@ -10,7 +10,7 @@ import { emailJobSchema, isAllowedOrigin } from './validation.js'
 import { verifyTurnstile } from './turnstile.js'
 import { prisma } from './db.js'
 import { authRouter, jwtMiddleware } from './auth/index.js'
-import { projectsRouter, usersRouter } from './projects/index.js'
+import { projectsRouter, usersRouter, feedbackRouter } from './projects/index.js'
 import type { EmailJob } from './types.js'
 
 const app = express()
@@ -83,6 +83,7 @@ app.get('/healthz', async (_req, res) => {
 app.use('/api/auth', authRouter)
 app.use('/api/projects', projectsRouter)
 app.use('/api/users', usersRouter)
+app.use('/api/feedback', feedbackRouter)
 
 app.post('/api/email-job', async (req, res) => {
   const origin = req.headers.origin
