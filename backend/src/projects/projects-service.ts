@@ -3,7 +3,7 @@ import type { ProjectListItem, ProjectDetail, UserProfile } from './types.js'
 import { PROJECT_STATUS_LABELS as statusLabels } from './types.js'
 import type { CreateProjectBody, UpdateProjectBody, TemplateSlug } from './site-config-schema.js'
 import { generateUniqueSubdomain } from './subdomain.js'
-import { createWorkspace, updateWorkspaceConfig } from './workspace-service.js'
+import { createWorkspace } from './workspace-service.js'
 import { buildProject } from './build-service.js'
 
 const projectListSelect = {
