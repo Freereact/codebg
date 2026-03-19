@@ -87,7 +87,11 @@ export function NewProjectPage() {
             This info goes directly on your website. You can change it anytime.
           </p>
           <div className="section-card mx-auto max-w-md p-6">
-            <BusinessInfoForm onSubmit={handleBusinessInfoSubmit} onBack={() => setStep('template')} loading={creating} />
+            <BusinessInfoForm
+              onSubmit={handleBusinessInfoSubmit}
+              onBack={() => setStep('template')}
+              loading={creating}
+            />
             {error && (
               <p role="alert" className="mt-4 text-center text-sm text-red-400">
                 {error}

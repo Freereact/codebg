@@ -1,4 +1,10 @@
-import type { ProjectListItem, ProjectDetail, PaginatedResponse, TemplateMeta, CreateProjectInput } from '../types/portal'
+import type {
+  ProjectListItem,
+  ProjectDetail,
+  PaginatedResponse,
+  TemplateMeta,
+  CreateProjectInput,
+} from '../types/portal'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
@@ -27,7 +33,9 @@ export async function fetchProjects(
   return apiFetch(`/api/projects?limit=${limit}&offset=${offset}`)
 }
 
-export async function fetchProject(id: string): Promise<{ ok: true; data: ProjectDetail } | { ok: false; error: string }> {
+export async function fetchProject(
+  id: string,
+): Promise<{ ok: true; data: ProjectDetail } | { ok: false; error: string }> {
   return apiFetch(`/api/projects/${id}`)
 }
 
