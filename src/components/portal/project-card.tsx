@@ -20,12 +20,10 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? ''
-
 export function ProjectCard({ project }: { project: ProjectListItem }) {
   const statusColor = STATUS_COLORS[project.status] ?? STATUS_COLORS.lead
-  const previewUrl = `${API_BASE}/api/projects/${project.id}/preview/`
-  const canPreview = project.status === 'preview' || project.status === 'live'
+  const previewUrl = project.subdomain ? `/sites/${project.subdomain}/` : null
+  const canPreview = previewUrl && (project.status === 'preview' || project.status === 'live')
   const projectName = project.subdomain ?? project.templateSlug ?? 'New project'
 
   return (
