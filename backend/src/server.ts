@@ -16,6 +16,7 @@ import { githubWebhookRouter } from './github/index.js'
 import type { EmailJob } from './types.js'
 
 const app = express()
+app.set('trust proxy', 1) // Behind nginx reverse proxy
 app.use(helmet())
 app.use(express.json({ limit: '200kb' }))
 app.use(cookieParser())

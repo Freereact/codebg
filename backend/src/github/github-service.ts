@@ -37,13 +37,27 @@ export async function createGitHubRepo(
 ): Promise<{ cloneUrl: string; htmlUrl: string }> {
   const octokit = getOctokit()
 
-  const { data } = await octokit.repos.createInOrg({
-    org: config.ghOrg,
-    name,
-    description,
-    auto_init: false,
-    private: false,
-  })
+  // Try org first, fall back to user account
+  let data: { clone_url: string; html_url: string }
+  try {
+    const res = await octokit.repos.createInOrg({
+      org: config.ghOrg,
+      name,
+      description,
+      auto_init: false,
+      private: false,
+    })
+    data = res.data
+  } catch {
+    // Freereact is a user account, not an org
+    const res = await octokit.repos.createForAuthenticatedUser({
+      name,
+      description,
+      auto_init: false,
+      private: false,
+    })
+    data = res.data
+  }
 
   return {
     cloneUrl: data.clone_url,
