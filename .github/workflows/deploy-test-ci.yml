@@ -160,6 +160,14 @@ jobs:
             printf 'GH_WEBHOOK_SECRET=%s\n' "${{ secrets.GH_WEBHOOK_SECRET }}"
           } | ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "cat > ~/projects/codebg/backend/.env && chmod 600 ~/projects/codebg/backend/.env"
 
+      - name: Ensure project directories
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -s << 'SCRIPT'
+            set -euo pipefail
+            mkdir -p /var/www/projects /var/www/sites
+            chown 1000:1000 /var/www/projects /var/www/sites
+          SCRIPT
+
       - name: Deploy backend
         run: |
           set -euo pipefail
