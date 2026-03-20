@@ -36,7 +36,6 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
   const statusColor = STATUS_COLORS[project.status] ?? STATUS_COLORS.lead
   const previewUrl = project.subdomain ? `/sites/${project.subdomain}/` : null
   const canPreview = previewUrl && (project.status === 'preview' || project.status === 'live')
-  const isLive = project.status === 'live'
   const canGoLive = project.status === 'preview' && !project.planTier
   const projectName = project.subdomain ?? project.templateSlug ?? 'New project'
   const [goingLive, setGoingLive] = useState(false)
