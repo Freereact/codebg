@@ -182,6 +182,11 @@ projectsRouter.get('/:id/download', requireAuth, async (req: AuthenticatedReques
       return res.status(404).json({ ok: false, error: 'project_not_found' })
     }
 
+    // Download requires a paid subscription
+    if (!project.planTier) {
+      return res.status(403).json({ ok: false, error: 'subscription_required' })
+    }
+
     const zipBuffer = await downloadProject(parsed.data.id, getUserId(req))
     if (!zipBuffer) {
       return res.status(404).json({ ok: false, error: 'project_not_found' })

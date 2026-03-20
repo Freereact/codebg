@@ -152,7 +152,7 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
                 <MessageSquare size={12} /> Review
               </Link>
             )}
-            {canPreview && (
+            {canPreview && project.planTier && (
               <a
                 href={`/api/projects/${project.id}/download`}
                 className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"

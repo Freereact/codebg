@@ -4,8 +4,10 @@ import type { TemplateMeta, BusinessInfoInput } from '../types/portal'
 import { fetchTemplates, createProject } from '../lib/projects-api'
 import { TemplateCard } from '../components/portal/template-card'
 import { BusinessInfoForm } from '../components/portal/business-info-form'
+import { BuildProgress } from '../components/portal/build-progress'
+import { useProjectEvents } from '../hooks/use-project-events'
 
-type WizardStep = 'template' | 'info'
+type WizardStep = 'template' | 'info' | 'building'
 
 export function NewProjectPage() {
   const navigate = useNavigate()
@@ -14,7 +16,17 @@ export function NewProjectPage() {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const events = useProjectEvents(createdProjectId ?? undefined)
+
+  // Auto-redirect when build completes
+  useEffect(() => {
+    if (events.buildComplete || events.status === 'preview') {
+      const timer = setTimeout(() => navigate('/portal/dashboard', { replace: true }), 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [events.buildComplete, events.status, navigate])
 
   useEffect(() => {
     fetchTemplates()
@@ -44,7 +56,8 @@ export function NewProjectPage() {
     try {
       const res = await createProject({ templateSlug: selectedSlug, businessInfo: info })
       if (res.ok) {
-        navigate('/portal/dashboard', { replace: true })
+        setCreatedProjectId(res.data.id)
+        setStep('building')
       } else {
         setError(res.error)
         setCreating(false)
@@ -110,6 +123,26 @@ export function NewProjectPage() {
             )}
           </div>
         </>
+      )}
+
+      {step === 'building' && (
+        <div className="mx-auto max-w-md">
+          <h1 className="mb-6 text-center text-2xl font-semibold text-slate-800 dark:text-white">
+            Building your site...
+          </h1>
+          <BuildProgress
+            status={events.status}
+            step={events.step}
+            buildComplete={events.buildComplete}
+            durationMs={events.durationMs}
+            error={events.error}
+          />
+          {events.buildComplete && (
+            <p className="mt-4 text-center text-sm text-green-600 dark:text-green-400">
+              Redirecting to your dashboard...
+            </p>
+          )}
+        </div>
       )}
     </div>
   )
