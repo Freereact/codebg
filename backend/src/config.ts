@@ -33,5 +33,5 @@ export const config = {
     : '',
   ghAppInstallationId: Number(process.env.GH_APP_INSTALLATION_ID ?? '0'),
   ghWebhookSecret: process.env.GH_WEBHOOK_SECRET ?? '',
-  ghOrg: process.env.GH_ORG ?? 'Freereact',
+  ghOrg: process.env.GH_ORG ?? 'codebg-team',
 }
