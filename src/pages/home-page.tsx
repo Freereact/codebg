@@ -42,12 +42,12 @@ export function HomePage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
-      <Hero onContactClick={scrollToContact} />
+      <Hero />
       <Services />
       <Process />
       <Samples samples={samples} />
       <News />
-      <Pricing onContactClick={scrollToContact} />
+      <Pricing />
       <Testimonials onContactClick={scrollToContact} />
       <SeoResources />
       <Contact onSubmit={handleContactSubmit} sent={sent} error={error} />
