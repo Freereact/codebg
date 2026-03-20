@@ -54,6 +54,49 @@ projectsRouter.get('/templates', (_req, res: Response) => {
   return res.json({ ok: true, data: getAllTemplates() })
 })
 
+// SSE: real-time project events
+projectsRouter.get('/:id/events', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const parsed = projectIdSchema.safeParse(req.params)
+    if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+    const project = await findProjectByIdForUser(parsed.data.id, getUserId(req))
+    if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+
+    // SSE headers
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('X-Accel-Buffering', 'no') // Disable nginx buffering
+    res.flushHeaders()
+
+    // Send current status immediately
+    res.write(`event: status\ndata: ${JSON.stringify({ status: project.status })}\n\n`)
+
+    // Listen for changes
+    const { onProjectEvent } = await import('./events.js')
+    const unsubscribe = onProjectEvent(parsed.data.id, (event) => {
+      res.write(`event: ${event.type}\ndata: ${JSON.stringify(event.data)}\n\n`)
+    })
+
+    // Heartbeat every 30s
+    const heartbeat = setInterval(() => {
+      res.write(': heartbeat\n\n')
+    }, 30_000)
+
+    // Cleanup on disconnect
+    req.on('close', () => {
+      unsubscribe()
+      clearInterval(heartbeat)
+    })
+  } catch (err) {
+    console.error('[sse] error', err instanceof Error ? err.message : 'unknown')
+    if (!res.headersSent) {
+      return res.status(500).json({ ok: false, error: 'internal_error' })
+    }
+  }
+})
+
 // Public access check — used by the AccessGate component embedded in built sites
 projectsRouter.get('/access/:subdomain', async (req: AuthenticatedRequest, res: Response) => {
   try {

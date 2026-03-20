@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useAuth } from '../contexts/auth-context'
 import { useProjects } from '../hooks/use-projects'
 import { EmptyProjectsState } from '../components/portal/empty-state'
@@ -16,6 +17,14 @@ export function PortalDashboardPage() {
 
   const email = authState.status === 'authenticated' ? authState.user.email : ''
   const name = email.includes('@') ? email.split('@')[0] : 'there'
+
+  // Auto-refresh when any project is building
+  useEffect(() => {
+    if (projects.some((p) => p.status === 'draft' || p.status === 'building')) {
+      const timer = setInterval(refetch, 2000)
+      return () => clearInterval(timer)
+    }
+  }, [projects, refetch])
 
   if (loading) {
     return (

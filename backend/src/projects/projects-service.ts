@@ -10,6 +10,7 @@ import { generateUniqueSubdomain } from './subdomain.js'
 import { initProjectRepo, updateOverrides as updateRepoOverrides, getVerifiedRepoPath } from './repo-service.js'
 import { buildProject } from './build-service.js'
 import { createArchive } from './git-service.js'
+import { emitProjectEvent } from './events.js'
 import { createGitHubRepo, pushToGitHub } from '../github/index.js'
 
 const projectListSelect = {
@@ -155,10 +156,13 @@ async function runProjectBuild(
   businessInfo: CreateProjectBody['businessInfo'],
 ): Promise<void> {
   try {
+    emitProjectEvent(projectId, { type: 'progress', data: { step: 'scaffolding' } })
     const { repoPath } = await initProjectRepo({ projectId, templateSlug, subdomain, businessInfo })
     console.log(`[build] repo scaffolded for ${projectId}`)
 
+    emitProjectEvent(projectId, { type: 'progress', data: { step: 'building' } })
     await prisma.project.update({ where: { id: projectId }, data: { status: 'building' } })
+    emitProjectEvent(projectId, { type: 'status', data: { status: 'building' } })
     console.log(`[build] status → building for ${projectId}`)
 
     const result = await buildProject(repoPath, subdomain)
@@ -169,6 +173,8 @@ async function runProjectBuild(
         where: { id: projectId },
         data: { status: 'preview', draftReadyAt: new Date() },
       })
+      emitProjectEvent(projectId, { type: 'status', data: { status: 'preview' } })
+      emitProjectEvent(projectId, { type: 'build-complete', data: { durationMs: result.durationMs ?? 0 } })
       console.log(`[build] status → preview for ${projectId}`)
 
       // Push to GitHub (fire-and-forget, don't block the build)
@@ -183,10 +189,13 @@ async function runProjectBuild(
       }
     } else {
       await prisma.project.update({ where: { id: projectId }, data: { status: 'draft' } })
+      emitProjectEvent(projectId, { type: 'error', data: { message: result.message ?? 'Build failed' } })
+      emitProjectEvent(projectId, { type: 'status', data: { status: 'draft' } })
       console.error(`[build] failed for ${projectId}: ${result.message}`)
     }
   } catch (err) {
     console.error(`[build] pipeline error for ${projectId}:`, err instanceof Error ? err.message : 'unknown')
+    emitProjectEvent(projectId, { type: 'error', data: { message: 'Build pipeline error' } })
     await prisma.project.update({ where: { id: projectId }, data: { status: 'draft' } }).catch(() => {})
   }
 }
