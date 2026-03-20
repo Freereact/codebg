@@ -7,7 +7,13 @@ import { config } from '../config.js'
 import { prisma } from '../db.js'
 import { getStripe } from './stripe-client.js'
 import { createCheckoutSchema } from './validation.js'
-import { notifyUserStatusChange } from '../admin/notifications.js'
+import {
+  notifyUserStatusChange,
+  notifyUserPaymentFailed,
+  notifyUserSubscriptionCancelled,
+  notifyUserSubscriptionCancelScheduled,
+  notifyAdminNewPayment,
+} from '../admin/notifications.js'
 
 export const checkoutRouter = Router()
 export const stripeWebhookRouter = Router()
@@ -212,10 +218,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
   console.log(`[stripe] project ${projectId} upgraded to ${tier} (live)`)
 
-  // Notify user
+  // Notify user + admin
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (user) {
     notifyUserStatusChange(user.email, user.name, project.subdomain ?? 'your site', 'Live').catch(() => {})
+    notifyAdminNewPayment(
+      user.email,
+      project.subdomain ?? 'project',
+      tier,
+      tier === 'starter' ? '$19/mo' : '$39/mo',
+    ).catch(() => {})
   }
 }
 
@@ -259,6 +271,13 @@ async function handleInvoiceFailed(invoice: Stripe.Invoice): Promise<void> {
   })
 
   console.log(`[stripe] invoice failed for subscription ${subscriptionId}`)
+
+  // Notify user about payment failure
+  const user = await prisma.user.findUnique({ where: { id: sub.userId } })
+  const project = await prisma.project.findFirst({ where: { id: sub.projectId } })
+  if (user && project) {
+    notifyUserPaymentFailed(user.email, user.name, project.subdomain ?? 'your site').catch(() => {})
+  }
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
@@ -283,6 +302,20 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
   })
 
   console.log(`[stripe] subscription ${stripeSubId} updated: ${subscription.status}`)
+
+  // Notify user if cancellation was scheduled
+  if (subscription.cancel_at_period_end && !sub.cancelAtPeriodEnd) {
+    const user = await prisma.user.findUnique({ where: { id: sub.userId } })
+    const project = await prisma.project.findFirst({ where: { id: sub.projectId } })
+    if (user && project) {
+      const endDate = subscription.items.data[0]?.current_period_end
+        ? new Date(subscription.items.data[0].current_period_end * 1000).toLocaleDateString('en-CA')
+        : 'the end of your billing period'
+      notifyUserSubscriptionCancelScheduled(user.email, user.name, project.subdomain ?? 'your site', endDate).catch(
+        () => {},
+      )
+    }
+  }
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
@@ -306,4 +339,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
   }
 
   console.log(`[stripe] subscription ${stripeSubId} deleted`)
+
+  // Notify user
+  const user = await prisma.user.findUnique({ where: { id: sub.userId } })
+  if (user && sub.project) {
+    notifyUserSubscriptionCancelled(user.email, user.name, sub.project.subdomain ?? 'your site').catch(() => {})
+  }
 }

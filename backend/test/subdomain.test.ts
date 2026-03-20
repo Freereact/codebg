@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { slugifyBusinessName, generateUniqueSubdomain } from '../src/projects/subdomain.js'
+import { slugifyBusinessName, generateUniqueSubdomain, isReservedSubdomain } from '../src/projects/subdomain.js'
 
 describe('slugifyBusinessName', () => {
   it('lowercases and hyphenates', () => {
@@ -34,9 +34,45 @@ describe('slugifyBusinessName', () => {
     const result = slugifyBusinessName('!!!@@@###')
     expect(result.length).toBeGreaterThan(0)
   })
+
+  it('generates random slug for names shorter than 3 chars', () => {
+    const result = slugifyBusinessName('AB')
+    expect(result.startsWith('site-')).toBe(true)
+    expect(result.length).toBeGreaterThan(5)
+  })
+})
+
+describe('isReservedSubdomain', () => {
+  it('blocks system routes', () => {
+    expect(isReservedSubdomain('admin')).toBe(true)
+    expect(isReservedSubdomain('api')).toBe(true)
+    expect(isReservedSubdomain('login')).toBe(true)
+    expect(isReservedSubdomain('portal')).toBe(true)
+    expect(isReservedSubdomain('sites')).toBe(true)
+    expect(isReservedSubdomain('www')).toBe(true)
+  })
+
+  it('allows normal business names', () => {
+    expect(isReservedSubdomain('sunrise-bakery')).toBe(false)
+    expect(isReservedSubdomain('joes-auto-repair')).toBe(false)
+    expect(isReservedSubdomain('my-dental')).toBe(false)
+  })
+
+  it('blocks brand names', () => {
+    expect(isReservedSubdomain('codebg')).toBe(true)
+    expect(isReservedSubdomain('test')).toBe(true)
+  })
 })
 
 describe('generateUniqueSubdomain', () => {
+  it('adds suffix for reserved names', async () => {
+    const checkExists = async () => false
+    const result = await generateUniqueSubdomain('Admin', checkExists)
+    expect(result).not.toBe('admin')
+    expect(result.startsWith('admin-')).toBe(true)
+  })
+
+
   it('returns slug directly if no collision', async () => {
     const checkExists = async () => false
     const result = await generateUniqueSubdomain('Sunrise Bakery', checkExists)
@@ -59,8 +95,8 @@ describe('generateUniqueSubdomain', () => {
       calls++
       return calls <= 3
     }
-    const result = await generateUniqueSubdomain('Test', checkExists)
-    expect(result.startsWith('test')).toBe(true)
+    const result = await generateUniqueSubdomain('Bakery', checkExists)
+    expect(result.startsWith('bakery')).toBe(true)
     expect(calls).toBe(4)
   })
 })

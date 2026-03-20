@@ -1,5 +1,56 @@
 import crypto from 'node:crypto'
 
+/** Names that must never be used as subdomains — system routes, protocols, common infra */
+const RESERVED_NAMES = new Set([
+  // System routes
+  'admin',
+  'api',
+  'app',
+  'auth',
+  'billing',
+  'blog',
+  'cdn',
+  'checkout',
+  'dashboard',
+  'docs',
+  'feedback',
+  'healthz',
+  'hooks',
+  'login',
+  'logout',
+  'mail',
+  'portal',
+  'preview',
+  'register',
+  'signup',
+  'sites',
+  'status',
+  'verify',
+  'webhooks',
+  // Infrastructure
+  'ftp',
+  'imap',
+  'ns1',
+  'ns2',
+  'pop',
+  'smtp',
+  'ssh',
+  'vpn',
+  'www',
+  // Brand protection
+  'codebg',
+  'codebg-team',
+  'test',
+  'demo',
+  'example',
+  'sample',
+  'staging',
+  'production',
+  'dev',
+])
+
+const MIN_SUBDOMAIN_LENGTH = 3
+
 export function slugifyBusinessName(name: string): string {
   let slug = name
     .toLowerCase()
@@ -10,18 +61,27 @@ export function slugifyBusinessName(name: string): string {
     .slice(0, 32)
     .replace(/-$/, '')
 
-  if (!slug) {
+  if (!slug || slug.length < MIN_SUBDOMAIN_LENGTH) {
     slug = `site-${crypto.randomBytes(4).toString('hex')}`
   }
 
   return slug
 }
 
+export function isReservedSubdomain(subdomain: string): boolean {
+  return RESERVED_NAMES.has(subdomain)
+}
+
 export async function generateUniqueSubdomain(
   businessName: string,
   checkExists: (subdomain: string) => Promise<boolean>,
 ): Promise<string> {
-  const base = slugifyBusinessName(businessName)
+  let base = slugifyBusinessName(businessName)
+
+  // If the slug is reserved, add a random suffix immediately
+  if (isReservedSubdomain(base)) {
+    base = `${base}-${crypto.randomBytes(2).toString('hex')}`
+  }
 
   if (!(await checkExists(base))) {
     return base
@@ -30,7 +90,7 @@ export async function generateUniqueSubdomain(
   for (let i = 0; i < 10; i++) {
     const suffix = crypto.randomBytes(2).toString('hex')
     const candidate = `${base}-${suffix}`
-    if (!(await checkExists(candidate))) {
+    if (!isReservedSubdomain(candidate) && !(await checkExists(candidate))) {
       return candidate
     }
   }

@@ -85,6 +85,98 @@ ${config.frontendUrl}/portal/projects/${projectId}/review
   )
 }
 
+export async function notifyUserPaymentFailed(userEmail: string, userName: string, projectName: string): Promise<void> {
+  await sendEmail(
+    userEmail,
+    `Payment failed for ${projectName}`,
+    `Hi ${userName},
+
+Your payment for "${projectName}" has failed. Please update your payment method to keep your site online.
+
+Update your payment method:
+${config.frontendUrl}/portal/dashboard
+
+If you need help, reply to this email.
+
+— CodeBG`,
+  )
+}
+
+export async function notifyUserSubscriptionCancelled(
+  userEmail: string,
+  userName: string,
+  projectName: string,
+): Promise<void> {
+  await sendEmail(
+    userEmail,
+    `Your site ${projectName} has been taken offline`,
+    `Hi ${userName},
+
+Your subscription for "${projectName}" has ended and the site has been taken offline.
+
+Your project files are still available — you can download them anytime from your dashboard:
+${config.frontendUrl}/portal/dashboard
+
+To bring your site back online, start a new subscription from your dashboard.
+
+— CodeBG`,
+  )
+}
+
+export async function notifyUserSubscriptionCancelScheduled(
+  userEmail: string,
+  userName: string,
+  projectName: string,
+  endDate: string,
+): Promise<void> {
+  await sendEmail(
+    userEmail,
+    `Your ${projectName} subscription will end on ${endDate}`,
+    `Hi ${userName},
+
+Your subscription for "${projectName}" is set to cancel at the end of the current billing period (${endDate}).
+
+Your site will remain online until then. If you change your mind, you can reactivate from your billing settings:
+${config.frontendUrl}/portal/dashboard
+
+— CodeBG`,
+  )
+}
+
+export async function notifyAdminNewPayment(
+  userEmail: string,
+  projectName: string,
+  tier: string,
+  amount: string,
+): Promise<void> {
+  await sendEmail(
+    config.mailTo,
+    `New payment: ${userEmail} subscribed to ${tier}`,
+    `New paying customer!
+
+Email: ${userEmail}
+Project: ${projectName}
+Plan: ${tier}
+Amount: ${amount}
+
+View in admin panel:
+${config.frontendUrl}/admin/projects`,
+  )
+}
+
+export async function notifyAdminBuildFailed(projectName: string, error: string): Promise<void> {
+  await sendEmail(
+    config.mailTo,
+    `Build failed: ${projectName}`,
+    `Build failed for project "${projectName}":
+
+${error}
+
+Check the admin panel:
+${config.frontendUrl}/admin/projects`,
+  )
+}
+
 export async function notifyAdminNewFeedback(
   userEmail: string,
   projectSubdomain: string,
