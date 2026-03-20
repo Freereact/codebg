@@ -653,7 +653,7 @@ DECLARE
   allowed_transitions JSONB := '{
     "draft":           ["building", "cancelled"],
     "building":        ["preview", "draft"],
-    "preview":         ["lead", "paid", "live", "cancelled"],
+    "preview":         ["building", "lead", "paid", "live", "cancelled"],
     "lead":            ["paid", "cancelled"],
     "paid":            ["brief_received", "cancelled"],
     "brief_received":  ["draft_ready", "cancelled"],
