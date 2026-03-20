@@ -161,6 +161,10 @@ jobs:
             echo 'GH_ORG=codebg-team'
             echo 'SAMPLE_APPS_DIR=/mnt/sample-apps'
             echo 'DATABASE_SSL_REJECT_UNAUTHORIZED=false'
+            printf 'STRIPE_SECRET_KEY=%s\n' "${{ secrets.STRIPE_SECRET_KEY }}"
+            printf 'STRIPE_WEBHOOK_SECRET=%s\n' "${{ secrets.STRIPE_WEBHOOK_SECRET }}"
+            printf 'STRIPE_PRICE_STARTER_MONTHLY=%s\n' "${{ secrets.STRIPE_PRICE_STARTER_MONTHLY }}"
+            printf 'STRIPE_PRICE_PROFESSIONAL_MONTHLY=%s\n' "${{ secrets.STRIPE_PRICE_PROFESSIONAL_MONTHLY }}"
           } | ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "cat > ~/projects/codebg/backend/.env && chmod 600 ~/projects/codebg/backend/.env"
 
       - name: Ensure project directories

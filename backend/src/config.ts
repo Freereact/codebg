@@ -34,4 +34,8 @@ export const config = {
   ghAppInstallationId: Number(process.env.GH_APP_INSTALLATION_ID ?? '0'),
   ghWebhookSecret: process.env.GH_WEBHOOK_SECRET ?? '',
   ghOrg: process.env.GH_ORG ?? '',
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? '',
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? '',
+  stripePriceStarterMonthly: process.env.STRIPE_PRICE_STARTER_MONTHLY ?? '',
+  stripePriceProfessionalMonthly: process.env.STRIPE_PRICE_PROFESSIONAL_MONTHLY ?? '',
 }

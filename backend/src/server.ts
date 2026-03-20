@@ -13,14 +13,16 @@ import { authRouter, jwtMiddleware } from './auth/index.js'
 import { projectsRouter, usersRouter, feedbackRouter } from './projects/index.js'
 import { adminRouter } from './admin/index.js'
 import { githubWebhookRouter } from './github/index.js'
+import { checkoutRouter, stripeWebhookRouter, billingRouter } from './stripe/index.js'
 import type { EmailJob } from './types.js'
 
 const app = express()
 app.set('trust proxy', 1) // Behind nginx reverse proxy
 app.use(helmet())
 
-// Webhook route MUST receive raw body for HMAC signature verification — mount BEFORE express.json()
+// Webhook routes MUST receive raw body for signature verification — mount BEFORE express.json()
 app.use('/api/hooks', express.raw({ type: 'application/json' }), githubWebhookRouter)
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }), stripeWebhookRouter)
 
 app.use(express.json({ limit: '200kb' }))
 app.use(cookieParser())
@@ -92,7 +94,9 @@ app.use('/api/projects', projectsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/feedback', feedbackRouter)
 app.use('/api/admin', adminRouter)
-// Note: /api/hooks is mounted above express.json() for raw body access
+app.use('/api/checkout', checkoutRouter)
+app.use('/api/billing', billingRouter)
+// Note: /api/hooks and /api/webhooks/stripe are mounted above express.json() for raw body access
 
 app.post('/api/email-job', async (req, res) => {
   const origin = req.headers.origin
