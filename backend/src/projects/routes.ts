@@ -3,6 +3,7 @@ import { Router } from 'express'
 import type { Response } from 'express'
 import { requireAuth } from '../auth/middleware.js'
 import { config } from '../config.js'
+import { prisma } from '../db.js'
 import {
   listProjectsForUser,
   findProjectByIdForUser,
@@ -51,6 +52,40 @@ projectsRouter.get('/', requireAuth, async (req: AuthenticatedRequest, res: Resp
 
 projectsRouter.get('/templates', (_req, res: Response) => {
   return res.json({ ok: true, data: getAllTemplates() })
+})
+
+// Public access check — used by the AccessGate component embedded in built sites
+projectsRouter.get('/access/:subdomain', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const subdomain = req.params.subdomain
+    if (!subdomain) return res.json({ granted: false })
+
+    const project = await prisma.project.findFirst({
+      where: { subdomain, deletedAt: null },
+      select: { id: true, status: true, userId: true, planTier: true },
+    })
+
+    if (!project) return res.json({ granted: false })
+
+    // Paid project: always public
+    if (project.status === 'live' || project.planTier) {
+      return res.json({ granted: true, reason: 'public' })
+    }
+
+    // Check if requester is the owner (JWT cookie parsed by jwtMiddleware)
+    if (req.user && req.user.sub === project.userId) {
+      return res.json({ granted: true, reason: 'owner' })
+    }
+
+    return res.json({
+      granted: false,
+      loginUrl: '/login',
+      signupUrl: '/login',
+    })
+  } catch {
+    // On error, fail open (don't break the site)
+    return res.json({ granted: true, reason: 'error' })
+  }
 })
 
 projectsRouter.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) => {

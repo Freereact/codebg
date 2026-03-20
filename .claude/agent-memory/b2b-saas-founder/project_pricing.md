@@ -1,20 +1,22 @@
 ---
 name: Pricing Tiers and Unit Economics
-description: CodeBG pricing structure, Stripe products, and unit economics calculations as of 2026-03-18.
+description: CodeBG pricing structure revised 2026-03-20. No setup fees. Free/$19/$39 monthly tiers. Break-even at 3 Starter customers.
 type: project
 ---
 
-**Tiers:**
-- Starter: $49 CAD setup + $19/mo (Year 1 LTV: $277)
-- Professional: $149 CAD setup + $29/mo (Year 1 LTV: $497)
-- Custom: Quote-based setup + $49/mo (manual Stripe invoice)
+**Tiers (revised 2026-03-20 -- setup fees dropped):**
+- Free: $0 -- authenticated preview only, not public. Download ZIP anytime. 7-day expiry.
+- Starter: $19/mo CAD -- public site on subdomain, visual feedback, GitHub repo, email support.
+- Professional: $39/mo CAD -- custom domain, priority support, 2 content update requests/month.
 
-**Stripe architecture:** Separate products for subscriptions and setup fees. Setup fee charged via `add_invoice_items` on Checkout Session (rolls into first invoice). Currency: CAD.
+**Previous model (superseded):** $49+$19/mo Starter, $149+$29/mo Professional. Setup fees dropped because the platform builds sites in 2 seconds -- nothing to "set up." Friction reduction > per-customer margin at this stage.
 
-**Unit economics at 20 customers:** $3.25/customer COGS ($2.40 infra + $0.85 Stripe fees). 83% gross margin on Starter, 89% on Professional.
+**Unit economics at 20 customers:** ~$2.40/customer infra + ~$0.70 Stripe fees = ~$3.10 COGS. 84% gross margin on Starter, 92% on Professional.
 
-**Break-even:** 3 Starter subscribers cover the $48/mo infrastructure.
+**Break-even:** 3 Starter subscribers = $57/mo vs $48/mo infrastructure.
 
-**Why:** The old pricing was flat $49 one-time with "free hosting on Netlify" -- zero recurring revenue, actively telling customers they do not need you.
+**Risk:** "Monthly content updates" on Professional tier is an open-ended time commitment. Capped at "2 content update requests/month" to protect operator time.
 
-**How to apply:** All pricing discussions should reference these tiers. Do not add complexity (annual billing, add-ons) until monthly model is validated with paying customers.
+**Why:** Zero-upfront pricing converts faster for self-service platforms. Need velocity to validate, not margin optimization.
+
+**How to apply:** All pricing discussions use these tiers. No setup fees, no annual billing, no add-ons until monthly model validated with paying customers.

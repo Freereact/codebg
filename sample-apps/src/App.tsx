@@ -1,4 +1,5 @@
 import type { CustomerConfig, Section } from './types'
+import AccessGate from './components/AccessGate'
 import TopBar from './components/TopBar'
 import Hero from './components/Hero'
 import ServiceGrid from './components/ServiceGrid'
@@ -40,11 +41,13 @@ function renderSection(section: Section, config: CustomerConfig, index: number) 
 
 export default function App({ config }: { config: CustomerConfig }) {
   return (
-    <div className="page">
-      <div id="topbar"><TopBar config={config} /></div>
-      <div id="hero"><Hero config={config} /></div>
-      {config.sections.map((section, i) => renderSection(section, config, i))}
-      <div id="footer"><Footer /></div>
-    </div>
+    <AccessGate slug={config.slug}>
+      <div className="page">
+        <div id="topbar"><TopBar config={config} /></div>
+        <div id="hero"><Hero config={config} /></div>
+        {config.sections.map((section, i) => renderSection(section, config, i))}
+        <div id="footer"><Footer /></div>
+      </div>
+    </AccessGate>
   )
 }
