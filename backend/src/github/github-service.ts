@@ -45,16 +45,15 @@ export async function createGitHubRepo(
       name,
       description,
       auto_init: false,
-      private: false,
+      private: true,
     })
     data = res.data
   } catch {
-    // Freereact is a user account, not an org
     const res = await octokit.repos.createForAuthenticatedUser({
       name,
       description,
       auto_init: false,
-      private: false,
+      private: true,
     })
     data = res.data
   }
@@ -93,7 +92,12 @@ export async function pushToGitHub(localRepoPath: string, cloneUrl: string): Pro
     })
   })
 
-  await execFileAsync('git', ['push', 'github', 'main', '--force'], {
+  // Push current branch (could be master or main depending on git config)
+  const { stdout: branch } = await execFileAsync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+    cwd: localRepoPath,
+    timeout: 5_000,
+  })
+  await execFileAsync('git', ['push', 'github', branch.trim(), '--force'], {
     cwd: localRepoPath,
     timeout: 60_000,
   })
@@ -129,7 +133,11 @@ export async function pullFromGitHub(localRepoPath: string): Promise<void> {
     })
   }
 
-  await execFileAsync('git', ['pull', 'github', 'main', '--ff-only'], {
+  const { stdout: branch } = await execFileAsync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+    cwd: localRepoPath,
+    timeout: 5_000,
+  })
+  await execFileAsync('git', ['pull', 'github', branch.trim(), '--ff-only'], {
     cwd: localRepoPath,
     timeout: 60_000,
   })

@@ -24,5 +24,5 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 USER node
-RUN git config --global user.email "build@codebg.com" && git config --global user.name "CodeBG"
+RUN git config --global user.email "build@codebg.com" && git config --global user.name "CodeBG" && git config --global init.defaultBranch main
 CMD ["node", "dist/server.js"]
