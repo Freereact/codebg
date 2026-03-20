@@ -1,4 +1,5 @@
 import { prisma } from '../db.js'
+import type { ProjectStatus } from '../projects/types.js'
 import { PROJECT_STATUS_LABELS } from '../projects/types.js'
 import type { AdminProjectsQuery, AdminUsersQuery, AdminFeedbackQuery, CreateNoteInput } from './validation.js'
 
@@ -81,7 +82,7 @@ export async function listAdminProjects(
     subdomain: row.subdomain,
     templateSlug: row.templateSlug,
     status: row.status,
-    statusLabel: PROJECT_STATUS_LABELS[row.status] ?? row.status,
+    statusLabel: PROJECT_STATUS_LABELS[row.status as ProjectStatus] ?? row.status,
     planTier: row.planTier,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),

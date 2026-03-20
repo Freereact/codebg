@@ -14,7 +14,7 @@ export function RequireAdmin({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (state.status === 'unauthenticated') {
+  if (state.status !== 'authenticated') {
     return <Navigate to="/login" replace />
   }
 

@@ -101,6 +101,12 @@ export async function pushToGitHub(localRepoPath: string, cloneUrl: string): Pro
     cwd: localRepoPath,
     timeout: 60_000,
   })
+
+  // Strip token from stored remote URL to prevent leaking in .git/config
+  await execFileAsync('git', ['remote', 'set-url', 'github', cloneUrl], {
+    cwd: localRepoPath,
+    timeout: 5_000,
+  })
 }
 
 /**
@@ -141,12 +147,21 @@ export async function pullFromGitHub(localRepoPath: string): Promise<void> {
     cwd: localRepoPath,
     timeout: 60_000,
   })
+
+  // Strip token from stored remote URL
+  if (remoteUrl) {
+    const cleanUrl = remoteUrl.replace(/https:\/\/[^@]*@/, 'https://')
+    await execFileAsync('git', ['remote', 'set-url', 'github', cleanUrl], {
+      cwd: localRepoPath,
+      timeout: 5_000,
+    })
+  }
 }
 
 /**
  * Verify a GitHub webhook signature.
  */
-export function verifyWebhookSignature(payload: string, signature: string): boolean {
+export function verifyWebhookSignature(payload: Buffer | string, signature: string): boolean {
   if (!config.ghWebhookSecret) return false
 
   const expected = 'sha256=' + crypto.createHmac('sha256', config.ghWebhookSecret).update(payload).digest('hex')

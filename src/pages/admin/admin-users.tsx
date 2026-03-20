@@ -7,10 +7,16 @@ export function AdminUsersPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timer)
+  }, [search])
 
   useEffect(() => {
     setLoading(true)
-    fetchAdminUsers({ search: search || undefined })
+    fetchAdminUsers({ search: debouncedSearch || undefined })
       .then((res) => {
         if (res.ok) {
           setUsers(res.data)
@@ -18,7 +24,7 @@ export function AdminUsersPage() {
         }
       })
       .finally(() => setLoading(false))
-  }, [search])
+  }, [debouncedSearch])
 
   return (
     <div>
@@ -30,9 +36,14 @@ export function AdminUsersPage() {
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search by email or name..."
         className="input mb-4 max-w-sm"
+        aria-label="Search users by email or name"
       />
 
-      {loading && <p className="animate-pulse text-slate-500">Loading...</p>}
+      {loading && (
+        <p role="status" className="animate-pulse text-slate-500">
+          Loading...
+        </p>
+      )}
 
       <div className="space-y-2">
         {users.map((u) => (

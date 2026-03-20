@@ -1,4 +1,10 @@
-export const PROJECT_STATUS_LABELS: Record<string, string> = {
+import type { ProjectStatus } from '../types/portal'
+
+export function getStatusLabel(status: string): string {
+  return PROJECT_STATUS_LABELS[status as ProjectStatus] ?? status
+}
+
+export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   draft: 'Setting up',
   building: 'Building preview',
   preview: 'Preview ready',

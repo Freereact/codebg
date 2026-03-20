@@ -21,6 +21,7 @@ import {
 import {
   adminProjectsQuerySchema,
   adminUsersQuerySchema,
+  adminUserIdSchema,
   adminFeedbackQuerySchema,
   updateProjectStatusSchema,
   createNoteSchema,
@@ -176,8 +177,10 @@ adminRouter.get('/users', async (req: AuthenticatedRequest, res: Response) => {
 
 adminRouter.get('/users/:id', async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const id = req.params.id
-    const user = await getAdminUserDetail(id)
+    const parsed = adminUserIdSchema.safeParse(req.params)
+    if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_user_id' })
+
+    const user = await getAdminUserDetail(parsed.data.id)
     if (!user) return res.status(404).json({ ok: false, error: 'user_not_found' })
 
     return res.json({ ok: true, data: user })

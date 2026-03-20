@@ -56,8 +56,8 @@ export function AdminDashboardPage() {
         <StatCard
           icon={FolderKanban}
           label="Live sites"
-          value={stats.projectsByStatus.preview ?? 0}
-          link="/admin/projects?status=preview"
+          value={(stats.projectsByStatus.live ?? 0) + (stats.projectsByStatus.maintenance ?? 0)}
+          link="/admin/projects?status=live"
         />
       </div>
 

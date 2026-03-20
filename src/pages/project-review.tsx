@@ -36,12 +36,13 @@ export function ProjectReviewPage() {
 
   // Enable review mode in iframe once loaded
   const handleIframeLoad = useCallback(() => {
-    iframeRef.current?.contentWindow?.postMessage({ type: 'enable-review' }, '*')
+    iframeRef.current?.contentWindow?.postMessage({ type: 'enable-review' }, window.location.origin)
   }, [])
 
   // Listen for section clicks from the iframe
   useEffect(() => {
     const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return
       if (e.data?.type === 'section-click') {
         setSelectedSection({ id: e.data.sectionId, title: e.data.sectionTitle })
         setComment('')
@@ -92,7 +93,11 @@ export function ProjectReviewPage() {
     <div className="flex h-[calc(100vh-64px)] flex-col">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-700">
-        <Link to="/portal/dashboard" className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <Link
+          to="/portal/dashboard"
+          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          aria-label="Back to dashboard"
+        >
           <ArrowLeft size={20} />
         </Link>
         <h1 className="text-sm font-medium text-slate-800 dark:text-white">{project.subdomain ?? 'Project'}</h1>
@@ -135,6 +140,7 @@ export function ProjectReviewPage() {
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="What would you like to change?"
+                  aria-label="Feedback for selected section"
                   rows={3}
                   className="input mb-2 resize-none text-sm"
                   autoFocus
@@ -169,6 +175,7 @@ export function ProjectReviewPage() {
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="General feedback about the site..."
+                  aria-label="General feedback about the site"
                   rows={3}
                   className="input mb-2 resize-none text-sm"
                 />

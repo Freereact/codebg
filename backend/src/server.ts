@@ -18,6 +18,10 @@ import type { EmailJob } from './types.js'
 const app = express()
 app.set('trust proxy', 1) // Behind nginx reverse proxy
 app.use(helmet())
+
+// Webhook route MUST receive raw body for HMAC signature verification — mount BEFORE express.json()
+app.use('/api/hooks', express.raw({ type: 'application/json' }), githubWebhookRouter)
+
 app.use(express.json({ limit: '200kb' }))
 app.use(cookieParser())
 app.use(
@@ -88,7 +92,7 @@ app.use('/api/projects', projectsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/feedback', feedbackRouter)
 app.use('/api/admin', adminRouter)
-app.use('/api/hooks', githubWebhookRouter)
+// Note: /api/hooks is mounted above express.json() for raw body access
 
 app.post('/api/email-job', async (req, res) => {
   const origin = req.headers.origin

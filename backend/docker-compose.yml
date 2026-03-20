@@ -12,14 +12,17 @@ services:
     ports:
       - "127.0.0.1:8787:8787"
     volumes:
-      - /root/projects/codebg/sample-apps:/mnt/sample-apps
-      - /var/www/projects:/var/www/projects
-      - /var/www/sites:/var/www/sites
+      - ${SAMPLE_APPS_HOST_PATH:-../sample-apps}:/mnt/sample-apps
+      - ${PROJECTS_HOST_PATH:-/var/www/projects}:/var/www/projects
+      - ${SITES_HOST_PATH:-/var/www/sites}:/var/www/sites
+    # DNS: remove or customize for your hosting provider
+    # For DigitalOcean: DNS_SERVER_1=67.207.67.2 DNS_SERVER_2=67.207.67.3
     dns:
-      - 67.207.67.2
-      - 67.207.67.3
+      - ${DNS_SERVER_1:-8.8.8.8}
+      - ${DNS_SERVER_2:-8.8.4.4}
     restart: unless-stopped
     depends_on:
+      # Optional: remove if not using Redis/RabbitMQ (server falls back to direct email send)
       rabbitmq:
         condition: service_healthy
       redis:
@@ -45,8 +48,8 @@ services:
     env_file:
       - .env
     dns:
-      - 67.207.67.2
-      - 67.207.67.3
+      - ${DNS_SERVER_1:-8.8.8.8}
+      - ${DNS_SERVER_2:-8.8.4.4}
     restart: unless-stopped
     depends_on:
       rabbitmq:

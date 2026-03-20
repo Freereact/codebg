@@ -1,7 +1,8 @@
 import path from 'node:path'
 import { prisma } from '../db.js'
 import { config } from '../config.js'
-import type { ProjectListItem, ProjectDetail, UserProfile } from './types.js'
+import type { ProjectListItem, ProjectDetail, UserProfile, ProjectStatus, PlanTier } from './types.js'
+import type { UserRole } from '../auth/types.js'
 import { PROJECT_STATUS_LABELS as statusLabels } from './types.js'
 import type { CreateProjectBody, UpdateProjectBody, TemplateSlug } from './site-config-schema.js'
 import { businessInfoSchema } from './site-config-schema.js'
@@ -22,8 +23,13 @@ const projectListSelect = {
   updatedAt: true,
 } as const
 
+/** Cast Prisma string to ProjectStatus at the DB→API boundary */
+const asStatus = (s: string) => s as ProjectStatus
+const asPlanTier = (s: string | null) => s as PlanTier | null
+const asSiteConfig = (v: unknown) => (v ?? {}) as Record<string, unknown>
+
 function toStatusLabel(status: string): string {
-  return statusLabels[status] ?? status
+  return statusLabels[status as ProjectStatus] ?? status
 }
 
 export async function listProjectsForUser(
@@ -46,12 +52,12 @@ export async function listProjectsForUser(
 
   const projects: ProjectListItem[] = rows.map((row) => ({
     id: row.id,
-    status: row.status,
+    status: asStatus(row.status),
     statusLabel: toStatusLabel(row.status),
     domain: row.domain,
     subdomain: row.subdomain,
     templateSlug: row.templateSlug,
-    planTier: row.planTier,
+    planTier: asPlanTier(row.planTier),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   }))
@@ -78,13 +84,13 @@ export async function findProjectByIdForUser(projectId: string, userId: string):
 
   return {
     id: row.id,
-    status: row.status,
+    status: asStatus(row.status),
     statusLabel: toStatusLabel(row.status),
     domain: row.domain,
     subdomain: row.subdomain,
     templateSlug: row.templateSlug,
-    planTier: row.planTier,
-    siteConfig: row.siteConfig,
+    planTier: asPlanTier(row.planTier),
+    siteConfig: asSiteConfig(row.siteConfig),
     setupFeeCents: row.setupFeeCents,
     paidAt: row.paidAt?.toISOString() ?? null,
     briefReceivedAt: row.briefReceivedAt?.toISOString() ?? null,
@@ -124,13 +130,13 @@ export async function createProject(userId: string, input: CreateProjectBody): P
 
   return {
     id: project.id,
-    status: project.status,
+    status: asStatus(project.status),
     statusLabel: toStatusLabel(project.status),
     domain: project.domain,
     subdomain: project.subdomain,
     templateSlug: project.templateSlug,
-    planTier: project.planTier,
-    siteConfig: project.siteConfig,
+    planTier: asPlanTier(project.planTier),
+    siteConfig: asSiteConfig(project.siteConfig),
     setupFeeCents: project.setupFeeCents,
     paidAt: project.paidAt?.toISOString() ?? null,
     briefReceivedAt: project.briefReceivedAt?.toISOString() ?? null,
@@ -279,7 +285,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     email: user.email,
     name: user.name,
     phone: user.phone,
-    role: user.role,
+    role: user.role as UserRole,
     createdAt: user.createdAt.toISOString(),
   }
 }

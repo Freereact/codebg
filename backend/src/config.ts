@@ -25,7 +25,7 @@ export const config = {
   magicLinkExpiryMinutes: Number(process.env.MAGIC_LINK_EXPIRY_MINUTES ?? 15),
   projectsDir: process.env.PROJECTS_DIR ?? '/var/www/projects',
   sitesDir: process.env.SITES_DIR ?? '/var/www/sites',
-  sampleAppsDir: process.env.SAMPLE_APPS_DIR ?? '/home/sz-server/projects/codebg/sample-apps',
+  sampleAppsDir: required('SAMPLE_APPS_DIR'),
   buildRateLimitSeconds: Number(process.env.BUILD_RATE_LIMIT_SECONDS ?? 300),
   ghAppId: process.env.GH_APP_ID ?? '',
   ghAppPrivateKey: process.env.GH_APP_PRIVATE_KEY
@@ -33,5 +33,5 @@ export const config = {
     : '',
   ghAppInstallationId: Number(process.env.GH_APP_INSTALLATION_ID ?? '0'),
   ghWebhookSecret: process.env.GH_WEBHOOK_SECRET ?? '',
-  ghOrg: process.env.GH_ORG ?? 'codebg-team',
+  ghOrg: process.env.GH_ORG ?? '',
 }

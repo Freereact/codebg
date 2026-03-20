@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { ExternalLink } from 'lucide-react'
 import { fetchAdminProjects } from '../../lib/admin-api'
 import type { AdminProjectItem } from '../../lib/admin-api'
-import { PROJECT_STATUS_LABELS } from '../../lib/admin-constants'
+import { getStatusLabel } from '../../lib/admin-constants'
 
 const STATUS_FILTERS = ['all', 'draft', 'building', 'preview', 'live', 'cancelled']
 
@@ -42,7 +42,7 @@ export function AdminProjectsPage() {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >
-            {s === 'all' ? 'All' : (PROJECT_STATUS_LABELS[s] ?? s)}
+            {s === 'all' ? 'All' : (getStatusLabel(s) ?? s)}
           </button>
         ))}
       </div>

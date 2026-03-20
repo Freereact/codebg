@@ -747,7 +747,7 @@ CREATE TRIGGER auth_tokens_validate_use
 -- If connection pressure grows, add PgBouncer in transaction pooling mode
 -- as a sidecar container in docker-compose.yml.
 --
--- Drizzle's node-postgres driver uses pg Pool by default.
+-- Prisma uses @prisma/adapter-pg with a pg Pool.
 -- Recommended pool config: { max: 5, idleTimeoutMillis: 30000 }
 -- ============================================================================
 

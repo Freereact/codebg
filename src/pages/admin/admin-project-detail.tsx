@@ -9,7 +9,7 @@ import {
   respondToFeedback,
   createAdminNote,
 } from '../../lib/admin-api'
-import { PROJECT_STATUS_LABELS } from '../../lib/admin-constants'
+import { getStatusLabel } from '../../lib/admin-constants'
 
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   draft: ['building', 'cancelled'],
@@ -27,6 +27,7 @@ export function AdminProjectDetailPage() {
   const [replyText, setReplyText] = useState<Record<string, string>>({})
   const [noteText, setNoteText] = useState('')
   const [sending, setSending] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const loadProject = () => {
     if (!id) return
@@ -67,35 +68,58 @@ export function AdminProjectDetailPage() {
   const handleStatusChange = async (newStatus: string) => {
     if (!id) return
     setSending('status')
-    await updateProjectStatus(id, newStatus)
-    loadProject()
-    setSending(null)
+    setActionError(null)
+    try {
+      await updateProjectStatus(id, newStatus)
+      loadProject()
+    } catch {
+      setActionError('Failed to update status')
+    } finally {
+      setSending(null)
+    }
   }
 
   const handleRebuild = async () => {
     if (!id) return
     setSending('rebuild')
-    await rebuildProject(id)
-    loadProject()
-    setSending(null)
+    setActionError(null)
+    try {
+      await rebuildProject(id)
+      loadProject()
+    } catch {
+      setActionError('Failed to trigger rebuild')
+    } finally {
+      setSending(null)
+    }
   }
 
   const handleReply = async (feedbackId: string) => {
     const text = replyText[feedbackId]
     if (!text?.trim()) return
     setSending(feedbackId)
-    await respondToFeedback(feedbackId, text.trim())
-    setReplyText((prev) => ({ ...prev, [feedbackId]: '' }))
-    loadProject()
-    setSending(null)
+    setActionError(null)
+    try {
+      await respondToFeedback(feedbackId, text.trim())
+      setReplyText((prev) => ({ ...prev, [feedbackId]: '' }))
+      loadProject()
+    } catch {
+      setActionError('Failed to send reply')
+    } finally {
+      setSending(null)
+    }
   }
 
   const handleAddNote = async () => {
     if (!id || !noteText.trim()) return
     setSending('note')
-    await createAdminNote({ projectId: id, content: noteText.trim() })
-    setNoteText('')
-    loadProject()
+    setActionError(null)
+    try {
+      await createAdminNote({ projectId: id, content: noteText.trim() })
+      setNoteText('')
+      loadProject()
+    } catch {
+      setActionError('Failed to add note')
+    }
     setSending(null)
   }
 
@@ -115,7 +139,7 @@ export function AdminProjectDetailPage() {
         <div>
           <h1 className="text-2xl font-semibold text-slate-800 dark:text-white">{subdomain ?? 'Project'}</h1>
           <p className="text-sm text-slate-400">
-            {user.email} &middot; {PROJECT_STATUS_LABELS[status] ?? status}
+            {user.email} &middot; {getStatusLabel(status)}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -135,6 +159,15 @@ export function AdminProjectDetailPage() {
           </Button>
         </div>
       </div>
+
+      {actionError && (
+        <div
+          role="alert"
+          className="mb-4 rounded bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300"
+        >
+          {actionError}
+        </div>
+      )}
 
       {/* GitHub */}
       {githubUrl && (
@@ -166,7 +199,7 @@ export function AdminProjectDetailPage() {
                 onClick={() => handleStatusChange(t)}
                 disabled={sending === 'status'}
               >
-                {PROJECT_STATUS_LABELS[t] ?? t}
+                {getStatusLabel(t)}
               </Button>
             ))}
           </div>

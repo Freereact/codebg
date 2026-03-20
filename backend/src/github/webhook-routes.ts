@@ -19,18 +19,22 @@ githubWebhookRouter.post('/github', async (req: Request, res: Response) => {
       return res.status(400).json({ ok: false, error: 'missing_headers' })
     }
 
-    // Verify webhook signature
-    const rawBody = JSON.stringify(req.body)
+    // Verify webhook signature against raw bytes (not re-serialized JSON)
+    const rawBody = req.body as Buffer
     if (!verifyWebhookSignature(rawBody, signature)) {
       return res.status(401).json({ ok: false, error: 'invalid_signature' })
     }
+
+    // Parse the raw body after verification
+    const payload = JSON.parse(rawBody.toString('utf-8')) as Record<string, unknown>
 
     // Only handle push events
     if (event !== 'push') {
       return res.json({ ok: true, skipped: true })
     }
 
-    const repoName = req.body?.repository?.name as string | undefined
+    const repo = payload.repository as Record<string, unknown> | undefined
+    const repoName = repo?.name as string | undefined
     if (!repoName) {
       return res.status(400).json({ ok: false, error: 'missing_repo_name' })
     }
@@ -74,7 +78,7 @@ githubWebhookRouter.post('/github', async (req: Request, res: Response) => {
       ).catch(() => {})
 
       // Auto-complete feedback referenced in commit messages
-      const commits = (req.body?.commits ?? []) as Array<{ message: string }>
+      const commits = (payload.commits ?? []) as Array<{ message: string }>
       await autoCompleteFeedback(project.id, commits)
     } else {
       await prisma.project.update({ where: { id: project.id }, data: { status: 'draft' } })

@@ -9,8 +9,9 @@ export function VerifyPage() {
   const { setUser } = useAuth()
   const [error, setError] = useState('')
 
+  const token = searchParams.get('token')
+
   useEffect(() => {
-    const token = searchParams.get('token')
     if (!token) {
       setError('Missing token')
       return
@@ -28,7 +29,7 @@ export function VerifyPage() {
       .catch(() => {
         setError('Network error. Please try again.')
       })
-  }, [searchParams, navigate, setUser])
+  }, [token, navigate, setUser])
 
   if (error) {
     return (

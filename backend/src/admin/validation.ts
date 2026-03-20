@@ -1,7 +1,8 @@
 import { z } from 'zod'
+import { PROJECT_STATUSES, FEEDBACK_STATUSES } from '../projects/types.js'
 
 export const adminProjectsQuerySchema = z.object({
-  status: z.string().optional(),
+  status: z.enum(PROJECT_STATUSES).optional(),
   search: z.string().max(200).optional(),
   limit: z
     .string()
@@ -34,7 +35,7 @@ export const adminUsersQuerySchema = z.object({
 export type AdminUsersQuery = z.output<typeof adminUsersQuerySchema>
 
 export const adminFeedbackQuerySchema = z.object({
-  status: z.enum(['pending', 'in_progress', 'completed', 'rejected']).optional(),
+  status: z.enum(FEEDBACK_STATUSES).optional(),
   limit: z
     .string()
     .optional()
@@ -50,10 +51,14 @@ export const adminFeedbackQuerySchema = z.object({
 export type AdminFeedbackQuery = z.output<typeof adminFeedbackQuerySchema>
 
 export const updateProjectStatusSchema = z.object({
-  status: z.string().min(1).max(50),
+  status: z.enum(PROJECT_STATUSES),
 })
 
 export type UpdateProjectStatusInput = z.output<typeof updateProjectStatusSchema>
+
+export const adminUserIdSchema = z.object({
+  id: z.string().uuid('invalid user id'),
+})
 
 export const createNoteSchema = z.object({
   userId: z.string().uuid().optional(),
