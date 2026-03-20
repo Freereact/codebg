@@ -40,14 +40,21 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
   const projectName = project.subdomain ?? project.templateSlug ?? 'New project'
   const [goingLive, setGoingLive] = useState(false)
 
+  const [goLiveError, setGoLiveError] = useState('')
+
   const handleGoLive = async (tier: 'starter' | 'professional') => {
     setGoingLive(true)
+    setGoLiveError('')
     try {
       const res = await createCheckoutSession(project.id, tier)
       if (res.ok && res.url) {
         window.location.href = res.url
+      } else {
+        setGoLiveError('error' in res ? String(res.error) : 'Checkout failed')
+        setGoingLive(false)
       }
     } catch {
+      setGoLiveError('Network error. Please try again.')
       setGoingLive(false)
     }
   }
@@ -93,6 +100,11 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
       {canGoLive && (
         <div className="mt-3 rounded-lg border border-accent/30 bg-accent/5 p-3 dark:border-accent/20 dark:bg-accent/10">
           <p className="mb-2 text-xs font-medium text-slate-600 dark:text-slate-300">Make your site public:</p>
+          {goLiveError && (
+            <p role="alert" className="mb-2 text-xs text-red-500">
+              {goLiveError}
+            </p>
+          )}
           <div className="flex gap-2">
             <button
               onClick={() => handleGoLive('starter')}

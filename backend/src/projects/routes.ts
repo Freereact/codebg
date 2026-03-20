@@ -84,10 +84,24 @@ projectsRouter.get('/:id/events', requireAuth, async (req: AuthenticatedRequest,
       res.write(': heartbeat\n\n')
     }, 30_000)
 
-    // Cleanup on disconnect
-    req.on('close', () => {
+    // Max connection lifetime: 10 minutes (prevents ghost listeners)
+    const maxLifetime = setTimeout(
+      () => {
+        cleanup()
+        res.end()
+      },
+      10 * 60 * 1000,
+    )
+
+    const cleanup = () => {
       unsubscribe()
       clearInterval(heartbeat)
+      clearTimeout(maxLifetime)
+    }
+
+    // Cleanup on disconnect
+    req.on('close', () => {
+      cleanup()
     })
   } catch (err) {
     console.error('[sse] error', err instanceof Error ? err.message : 'unknown')
@@ -110,8 +124,8 @@ projectsRouter.get('/access/:subdomain', async (req: AuthenticatedRequest, res: 
 
     if (!project) return res.json({ granted: false })
 
-    // Paid project: always public
-    if (project.status === 'live' || project.planTier) {
+    // Paid project with active subscription: always public
+    if (project.status === 'live' && project.planTier) {
       return res.json({ granted: true, reason: 'public' })
     }
 
@@ -126,8 +140,8 @@ projectsRouter.get('/access/:subdomain', async (req: AuthenticatedRequest, res: 
       signupUrl: '/login',
     })
   } catch {
-    // On error, fail open (don't break the site)
-    return res.json({ granted: true, reason: 'error' })
+    // Fail closed — deny access on error
+    return res.json({ granted: false })
   }
 })
 

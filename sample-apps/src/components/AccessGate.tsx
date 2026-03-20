@@ -23,8 +23,10 @@ export default function AccessGate({ slug, children }: { slug: string; children:
         }
       })
       .catch(() => {
-        // API unreachable (self-hosted deployment) — fail open
-        setStatus('granted')
+        // API unreachable: if running on codebg.com, fail closed.
+        // If self-hosted (different origin), fail open.
+        const isCodeBG = window.location.hostname.endsWith('codebg.com')
+        setStatus(isCodeBG ? 'blocked' : 'granted')
       })
   }, [slug])
 
