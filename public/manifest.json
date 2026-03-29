@@ -1,0 +1,16 @@
+{
+  "name": "CodeBG — Fast Small Business Websites",
+  "short_name": "CodeBG",
+  "description": "Affordable AI-powered websites for small business — fast and agile delivery in Penticton, BC.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2a2f36",
+  "theme_color": "#2a2f36",
+  "icons": [
+    {
+      "src": "/og-image.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}

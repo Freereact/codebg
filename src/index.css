@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: theme('colors.shell');
+  color: theme('colors.gray.800');
+  font-family: Roboto, Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+.dark body {
+  color: theme('colors.gray.200');
+}
+
+.app-shell {
+  margin: 16px;
+  border-radius: 24px;
+  background: theme('colors.surface');
+  border: 1px solid theme('colors.shell-border');
+  overflow: clip;
+}
+.dark .app-shell {
+  background: #1a1d23;
+  border-color: #2a2f36;
+}
+
+.section-card {
+  border-radius: 20px;
+  background: theme('colors.surface');
+  border: 1px solid theme('colors.surface-border');
+}
+.dark .section-card {
+  background: #22262d;
+  border-color: #3a414b;
+}
+
+.input {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-accent transition-colors;
+}
+.dark .input {
+  @apply border-slate-600 bg-slate-800 text-slate-100;
+}
+
+/* Card hover lift effect */
+.card-hover {
+  @apply transition-all duration-200;
+}
+.card-hover:hover {
+  @apply shadow-md -translate-y-0.5 border-slate-300;
+}
+.dark .card-hover:hover {
+  @apply border-slate-500;
+}
+
+/* Section header accent bar */
+.section-heading {
+  @apply text-2xl font-semibold text-slate-800;
+}
+.dark .section-heading {
+  @apply text-slate-100;
+}
+.section-heading::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 3px;
+  background: theme('colors.accent.DEFAULT');
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+/* Mobile menu animation */
+.mobile-nav-enter {
+  animation: slideDown 0.2s ease-out;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scroll-reveal animations ── */
+.reveal-fade-up,
+.reveal-fade-in,
+.reveal-scale-in {
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.reveal-fade-up {
+  transform: translateY(24px);
+}
+.reveal-scale-in {
+  transform: scale(0.95);
+}
+
+.revealed .reveal-fade-up,
+.revealed .reveal-fade-in,
+.revealed .reveal-scale-in,
+.reveal-fade-up.revealed,
+.reveal-fade-in.revealed,
+.reveal-scale-in.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger children: each child delays by --stagger-index * 80ms */
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.45s ease-out, transform 0.45s ease-out;
+}
+.revealed .stagger-children > * {
+  opacity: 1;
+  transform: none;
+}
+.revealed .stagger-children > *:nth-child(1) { transition-delay: 0ms; }
+.revealed .stagger-children > *:nth-child(2) { transition-delay: 80ms; }
+.revealed .stagger-children > *:nth-child(3) { transition-delay: 160ms; }
+.revealed .stagger-children > *:nth-child(4) { transition-delay: 240ms; }
+.revealed .stagger-children > *:nth-child(5) { transition-delay: 320ms; }
+.revealed .stagger-children > *:nth-child(6) { transition-delay: 400ms; }
+
+/* Heading accent bar grow animation */
+.revealed .section-heading::after {
+  animation: accentGrow 0.5s ease-out 0.2s both;
+}
+@keyframes accentGrow {
+  from { width: 0; }
+  to { width: 40px; }
+}
+
+/* Pulse glow for CTA buttons */
+.pulse-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.3); }
+  50% { box-shadow: 0 0 16px 4px rgba(249, 115, 22, 0.15); }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-fade-up,
+  .reveal-fade-in,
+  .reveal-scale-in,
+  .stagger-children > *,
+  .pulse-glow {
+    transition: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

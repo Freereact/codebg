@@ -1,3 +1,22 @@
-node_modules/
-.cache/
-public
+node_modules
+dist
+.vite
+.DS_Store
+*.tsbuildinfo
+plan.md
+
+# Backend
+backend/.env
+
+# Sample apps
+sample-apps/dist/
+sample-apps/node_modules/
+
+# Environment
+.env.production
+
+# Dev info (local notes)
+dev_info/
+
+# Dev infrastructure records
+dev_infra/

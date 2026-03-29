@@ -1,0 +1,115 @@
+services:
+  codebg-api:
+    build: .
+    container_name: codebg-api
+    command: ["node", "dist/server.js"]
+    env_file:
+      - .env
+    environment:
+      - PROJECTS_DIR=/var/www/projects
+      - SITES_DIR=/var/www/sites
+      - SAMPLE_APPS_DIR=/mnt/sample-apps
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - ${SAMPLE_APPS_HOST_PATH:-../sample-apps}:/mnt/sample-apps
+      - ${PROJECTS_HOST_PATH:-/var/www/projects}:/var/www/projects
+      - ${SITES_HOST_PATH:-/var/www/sites}:/var/www/sites
+    # DNS: remove or customize for your hosting provider
+    # For DigitalOcean: DNS_SERVER_1=67.207.67.2 DNS_SERVER_2=67.207.67.3
+    dns:
+      - ${DNS_SERVER_1:-8.8.8.8}
+      - ${DNS_SERVER_2:-8.8.4.4}
+    restart: unless-stopped
+    depends_on:
+      # Optional: remove if not using Redis/RabbitMQ (server falls back to direct email send)
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - codebg-backend
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8787/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  codebg-worker:
+    build: .
+    container_name: codebg-worker
+    command: ["node", "dist/worker.js"]
+    env_file:
+      - .env
+    dns:
+      - ${DNS_SERVER_1:-8.8.8.8}
+      - ${DNS_SERVER_2:-8.8.4.4}
+    restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - codebg-backend
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: codebg-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    networks:
+      - codebg-backend
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: codebg-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - codebg-backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  codebg-backend:
+    driver: bridge
+
+volumes:
+  redis-data:
