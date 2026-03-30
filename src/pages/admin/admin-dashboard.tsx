@@ -110,10 +110,7 @@ function SiteModePanel() {
           >
             {saving ? 'Saving...' : 'Confirm'}
           </button>
-          <button
-            onClick={() => setConfirm(null)}
-            className="text-xs text-amber-700 underline dark:text-amber-400"
-          >
+          <button onClick={() => setConfirm(null)} className="text-xs text-amber-700 underline dark:text-amber-400">
             Cancel
           </button>
         </div>

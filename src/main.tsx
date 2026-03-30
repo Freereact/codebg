@@ -39,51 +39,51 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <SiteModeProvider>
           <AuthProvider>
             <Routes>
-            {/* Marketing site */}
-            <Route element={<RootLayout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/services" element={<ServicesIndexPage />} />
-              <Route path="/process" element={<ProcessPage />} />
-              <Route path="/pricing" element={<PricingPage />} />
-              <Route path="/news" element={<NewsIndexPage />} />
-              <Route path="/news/:slug" element={<NewsArticlePage />} />
-              <Route path="/customers" element={<CustomersIndexPage />} />
-              <Route path="/services/:slug" element={<ServicePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/verify" element={<VerifyPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Route>
+              {/* Marketing site */}
+              <Route element={<RootLayout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/services" element={<ServicesIndexPage />} />
+                <Route path="/process" element={<ProcessPage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/news" element={<NewsIndexPage />} />
+                <Route path="/news/:slug" element={<NewsArticlePage />} />
+                <Route path="/customers" element={<CustomersIndexPage />} />
+                <Route path="/services/:slug" element={<ServicePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/verify" element={<VerifyPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
 
-            {/* Customer portal (authenticated) */}
-            <Route
-              element={
-                <RequireAuth>
-                  <PortalLayout />
-                </RequireAuth>
-              }
-            >
-              <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
-              <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
-              <Route path="/portal/projects/new" element={<NewProjectPage />} />
-              <Route path="/portal/projects/:id/review" element={<ProjectReviewPage />} />
-            </Route>
+              {/* Customer portal (authenticated) */}
+              <Route
+                element={
+                  <RequireAuth>
+                    <PortalLayout />
+                  </RequireAuth>
+                }
+              >
+                <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
+                <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
+                <Route path="/portal/projects/new" element={<NewProjectPage />} />
+                <Route path="/portal/projects/:id/review" element={<ProjectReviewPage />} />
+              </Route>
 
-            {/* Admin portal (admin role only) */}
-            <Route
-              element={
-                <RequireAdmin>
-                  <AdminLayout />
-                </RequireAdmin>
-              }
-            >
-              <Route path="/admin" element={<AdminDashboardPage />} />
-              <Route path="/admin/projects" element={<AdminProjectsPage />} />
-              <Route path="/admin/projects/:id" element={<AdminProjectDetailPage />} />
-              <Route path="/admin/users" element={<AdminUsersPage />} />
-              <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
-            </Route>
-          </Routes>
+              {/* Admin portal (admin role only) */}
+              <Route
+                element={
+                  <RequireAdmin>
+                    <AdminLayout />
+                  </RequireAdmin>
+                }
+              >
+                <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/projects" element={<AdminProjectsPage />} />
+                <Route path="/admin/projects/:id" element={<AdminProjectDetailPage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
+              </Route>
+            </Routes>
           </AuthProvider>
         </SiteModeProvider>
       </ThemeProvider>
