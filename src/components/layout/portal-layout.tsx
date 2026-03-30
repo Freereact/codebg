@@ -2,6 +2,7 @@ import { Outlet, Link } from 'react-router-dom'
 import { Sun, Moon, LogOut } from 'lucide-react'
 import { useThemeContext } from '../../contexts/theme-context'
 import { useAuth } from '../../contexts/auth-context'
+import { SiteModeBanner } from '../ui/site-mode-banner'
 
 function PortalHeader() {
   const { theme, toggleTheme } = useThemeContext()
@@ -44,6 +45,7 @@ function PortalHeader() {
 export function PortalLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-surface dark:bg-shell">
+      <SiteModeBanner />
       <PortalHeader />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 md:px-6">
         <Outlet />
