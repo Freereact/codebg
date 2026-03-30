@@ -178,6 +178,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   const stripe = getStripe()
   const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
+  // Idempotency: skip if subscription already recorded
+  const existingSub = await prisma.subscription.findFirst({
+    where: { stripeSubscriptionId: subscriptionId },
+  })
+  if (existingSub) {
+    console.log(`[stripe] duplicate checkout.completed skipped for ${subscriptionId}`)
+    return
+  }
+
+  const amountCents = subscription.items.data[0]?.price.unit_amount ?? 0
+
   // Create subscription record
   await prisma.subscription.create({
     data: {
@@ -186,7 +197,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       stripeSubscriptionId: subscriptionId,
       stripePriceId: subscription.items.data[0]?.price.id ?? null,
       planTier: tier,
-      amountCents: tier === 'starter' ? 1900 : 3900,
+      amountCents,
       status: 'active',
       currentPeriodStart: subscription.items.data[0]?.current_period_start
         ? new Date(subscription.items.data[0].current_period_start * 1000)
@@ -202,7 +213,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     data: {
       userId,
       projectId,
-      amountCents: tier === 'starter' ? 1900 : 3900,
+      amountCents,
       currency: 'cad',
       paymentType: 'subscription',
       status: 'succeeded',
@@ -226,7 +237,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       user.email,
       project.subdomain ?? 'project',
       tier,
-      tier === 'starter' ? '$19/mo' : '$39/mo',
+      `$${(amountCents / 100).toFixed(2)}/mo`,
     ).catch(() => {})
   }
 }
@@ -240,13 +251,29 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
   })
   if (!sub) return
 
+  // Idempotency: skip if we already recorded this invoice
+  const stripeInvoiceId = invoice.id ?? null
+  if (stripeInvoiceId) {
+    const existing = await prisma.payment.findFirst({ where: { stripeInvoiceId } })
+    if (existing) {
+      console.log(`[stripe] duplicate invoice.paid skipped: ${stripeInvoiceId}`)
+      return
+    }
+  }
+
+  const rawInvoice = invoice as unknown as Record<string, unknown>
+  const piRaw = rawInvoice.payment_intent
+  const stripePaymentIntentId = typeof piRaw === 'string' ? piRaw : null
+
   await prisma.payment.create({
     data: {
       userId: sub.userId,
       projectId: sub.projectId,
       subscriptionId: sub.id,
-      amountCents: sub.amountCents,
-      currency: 'cad',
+      stripePaymentIntentId,
+      stripeInvoiceId,
+      amountCents: invoice.amount_paid ?? sub.amountCents,
+      currency: (invoice.currency as string) ?? 'cad',
       paymentType: 'subscription',
       status: 'succeeded',
       paidAt: new Date(),

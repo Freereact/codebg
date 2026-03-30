@@ -147,10 +147,7 @@ describe('initProjectRepo', () => {
 
   it('calls git init after all files written', async () => {
     await initProjectRepo(params)
-    expect(mockGit.initRepo).toHaveBeenCalledWith(
-      expect.stringContaining('p-1'),
-      expect.stringContaining('bakery'),
-    )
+    expect(mockGit.initRepo).toHaveBeenCalledWith(expect.stringContaining('p-1'), expect.stringContaining('bakery'))
   })
 
   it('returns commit hash', async () => {

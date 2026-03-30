@@ -63,29 +63,22 @@ describe('verifyJwt', () => {
   })
 
   it('returns null for an expired token', () => {
-    const token = jwt.sign(
-      { sub: 'user-1', email: 'a@b.com', role: 'client' },
-      TEST_SECRET,
-      { algorithm: 'HS256', expiresIn: '-1s' },
-    )
+    const token = jwt.sign({ sub: 'user-1', email: 'a@b.com', role: 'client' }, TEST_SECRET, {
+      algorithm: 'HS256',
+      expiresIn: '-1s',
+    })
     expect(verifyJwt(token)).toBeNull()
   })
 
   it('returns null for a token signed with wrong secret', () => {
-    const token = jwt.sign(
-      { sub: 'user-1', email: 'a@b.com', role: 'client' },
-      'wrong-secret',
-      { algorithm: 'HS256' },
-    )
+    const token = jwt.sign({ sub: 'user-1', email: 'a@b.com', role: 'client' }, 'wrong-secret', { algorithm: 'HS256' })
     expect(verifyJwt(token)).toBeNull()
   })
 
   it('returns null for a token with alg:none', () => {
-    const token = jwt.sign(
-      { sub: 'user-1', email: 'a@b.com', role: 'client' },
-      '',
-      { algorithm: 'none' as jwt.Algorithm },
-    )
+    const token = jwt.sign({ sub: 'user-1', email: 'a@b.com', role: 'client' }, '', {
+      algorithm: 'none' as jwt.Algorithm,
+    })
     expect(verifyJwt(token)).toBeNull()
   })
 

@@ -26,7 +26,7 @@ import {
   updateProjectStatusSchema,
   createNoteSchema,
 } from './validation.js'
-import { notifyUserFeedbackResponse, notifyUserStatusChange } from './notifications.js'
+import { notifyUserFeedbackResponse, notifyUserStatusChange, notifyAdminBuildFailed } from './notifications.js'
 import { prisma } from '../db.js'
 
 export const adminRouter = Router()
@@ -139,6 +139,11 @@ adminRouter.post('/projects/:id/rebuild', async (req: AuthenticatedRequest, res:
       .then(async (result) => {
         const newStatus = result.status === 'success' ? 'preview' : 'draft'
         await prisma.project.update({ where: { id: project.id }, data: { status: newStatus } })
+        if (result.status !== 'success') {
+          notifyAdminBuildFailed(project.subdomain ?? 'unknown', result.message ?? 'Admin rebuild failed').catch(
+            () => {},
+          )
+        }
       })
       .catch(() => {})
 

@@ -20,3 +20,6 @@ dev_info/
 
 # Dev infrastructure records
 dev_infra/
+
+# Claude Code memory (per-user, not project-level)
+.claude/projects/

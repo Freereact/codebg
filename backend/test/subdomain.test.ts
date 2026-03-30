@@ -72,7 +72,6 @@ describe('generateUniqueSubdomain', () => {
     expect(result.startsWith('admin-')).toBe(true)
   })
 
-
   it('returns slug directly if no collision', async () => {
     const checkExists = async () => false
     const result = await generateUniqueSubdomain('Sunrise Bakery', checkExists)

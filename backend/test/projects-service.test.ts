@@ -40,9 +40,8 @@ vi.mock('../src/projects/git-service.js', () => ({
   createArchive: vi.fn().mockResolvedValue(Buffer.from('zipdata')),
 }))
 
-const { listProjectsForUser, findProjectByIdForUser, getUserProfile } = await import(
-  '../src/projects/projects-service.js'
-)
+const { listProjectsForUser, findProjectByIdForUser, getUserProfile } =
+  await import('../src/projects/projects-service.js')
 
 beforeEach(() => {
   vi.clearAllMocks()

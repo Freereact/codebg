@@ -5,7 +5,7 @@ import { verifyWebhookSignature, pullFromGitHub } from './github-service.js'
 import { buildProject } from '../projects/build-service.js'
 import { prisma } from '../db.js'
 import { config } from '../config.js'
-import { notifyUserPreviewReady } from '../admin/notifications.js'
+import { notifyUserPreviewReady, notifyAdminBuildFailed } from '../admin/notifications.js'
 
 export const githubWebhookRouter = Router()
 
@@ -83,6 +83,9 @@ githubWebhookRouter.post('/github', async (req: Request, res: Response) => {
     } else {
       await prisma.project.update({ where: { id: project.id }, data: { status: 'draft' } })
       console.error(`[webhook] rebuild failed for ${project.id}: ${result.message}`)
+      notifyAdminBuildFailed(project.subdomain ?? repoName, result.message ?? 'Rebuild failed after GitHub push').catch(
+        () => {},
+      )
     }
 
     return res.json({ ok: true, projectId: project.id, buildStatus: result.status })

@@ -12,6 +12,7 @@ import { buildProject } from './build-service.js'
 import { createArchive } from './git-service.js'
 import { emitProjectEvent } from './events.js'
 import { createGitHubRepo, pushToGitHub } from '../github/index.js'
+import { notifyAdminBuildFailed } from '../admin/notifications.js'
 
 const projectListSelect = {
   id: true,
@@ -192,11 +193,13 @@ async function runProjectBuild(
       emitProjectEvent(projectId, { type: 'error', data: { message: result.message ?? 'Build failed' } })
       emitProjectEvent(projectId, { type: 'status', data: { status: 'draft' } })
       console.error(`[build] failed for ${projectId}: ${result.message}`)
+      notifyAdminBuildFailed(subdomain, result.message ?? 'Build failed').catch(() => {})
     }
   } catch (err) {
     console.error(`[build] pipeline error for ${projectId}:`, err instanceof Error ? err.message : 'unknown')
     emitProjectEvent(projectId, { type: 'error', data: { message: 'Build pipeline error' } })
     await prisma.project.update({ where: { id: projectId }, data: { status: 'draft' } }).catch(() => {})
+    notifyAdminBuildFailed(subdomain, err instanceof Error ? err.message : 'Build pipeline error').catch(() => {})
   }
 }
 
@@ -237,15 +240,20 @@ export async function updateProjectSiteConfig(
 
   // Update overrides.json + git commit, then rebuild
   const repoPath = path.join(config.projectsDir, project.id)
+  const rebuildName = project.subdomain ?? projectId
   updateRepoOverrides(projectId, userId, validatedBizInfo.data)
     .then(async () => {
       await prisma.project.update({ where: { id: projectId }, data: { status: 'building' } })
-      const result = await buildProject(repoPath, project.subdomain ?? projectId)
+      const result = await buildProject(repoPath, rebuildName)
       const newStatus = result.status === 'success' ? 'preview' : 'draft'
       await prisma.project.update({ where: { id: projectId }, data: { status: newStatus } })
+      if (result.status !== 'success') {
+        notifyAdminBuildFailed(rebuildName, result.message ?? 'Rebuild failed').catch(() => {})
+      }
     })
     .catch((err) => {
       console.error(`[projects] rebuild failed for ${project.id}:`, err instanceof Error ? err.message : 'unknown')
+      notifyAdminBuildFailed(rebuildName, err instanceof Error ? err.message : 'Rebuild failed').catch(() => {})
     })
 
   return findProjectByIdForUser(projectId, userId)

@@ -149,6 +149,7 @@ CREATE TABLE projects (
   -- Domain and hosting
   domain          TEXT,                -- e.g., "sunsetbakery.com" — set when known
   subdomain       TEXT,                -- e.g., "sunset-bakery" for sunset-bakery.codebg.com staging
+  github_url      TEXT,                -- GitHub repo URL, set after initial build pushes to GitHub
 
   -- Pipeline status
   status          TEXT NOT NULL DEFAULT 'lead',
