@@ -122,3 +122,15 @@ export async function createAdminNote(input: {
 }): Promise<ApiResult<unknown>> {
   return apiFetch('/api/admin/notes', { method: 'POST', body: JSON.stringify(input) })
 }
+
+// ============================================================================
+// Site Mode
+// ============================================================================
+
+export async function fetchSiteMode(): Promise<ApiResult<{ mode: string }>> {
+  return apiFetch('/api/admin/site-mode')
+}
+
+export async function updateSiteMode(mode: string): Promise<ApiResult<{ mode: string }>> {
+  return apiFetch('/api/admin/site-mode', { method: 'PUT', body: JSON.stringify({ mode }) })
+}

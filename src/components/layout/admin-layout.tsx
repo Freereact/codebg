@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, FolderKanban, Users, MessageSquare, LogOut } from 'lucide-react'
 import { useAuth } from '../../contexts/auth-context'
 import { cn } from '../../lib/utils'
+import { SiteModeBanner } from '../ui/site-mode-banner'
 
 const navItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
@@ -59,11 +60,14 @@ function AdminSidebar() {
 
 export function AdminLayout() {
   return (
-    <div className="flex min-h-screen bg-surface dark:bg-[#14171c]">
-      <AdminSidebar />
-      <main className="flex-1 overflow-y-auto p-6">
-        <Outlet />
-      </main>
+    <div className="flex min-h-screen flex-col bg-surface dark:bg-[#14171c]">
+      <SiteModeBanner variant="admin" />
+      <div className="flex flex-1">
+        <AdminSidebar />
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

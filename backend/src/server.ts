@@ -4,8 +4,9 @@ import cors from 'cors'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import amqp from 'amqplib'
-import { Redis } from 'ioredis'
 import { config } from './config.js'
+import { redis } from './redis.js'
+import { getSiteMode, siteMaintenanceGuard } from './site-mode.js'
 import { emailJobSchema, isAllowedOrigin } from './validation.js'
 import { verifyTurnstile } from './turnstile.js'
 import { prisma } from './db.js'
@@ -33,9 +34,7 @@ app.use(
   }),
 )
 app.use(jwtMiddleware)
-
-const redis = new Redis(config.redisUrl)
-redis.on('error', (err) => console.error('[redis] connection error', err))
+app.use(siteMaintenanceGuard)
 
 let amqpConn: amqp.ChannelModel | null = null
 let channel: amqp.Channel | null = null
@@ -78,6 +77,11 @@ async function sendViaResend(job: EmailJob): Promise<void> {
     throw new Error(`Resend API error (${response.status}): ${errText}`)
   }
 }
+
+app.get('/api/site-mode', async (_req, res) => {
+  const mode = await getSiteMode()
+  return res.json({ ok: true, mode })
+})
 
 app.get('/healthz', async (_req, res) => {
   try {

@@ -6,6 +6,7 @@ import { ContactModal } from '../sections/contact-modal'
 import { CaptchaModal } from '../sections/captcha-modal'
 import { Toast } from '../ui/toast'
 import { useContactForm } from '../../hooks/use-contact-form'
+import { SiteModeBanner } from '../ui/site-mode-banner'
 
 export type ContactOutletContext = ReturnType<typeof useContactForm>
 
@@ -19,6 +20,7 @@ export function RootLayout() {
 
   return (
     <>
+      <SiteModeBanner />
       <div className="app-shell">
         <a
           href="#main-content"

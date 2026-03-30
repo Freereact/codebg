@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ThemeProvider } from './contexts/theme-context'
 import { AuthProvider } from './contexts/auth-context'
+import { SiteModeProvider } from './contexts/site-mode-context'
 import { RootLayout } from './components/layout/root-layout'
 import { PortalLayout } from './components/layout/portal-layout'
 import { RequireAuth } from './components/auth/require-auth'
@@ -35,8 +36,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <ThemeProvider>
-        <AuthProvider>
-          <Routes>
+        <SiteModeProvider>
+          <AuthProvider>
+            <Routes>
             {/* Marketing site */}
             <Route element={<RootLayout />}>
               <Route path="/" element={<HomePage />} />
@@ -82,7 +84,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
             </Route>
           </Routes>
-        </AuthProvider>
+          </AuthProvider>
+        </SiteModeProvider>
       </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>,

@@ -28,6 +28,7 @@ import {
 } from './validation.js'
 import { notifyUserFeedbackResponse, notifyUserStatusChange, notifyAdminBuildFailed } from './notifications.js'
 import { prisma } from '../db.js'
+import { getSiteMode, setSiteMode, setSiteModeSchema } from '../site-mode.js'
 
 export const adminRouter = Router()
 
@@ -272,6 +273,33 @@ adminRouter.post('/notes', async (req: AuthenticatedRequest, res: Response) => {
     return res.status(201).json({ ok: true, data: note })
   } catch (err) {
     console.error('[admin] create note error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+// ============================================================================
+// Site Mode
+// ============================================================================
+
+adminRouter.get('/site-mode', async (_req: AuthenticatedRequest, res: Response) => {
+  try {
+    const mode = await getSiteMode()
+    return res.json({ ok: true, data: { mode } })
+  } catch (err) {
+    console.error('[admin] site-mode error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+adminRouter.put('/site-mode', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const parsed = setSiteModeSchema.safeParse(req.body)
+    if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_payload' })
+
+    await setSiteMode(parsed.data.mode)
+    return res.json({ ok: true, data: { mode: parsed.data.mode } })
+  } catch (err) {
+    console.error('[admin] set site-mode error', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ ok: false, error: 'internal_error' })
   }
 })
