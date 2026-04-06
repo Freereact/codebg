@@ -79,13 +79,9 @@ jobs:
       - name: Deploy frontend
         run: |
           set -euo pipefail
-          ssh ${{ vars.VM_USER }}@${{ vars.VM_HOST }} bash -s -- \
-            "${{ secrets.TURNSTILE_SITE_KEY }}" \
-            "${{ vars.SAMPLE_APPS_URL }}" << 'SCRIPT'
+          ssh ${{ vars.VM_USER }}@${{ vars.VM_HOST }} \
+            "TURNSTILE_SITE_KEY='${{ secrets.TURNSTILE_SITE_KEY }}' SAMPLE_APPS_URL='${{ vars.SAMPLE_APPS_URL }}' bash -s" << 'SCRIPT'
             set -euo pipefail
-            TURNSTILE_SITE_KEY="$1"
-            SAMPLE_APPS_URL="$2"
-
             cd ~/projects/codebg
             git fetch --all --prune
             git checkout -f -B main origin/main
