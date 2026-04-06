@@ -131,13 +131,13 @@ projectsRouter.get('/access/:subdomain', async (req: AuthenticatedRequest, res: 
 
     // Check if requester is the owner (JWT cookie parsed by jwtMiddleware)
     if (req.user && req.user.sub === project.userId) {
-      return res.json({ granted: true, reason: 'owner' })
+      return res.json({ granted: true, reason: 'owner', siteUrl: config.frontendUrl })
     }
 
     return res.json({
       granted: false,
-      loginUrl: '/login',
-      signupUrl: '/login',
+      loginUrl: `${config.frontendUrl}/login`,
+      signupUrl: `${config.frontendUrl}/login`,
     })
   } catch {
     // Fail closed — deny access on error

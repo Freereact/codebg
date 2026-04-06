@@ -7,19 +7,26 @@ interface AccessResponse {
   reason?: string
   loginUrl?: string
   signupUrl?: string
+  siteUrl?: string
 }
 
 export default function AccessGate({ slug, children }: { slug: string; children: React.ReactNode }) {
   const [status, setStatus] = useState<AccessStatus>('checking')
+  const [loginUrl, setLoginUrl] = useState('/login')
+  const [signupUrl, setSignupUrl] = useState('/login')
+  const [siteUrl, setSiteUrl] = useState('')
 
   useEffect(() => {
     fetch(`/api/projects/access/${encodeURIComponent(slug)}`, { credentials: 'include' })
       .then((r) => r.json() as Promise<AccessResponse>)
       .then((d) => {
+        if (d.siteUrl) setSiteUrl(d.siteUrl)
         if (d.granted) {
           setStatus(d.reason === 'owner' ? 'owner' : 'granted')
         } else {
           setStatus('blocked')
+          if (d.loginUrl) setLoginUrl(d.loginUrl)
+          if (d.signupUrl) setSignupUrl(d.signupUrl)
         }
       })
       .catch(() => {
@@ -39,18 +46,18 @@ export default function AccessGate({ slug, children }: { slug: string; children:
   }
 
   if (status === 'blocked') {
-    return <PaywallOverlay />
+    return <PaywallOverlay loginUrl={loginUrl} signupUrl={signupUrl} />
   }
 
   return (
     <>
-      {status === 'owner' && <PreviewBanner />}
+      {status === 'owner' && <PreviewBanner dashboardUrl={`${siteUrl}/portal/dashboard`} />}
       {children}
     </>
   )
 }
 
-function PreviewBanner() {
+function PreviewBanner({ dashboardUrl }: { dashboardUrl: string }) {
   return (
     <div
       style={{
@@ -72,7 +79,7 @@ function PreviewBanner() {
     >
       <span>Preview mode — only you can see this site</span>
       <a
-        href="/portal/dashboard"
+        href={dashboardUrl}
         style={{
           padding: '4px 12px',
           borderRadius: '6px',
@@ -89,7 +96,7 @@ function PreviewBanner() {
   )
 }
 
-function PaywallOverlay() {
+function PaywallOverlay({ loginUrl, signupUrl }: { loginUrl: string; signupUrl: string }) {
   return (
     <div
       style={{
@@ -114,7 +121,7 @@ function PaywallOverlay() {
       </p>
       <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <a
-          href="/login"
+          href={loginUrl}
           style={{
             display: 'inline-block',
             padding: '10px 24px',
@@ -129,7 +136,7 @@ function PaywallOverlay() {
           Sign in to view your preview
         </a>
         <a
-          href="/login"
+          href={signupUrl}
           style={{
             display: 'inline-block',
             padding: '10px 24px',
