@@ -31,6 +31,7 @@ import { AdminUsersPage } from './pages/admin/admin-users'
 import { AdminFeedbackPage } from './pages/admin/admin-feedback'
 import { NotFoundPage } from './pages/not-found'
 import { ErrorBoundary } from './components/ui/error-boundary'
+import { IS_TEST } from './lib/config'
 import './index.css'
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -92,6 +93,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           </SiteModeProvider>
         </ThemeProvider>
       </ErrorBoundary>
+      {IS_TEST && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-amber-500 py-1 text-center text-xs font-semibold text-black">
+          Test Environment — data may be reset at any time
+        </div>
+      )}
     </BrowserRouter>
   </React.StrictMode>,
 )

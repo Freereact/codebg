@@ -77,14 +77,17 @@ jobs:
           ssh-keyscan -H ${{ vars.VM_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy frontend
-        env:
-          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
-          SAMPLE_APPS_URL: ${{ vars.SAMPLE_APPS_URL }}
-          IS_TEST: ${{ vars.IS_TEST }}
         run: |
           set -euo pipefail
-          ssh ${{ vars.VM_USER }}@${{ vars.VM_HOST }} bash -s << 'SCRIPT'
+          ssh ${{ vars.VM_USER }}@${{ vars.VM_HOST }} bash -s -- \
+            "${{ secrets.TURNSTILE_SITE_KEY }}" \
+            "${{ vars.SAMPLE_APPS_URL }}" \
+            "${{ vars.IS_TEST }}" << 'SCRIPT'
             set -euo pipefail
+            TURNSTILE_SITE_KEY="$1"
+            SAMPLE_APPS_URL="$2"
+            IS_TEST="$3"
+
             cd ~/projects/codebg
             git fetch --all --prune
             git checkout -f -B test-ci origin/test-ci
@@ -93,7 +96,7 @@ jobs:
             # Build frontend
             npm ci
             node scripts/generate-fallback-samples.mjs
-            VITE_TURNSTILE_SITE_KEY='$TURNSTILE_SITE_KEY' VITE_SAMPLE_APPS_URL='$SAMPLE_APPS_URL' VITE_IS_TEST='$IS_TEST' npm run build
+            VITE_TURNSTILE_SITE_KEY="$TURNSTILE_SITE_KEY" VITE_SAMPLE_APPS_URL="$SAMPLE_APPS_URL" VITE_IS_TEST="$IS_TEST" npm run build
             mkdir -p /var/www/codebg
             rsync -a --delete dist/ /var/www/codebg/
             rm -rf /var/www/codebg/customers/
