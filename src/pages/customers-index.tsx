@@ -3,6 +3,7 @@ import { Section } from '../components/ui/section'
 import { Card } from '../components/ui/card'
 import { CtaLink } from '../components/ui/cta-link'
 import { useDocumentMeta } from '../hooks/use-document-meta'
+import { SAMPLE_APPS_URL } from '../lib/config'
 import { fallbackSamples } from '../data/samples'
 import type { SampleEntry } from '../types'
 
@@ -19,7 +20,7 @@ export function CustomersIndexPage() {
 
     async function loadSamples() {
       try {
-        const res = await fetch('https://sample-apps.codebg.com/samples.json', { cache: 'no-store' })
+        const res = await fetch(`${SAMPLE_APPS_URL}/samples.json`, { cache: 'no-store' })
         if (!res.ok) return
         const json = await res.json()
         const list: SampleEntry[] = json.samples ?? (Array.isArray(json) ? json : [])
@@ -73,7 +74,7 @@ export function CustomersIndexPage() {
                     ))}
                   </div>
                 ) : null}
-                <CtaLink href={`https://sample-apps.codebg.com/${sample.slug}/`} className="mt-4 inline-block">
+                <CtaLink href={`${SAMPLE_APPS_URL}/${sample.slug}/`} className="mt-4 inline-block">
                   Open sample
                 </CtaLink>
               </div>

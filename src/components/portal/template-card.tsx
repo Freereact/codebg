@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react'
 import type { TemplateMeta } from '../../types/portal'
+import { SAMPLE_APPS_URL } from '../../lib/config'
 
 const TEMPLATE_COLORS: Record<string, string> = {
   autoshop: 'from-blue-600 to-blue-800',
@@ -57,7 +58,7 @@ export function TemplateCard({ template, selected, onSelect }: TemplateCardProps
       {previewSlug && (
         <div className="border-t border-slate-100 px-4 py-2 dark:border-slate-700">
           <a
-            href={`https://sample-apps.codebg.com/${previewSlug}/`}
+            href={`${SAMPLE_APPS_URL}/${previewSlug}/`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}

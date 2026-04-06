@@ -7,6 +7,7 @@ import { useThemeContext } from '../../hooks/use-theme'
 import { useAuth } from '../../hooks/use-auth'
 import { useActiveSection } from '../../hooks/use-active-section'
 import { cn } from '../../lib/utils'
+import { IS_TEST } from '../../lib/config'
 
 const sectionIds = ['about', 'services', 'process', 'samples', 'news', 'pricing', 'contact']
 
@@ -55,6 +56,11 @@ export function Header({ onContactClick }: HeaderProps) {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link to="/" className="text-lg font-semibold tracking-wide">
           Code<span className="text-accent">BG</span>
+          {IS_TEST && (
+            <span className="ml-2 rounded bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold uppercase text-black">
+              test
+            </span>
+          )}
         </Link>
 
         <nav className="hidden gap-6 text-sm md:flex">

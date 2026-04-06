@@ -1,6 +1,7 @@
 import { ExternalLink } from 'lucide-react'
 import { Section } from '../ui/section'
 import { Card } from '../ui/card'
+import { SAMPLE_APPS_URL } from '../../lib/config'
 
 const showcaseSites = [
   {
@@ -31,7 +32,7 @@ export function Showcase() {
       </p>
       <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 stagger-children">
         {showcaseSites.map((site) => (
-          <Card key={site.slug} as="a" href={`https://sample-apps.codebg.com/${site.slug}/`} variant="link">
+          <Card key={site.slug} as="a" href={`${SAMPLE_APPS_URL}/${site.slug}/`} variant="link">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="font-medium text-slate-800 dark:text-slate-100">{site.name}</p>

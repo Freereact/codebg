@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom'
+import { IS_TEST } from '../../lib/config'
 
 interface FooterProps {
   onContactClick?: () => void
@@ -53,6 +54,11 @@ export function Footer({ onContactClick }: FooterProps) {
             />
           </a>
           <span>&copy; {new Date().getFullYear()} CodeBG</span>
+          {IS_TEST && (
+            <div className="mt-2 rounded bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-500">
+              Test Environment — data may be reset at any time
+            </div>
+          )}
         </div>
       </div>
     </footer>

@@ -3,6 +3,7 @@ import { Card } from '../ui/card'
 import { CtaLink } from '../ui/cta-link'
 import { Carousel } from '../ui/carousel'
 import type { SampleEntry } from '../../types'
+import { SAMPLE_APPS_URL } from '../../lib/config'
 
 interface SamplesProps {
   samples: SampleEntry[]
@@ -66,7 +67,7 @@ function SampleCard({ sample }: { sample: SampleEntry }) {
             ))}
           </div>
         ) : null}
-        <CtaLink href={`https://sample-apps.codebg.com/${sample.slug}/`} className="mt-4 inline-block">
+        <CtaLink href={`${SAMPLE_APPS_URL}/${sample.slug}/`} className="mt-4 inline-block">
           Open sample
         </CtaLink>
       </div>

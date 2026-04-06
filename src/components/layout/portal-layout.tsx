@@ -3,6 +3,7 @@ import { Sun, Moon, LogOut, Settings } from 'lucide-react'
 import { useThemeContext } from '../../hooks/use-theme'
 import { useAuth } from '../../hooks/use-auth'
 import { SiteModeBanner } from '../ui/site-mode-banner'
+import { IS_TEST } from '../../lib/config'
 
 function PortalHeader() {
   const { theme, toggleTheme } = useThemeContext()
@@ -15,6 +16,11 @@ function PortalHeader() {
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
         <Link to="/" className="text-lg font-semibold tracking-wide">
           Code<span className="text-accent">BG</span>
+          {IS_TEST && (
+            <span className="ml-2 rounded bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold uppercase text-black">
+              test
+            </span>
+          )}
         </Link>
 
         <div className="flex items-center gap-4">

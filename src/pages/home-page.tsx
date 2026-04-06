@@ -10,6 +10,7 @@ import { Showcase } from '../components/sections/testimonials'
 import { SeoResources } from '../components/sections/seo-resources'
 import { Contact } from '../components/sections/contact'
 import { fallbackSamples } from '../data/samples'
+import { SAMPLE_APPS_URL } from '../lib/config'
 import type { SampleEntry } from '../types'
 import type { ContactOutletContext } from '../components/layout/root-layout'
 
@@ -22,7 +23,7 @@ export function HomePage() {
 
     async function loadSamples() {
       try {
-        const res = await fetch('https://sample-apps.codebg.com/samples.json', { cache: 'no-store' })
+        const res = await fetch(`${SAMPLE_APPS_URL}/samples.json`, { cache: 'no-store' })
         if (!res.ok) return
         const json = await res.json()
         const list: SampleEntry[] = json.samples ?? (Array.isArray(json) ? json : [])
