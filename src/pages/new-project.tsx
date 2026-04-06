@@ -28,9 +28,7 @@ function WizardStepper({ current }: { current: WizardStep }) {
         return (
           <div key={s.key} className="flex items-center gap-2">
             {i > 0 && (
-              <div
-                className={`h-px w-6 sm:w-10 ${done || active ? 'bg-accent' : 'bg-slate-300 dark:bg-slate-600'}`}
-              />
+              <div className={`h-px w-6 sm:w-10 ${done || active ? 'bg-accent' : 'bg-slate-300 dark:bg-slate-600'}`} />
             )}
             <div className="flex items-center gap-1.5">
               <span
