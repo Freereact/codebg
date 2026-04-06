@@ -149,8 +149,8 @@ jobs:
             echo 'MAX_EMAILS_PER_DAY=100'
             printf 'TURNSTILE_SECRET_KEY=%s\n' "${{ secrets.TURNSTILE_SECRET_KEY }}"
             printf 'RESEND_API_KEY=%s\n' "${{ secrets.RESEND_API_KEY }}"
-            printf 'MAIL_FROM=%s\n' "${{ secrets.MAIL_FROM }}"
-            printf 'MAIL_TO=%s\n' "${{ secrets.MAIL_TO }}"
+            printf 'MAIL_FROM=%s\n' "${{ vars.MAIL_FROM }}"
+            printf 'MAIL_TO=%s\n' "${{ vars.MAIL_TO }}"
             printf 'DATABASE_URL=%s\n' "${{ secrets.DATABASE_URL }}"
             printf 'JWT_SECRET=%s\n' "${{ secrets.JWT_SECRET }}"
             printf 'FRONTEND_URL=%s\n' "${{ secrets.FRONTEND_URL }}"
