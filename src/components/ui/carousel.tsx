@@ -24,7 +24,7 @@ export function Carousel({
   const [current, setCurrent] = useState(0)
   const [paused, setPaused] = useState(false)
   const total = children.length
-  const timerRef = useRef<ReturnType<typeof setInterval>>()
+  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
 
   const goTo = useCallback(
     (idx: number) => {

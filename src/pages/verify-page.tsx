@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { verifyToken } from '../lib/auth-api'
-import { useAuth } from '../contexts/auth-context'
+import { useAuth } from '../hooks/use-auth'
 
 export function VerifyPage() {
   const [searchParams] = useSearchParams()

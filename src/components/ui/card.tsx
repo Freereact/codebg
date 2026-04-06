@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { type HTMLAttributes } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '../../lib/utils'
 
@@ -16,7 +16,7 @@ const cardVariants = cva('card-hover rounded-2xl border bg-white dark:bg-slate-8
   },
 })
 
-export interface CardProps extends React.HTMLAttributes<HTMLElement>, VariantProps<typeof cardVariants> {
+export interface CardProps extends HTMLAttributes<HTMLElement>, VariantProps<typeof cardVariants> {
   as?: 'div' | 'article' | 'a'
   href?: string
 }

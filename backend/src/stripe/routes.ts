@@ -91,15 +91,22 @@ checkoutRouter.post('/session', requireAuth, async (req: AuthenticatedRequest, r
 // ============================================================================
 
 stripeWebhookRouter.post('/', async (req: Request, res: Response) => {
+  // Step 1: Verify signature — 400 on invalid (Stripe should not retry)
+  let event: Stripe.Event
   try {
     const stripe = getStripe()
     const signature = req.headers['stripe-signature'] as string | undefined
     if (!signature || !config.stripeWebhookSecret) {
       return res.status(400).json({ error: 'missing_signature' })
     }
+    event = stripe.webhooks.constructEvent(req.body as Buffer, signature, config.stripeWebhookSecret)
+  } catch (err) {
+    console.error('[stripe] signature verification failed', err instanceof Error ? err.message : 'unknown')
+    return res.status(400).json({ error: 'invalid_signature' })
+  }
 
-    const event = stripe.webhooks.constructEvent(req.body as Buffer, signature, config.stripeWebhookSecret)
-
+  // Step 2: Handle event — 500 on failure (Stripe will retry)
+  try {
     switch (event.type) {
       case 'checkout.session.completed':
         await handleCheckoutCompleted(event.data.object)
@@ -122,8 +129,8 @@ stripeWebhookRouter.post('/', async (req: Request, res: Response) => {
 
     return res.json({ received: true })
   } catch (err) {
-    console.error('[stripe] webhook error', err instanceof Error ? err.message : 'unknown')
-    return res.status(400).json({ error: 'webhook_error' })
+    console.error('[stripe] handler error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ error: 'handler_error' })
   }
 })
 

@@ -1,13 +1,63 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Check } from 'lucide-react'
 import type { TemplateMeta, BusinessInfoInput } from '../types/portal'
 import { fetchTemplates, createProject } from '../lib/projects-api'
+import { SkeletonTemplateCard } from '../components/ui/skeleton'
 import { TemplateCard } from '../components/portal/template-card'
 import { BusinessInfoForm } from '../components/portal/business-info-form'
 import { BuildProgress } from '../components/portal/build-progress'
 import { useProjectEvents } from '../hooks/use-project-events'
 
 type WizardStep = 'template' | 'info' | 'building'
+
+const WIZARD_STEPS = [
+  { key: 'template' as const, label: 'Choose template' },
+  { key: 'info' as const, label: 'Business info' },
+  { key: 'building' as const, label: 'Build' },
+]
+
+function WizardStepper({ current }: { current: WizardStep }) {
+  const currentIdx = WIZARD_STEPS.findIndex((s) => s.key === current)
+
+  return (
+    <nav aria-label="Progress" className="mb-8 flex items-center justify-center gap-2">
+      {WIZARD_STEPS.map((s, i) => {
+        const done = i < currentIdx
+        const active = i === currentIdx
+        return (
+          <div key={s.key} className="flex items-center gap-2">
+            {i > 0 && (
+              <div
+                className={`h-px w-6 sm:w-10 ${done || active ? 'bg-accent' : 'bg-slate-300 dark:bg-slate-600'}`}
+              />
+            )}
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                  done
+                    ? 'bg-accent text-white'
+                    : active
+                      ? 'border-2 border-accent text-accent'
+                      : 'border border-slate-300 text-slate-400 dark:border-slate-600 dark:text-slate-500'
+                }`}
+              >
+                {done ? <Check size={14} /> : i + 1}
+              </span>
+              <span
+                className={`hidden text-xs sm:inline ${
+                  done || active ? 'font-medium text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-500'
+                }`}
+              >
+                {s.label}
+              </span>
+            </div>
+          </div>
+        )
+      })}
+    </nav>
+  )
+}
 
 export function NewProjectPage() {
   const navigate = useNavigate()
@@ -70,16 +120,21 @@ export function NewProjectPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <p role="status" className="animate-pulse text-slate-500 dark:text-slate-400">
-          Loading templates...
-        </p>
+      <div className="mx-auto max-w-3xl">
+        <WizardStepper current="template" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading templates">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonTemplateCard key={i} />
+          ))}
+        </div>
       </div>
     )
   }
 
   return (
     <div className="mx-auto max-w-3xl">
+      <WizardStepper current={step} />
+
       {step === 'template' && (
         <>
           <h1 className="mb-2 text-2xl font-semibold text-slate-800 dark:text-white">Pick a template</h1>

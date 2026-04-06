@@ -47,8 +47,8 @@ const tiers = [
       'Everything in Starter',
       'Custom domain setup',
       'Priority support',
-      'Monthly content updates',
-      'Advanced customization',
+      'Up to 2 content updates per month',
+      'Custom colors, fonts, and layouts',
     ],
     cta: 'Get started',
     ctaLink: '/login',
@@ -64,7 +64,7 @@ export function Pricing() {
       headerRight={<CtaLink href="/pricing">Full details</CtaLink>}
     >
       <p className="mb-8 mt-2 text-sm text-slate-600 dark:text-slate-400">
-        Start free. Pay only when you want a public site. Own your code always.
+        Start free. Pay when you want a public site. Own your code always.
       </p>
       <div className="grid gap-6 md:grid-cols-3">
         {tiers.map((tier) => (

@@ -20,15 +20,15 @@ export function Hero() {
           Free to start — no credit card required
         </p>
         <h1 className="text-4xl font-bold leading-tight text-slate-900 dark:text-slate-50 md:text-5xl lg:text-[3.25rem]">
-          Create your business website in 60 seconds.
+          Build your business website. Own every line of code.
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300 md:text-xl">
-          Pick a template, fill in your business info, and see your site live — instantly. Own your code. Deploy
-          anywhere. Pay only when you go public.
+          Pick a template, add your business info, and get a real React site — live in seconds. Download it. Deploy
+          anywhere. No lock-in, ever.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button size="lg" className="pulse-glow" asChild>
-            <Link to="/login">Start building — free</Link>
+            <Link to="/login">Create your site — free</Link>
           </Button>
           <Button size="lg" variant="ghost" asChild>
             <a href="#samples">View templates</a>

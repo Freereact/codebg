@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, FolderKanban, Users, MessageSquare, LogOut } from 'lucide-react'
-import { useAuth } from '../../contexts/auth-context'
+import { useAuth } from '../../hooks/use-auth'
 import { cn } from '../../lib/utils'
 import { SiteModeBanner } from '../ui/site-mode-banner'
 

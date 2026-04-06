@@ -1,7 +1,7 @@
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, LogOut } from 'lucide-react'
-import { useThemeContext } from '../../contexts/theme-context'
-import { useAuth } from '../../contexts/auth-context'
+import { Sun, Moon, LogOut, Settings } from 'lucide-react'
+import { useThemeContext } from '../../hooks/use-theme'
+import { useAuth } from '../../hooks/use-auth'
 import { SiteModeBanner } from '../ui/site-mode-banner'
 
 function PortalHeader() {
@@ -19,6 +19,14 @@ function PortalHeader() {
 
         <div className="flex items-center gap-4">
           <span className="hidden text-sm text-slate-300 sm:inline">{email}</span>
+
+          <Link
+            to="/portal/settings"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10"
+            aria-label="Account settings"
+          >
+            <Settings size={18} />
+          </Link>
 
           <button
             onClick={toggleTheme}

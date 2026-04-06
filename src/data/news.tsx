@@ -5,7 +5,7 @@ export const newsEntries: NewsEntry[] = [
     slug: 'codebg-self-service-launch',
     title: 'CodeBG is now a self-service website platform',
     description:
-      'Create your business website in 60 seconds. Pick a template, fill in your info, preview instantly. Own your code.',
+      'Create your business website in seconds. Pick a template, fill in your info, preview instantly. Own your code.',
     category: 'Product',
     date: 'Mar 2026',
     href: '/news/codebg-self-service-launch',
@@ -28,7 +28,7 @@ export const newsEntries: NewsEntry[] = [
             <strong>Fill in your business info</strong> — name, phone, address, hours. That is it.
           </li>
           <li>
-            <strong>See your site instantly</strong> — built in about 2 seconds, preview it right in your dashboard
+            <strong>See your site instantly</strong> — built in seconds, preview it right in your dashboard
           </li>
           <li>
             <strong>Leave visual feedback</strong> — click any section of your site to request changes
@@ -66,44 +66,13 @@ export const newsEntries: NewsEntry[] = [
     ),
   },
   {
-    slug: 'nemoclaw-by-nvidia',
-    title: "NemoClaw (OpenClaw plugin): what's confirmed",
-    description: 'Verified summary of NVIDIA NemoClaw in OpenClaw deployment context.',
-    category: 'NVIDIA',
+    slug: 'choosing-the-right-template',
+    title: 'How to choose the right template for your business',
+    description: 'A quick guide to picking the template that fits your industry and goals.',
+    category: 'Guide',
     date: 'Mar 2026',
-    href: '/news/nemoclaw-by-nvidia',
-    linkLabel: 'Read article',
-    body: (
-      <>
-        <p>
-          Confirmed from public sources: NVIDIA NemoClaw is presented as an alpha open-source stack/plugin for secure
-          OpenClaw deployment with OpenShell.
-        </p>
-        <ul className="list-disc space-y-1 pl-5">
-          <li>
-            Repo:{' '}
-            <a
-              href="https://github.com/NVIDIA/NemoClaw"
-              target="_blank"
-              rel="noreferrer"
-              className="text-accent hover:underline"
-            >
-              github.com/NVIDIA/NemoClaw
-            </a>
-          </li>
-          <li>Status: Alpha</li>
-          <li>Focus: sandbox policy controls and secure runtime setup</li>
-        </ul>
-      </>
-    ),
-  },
-  {
-    slug: 'dynamic-sample-catalog',
-    title: 'Sample catalog now updates dynamically',
-    description: 'Main site sample cards now load from a shared JSON catalog for faster updates.',
-    category: 'Platform',
     href: '/customers',
-    linkLabel: 'Open samples',
+    linkLabel: 'Browse templates',
   },
   {
     slug: 'local-service-pages',

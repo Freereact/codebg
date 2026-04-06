@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Navigate } from 'react-router-dom'
 import { requestMagicLink } from '../lib/auth-api'
-import { useAuth } from '../contexts/auth-context'
+import { useAuth } from '../hooks/use-auth'
 import { useSiteMode } from '../contexts/site-mode-context'
 import { Button } from '../components/ui/button'
+
+const RESEND_COOLDOWN = 60
 
 export function LoginPage() {
   const { state: authState } = useAuth()
@@ -12,6 +14,30 @@ export function LoginPage() {
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
+
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const timer = setTimeout(() => setCooldown((c) => c - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [cooldown])
+
+  const handleResend = useCallback(async () => {
+    setError('')
+    setLoading(true)
+    setCooldown(RESEND_COOLDOWN)
+
+    try {
+      const res = await requestMagicLink(email)
+      if (!res.ok) {
+        setError(res.error ?? 'Could not resend. Please try again.')
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }, [email])
 
   // Redirect to portal if already logged in
   if (authState.status === 'authenticated') {
@@ -40,6 +66,7 @@ export function LoginPage() {
       const res = await requestMagicLink(email)
       if (res.ok) {
         setSent(true)
+        setCooldown(RESEND_COOLDOWN)
       } else {
         setError(res.error ?? 'Something went wrong')
       }
@@ -59,6 +86,35 @@ export function LoginPage() {
             We sent a sign-in link to <strong className="text-slate-800 dark:text-white">{email}</strong>. Click the
             link in the email to continue.
           </p>
+          <div className="mt-6">
+            {cooldown > 0 ? (
+              <p className="text-sm text-slate-400 dark:text-slate-500">Resend available in {cooldown}s</p>
+            ) : (
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={loading}
+                className="text-sm font-medium text-accent hover:underline disabled:opacity-50"
+              >
+                {loading ? 'Sending...' : "Didn't receive it? Send again"}
+              </button>
+            )}
+          </div>
+          {error && (
+            <p role="alert" className="mt-3 text-sm text-red-400">
+              {error}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setSent(false)
+              setError('')
+            }}
+            className="mt-4 text-xs text-slate-400 hover:underline"
+          >
+            Use a different email
+          </button>
         </div>
       </div>
     )

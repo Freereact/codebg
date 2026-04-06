@@ -21,6 +21,7 @@ import { VerifyPage } from './pages/verify-page'
 import { PortalDashboardPage } from './pages/portal-dashboard'
 import { NewProjectPage } from './pages/new-project'
 import { ProjectReviewPage } from './pages/project-review'
+import { PortalSettingsPage } from './pages/portal-settings'
 import { AdminLayout } from './components/layout/admin-layout'
 import { RequireAdmin } from './components/auth/require-admin'
 import { AdminDashboardPage } from './pages/admin/admin-dashboard'
@@ -29,64 +30,68 @@ import { AdminProjectDetailPage } from './pages/admin/admin-project-detail'
 import { AdminUsersPage } from './pages/admin/admin-users'
 import { AdminFeedbackPage } from './pages/admin/admin-feedback'
 import { NotFoundPage } from './pages/not-found'
+import { ErrorBoundary } from './components/ui/error-boundary'
 import './index.css'
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ThemeProvider>
-        <SiteModeProvider>
-          <AuthProvider>
-            <Routes>
-              {/* Marketing site */}
-              <Route element={<RootLayout />}>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/services" element={<ServicesIndexPage />} />
-                <Route path="/process" element={<ProcessPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/news" element={<NewsIndexPage />} />
-                <Route path="/news/:slug" element={<NewsArticlePage />} />
-                <Route path="/customers" element={<CustomersIndexPage />} />
-                <Route path="/services/:slug" element={<ServicePage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/verify" element={<VerifyPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <SiteModeProvider>
+            <AuthProvider>
+              <Routes>
+                {/* Marketing site */}
+                <Route element={<RootLayout />}>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/services" element={<ServicesIndexPage />} />
+                  <Route path="/process" element={<ProcessPage />} />
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/news" element={<NewsIndexPage />} />
+                  <Route path="/news/:slug" element={<NewsArticlePage />} />
+                  <Route path="/customers" element={<CustomersIndexPage />} />
+                  <Route path="/services/:slug" element={<ServicePage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/verify" element={<VerifyPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Route>
 
-              {/* Customer portal (authenticated) */}
-              <Route
-                element={
-                  <RequireAuth>
-                    <PortalLayout />
-                  </RequireAuth>
-                }
-              >
-                <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
-                <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
-                <Route path="/portal/projects/new" element={<NewProjectPage />} />
-                <Route path="/portal/projects/:id/review" element={<ProjectReviewPage />} />
-              </Route>
+                {/* Customer portal (authenticated) */}
+                <Route
+                  element={
+                    <RequireAuth>
+                      <PortalLayout />
+                    </RequireAuth>
+                  }
+                >
+                  <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
+                  <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
+                  <Route path="/portal/projects/new" element={<NewProjectPage />} />
+                  <Route path="/portal/projects/:id/review" element={<ProjectReviewPage />} />
+                  <Route path="/portal/settings" element={<PortalSettingsPage />} />
+                </Route>
 
-              {/* Admin portal (admin role only) */}
-              <Route
-                element={
-                  <RequireAdmin>
-                    <AdminLayout />
-                  </RequireAdmin>
-                }
-              >
-                <Route path="/admin" element={<AdminDashboardPage />} />
-                <Route path="/admin/projects" element={<AdminProjectsPage />} />
-                <Route path="/admin/projects/:id" element={<AdminProjectDetailPage />} />
-                <Route path="/admin/users" element={<AdminUsersPage />} />
-                <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
-              </Route>
-            </Routes>
-          </AuthProvider>
-        </SiteModeProvider>
-      </ThemeProvider>
+                {/* Admin portal (admin role only) */}
+                <Route
+                  element={
+                    <RequireAdmin>
+                      <AdminLayout />
+                    </RequireAdmin>
+                  }
+                >
+                  <Route path="/admin" element={<AdminDashboardPage />} />
+                  <Route path="/admin/projects" element={<AdminProjectsPage />} />
+                  <Route path="/admin/projects/:id" element={<AdminProjectDetailPage />} />
+                  <Route path="/admin/users" element={<AdminUsersPage />} />
+                  <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
+                </Route>
+              </Routes>
+            </AuthProvider>
+          </SiteModeProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   </React.StrictMode>,
 )
