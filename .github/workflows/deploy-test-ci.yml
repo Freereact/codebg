@@ -129,12 +129,15 @@ jobs:
 
             # If SSL certs don't exist yet, provision them with a temporary HTTP-only config
             if [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]; then
+              # Remove any existing SSL configs that would fail nginx -t
+              sudo rm -f /etc/nginx/sites-enabled/test.codebg.com /etc/nginx/sites-enabled/sample-apps.codebg.com
+              sudo rm -f /etc/nginx/sites-available/test.codebg.com /etc/nginx/sites-available/sample-apps.codebg.com
               # Temporary HTTP-only server for Certbot challenge
               printf 'server {\n  listen 80;\n  server_name test.codebg.com sample-apps.codebg.com;\n  root /var/www/codebg;\n  location /.well-known/acme-challenge/ { root /var/www/certbot; }\n}\n' \
                 | sudo tee /etc/nginx/sites-available/temp-http > /dev/null
               sudo ln -sf /etc/nginx/sites-available/temp-http /etc/nginx/sites-enabled/temp-http
               sudo nginx -t && sudo systemctl reload nginx
-              sudo certbot --nginx -d test.codebg.com -d sample-apps.codebg.com --expand --non-interactive --agree-tos
+              sudo certbot --nginx -d test.codebg.com -d sample-apps.codebg.com --expand --non-interactive --agree-tos -m hello@codebg.com
               sudo rm -f /etc/nginx/sites-enabled/temp-http /etc/nginx/sites-available/temp-http
             fi
 
