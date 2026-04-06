@@ -38,4 +38,13 @@ export const config = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? '',
   stripePriceStarterMonthly: process.env.STRIPE_PRICE_STARTER_MONTHLY ?? '',
   stripePriceProfessionalMonthly: process.env.STRIPE_PRICE_PROFESSIONAL_MONTHLY ?? '',
+  get stripeConfigured(): boolean {
+    return !!(this.stripeSecretKey && this.stripeWebhookSecret)
+  },
 }
+
+// Warn at startup about missing optional config
+if (!config.stripeSecretKey) console.warn('[config] STRIPE_SECRET_KEY not set — checkout will fail')
+if (!config.stripeWebhookSecret) console.warn('[config] STRIPE_WEBHOOK_SECRET not set — webhooks will fail')
+if (!config.stripePriceStarterMonthly) console.warn('[config] STRIPE_PRICE_STARTER_MONTHLY not set')
+if (!config.stripePriceProfessionalMonthly) console.warn('[config] STRIPE_PRICE_PROFESSIONAL_MONTHLY not set')

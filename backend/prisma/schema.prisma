@@ -69,6 +69,7 @@ model Project {
   contentRequests ContentRequest[]
   adminNotes      AdminNote[]
 
+  @@unique([subdomain], map: "projects_subdomain_unique_idx")
   @@index([status], map: "projects_status_idx")
   @@index([userId], map: "projects_user_id_idx")
   @@index([updatedAt(sort: Desc)], map: "projects_updated_at_idx")

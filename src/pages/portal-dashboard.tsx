@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
-import { useAuth } from '../contexts/auth-context'
+import { useAuth } from '../hooks/use-auth'
 import { useProjects } from '../hooks/use-projects'
 import { EmptyProjectsState } from '../components/portal/empty-state'
 import { ProjectCard } from '../components/portal/project-card'
+import { SkeletonCard } from '../components/ui/skeleton'
 
 function getGreeting(): string {
   const hour = new Date().getHours()
@@ -28,10 +29,12 @@ export function PortalDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <p role="status" className="animate-pulse text-slate-500 dark:text-slate-400">
-          Loading your projects...
-        </p>
+      <div>
+        <div className="mb-8 h-8 w-64 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+        <div className="grid gap-4 sm:grid-cols-2" role="status" aria-label="Loading projects">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
       </div>
     )
   }
@@ -53,7 +56,7 @@ export function PortalDashboardPage() {
       </h1>
 
       {projects.length === 0 ? (
-        <EmptyProjectsState />
+        <EmptyProjectsState userName={email} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {projects.map((project) => (

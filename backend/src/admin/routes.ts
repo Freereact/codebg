@@ -132,21 +132,24 @@ adminRouter.post('/projects/:id/rebuild', async (req: AuthenticatedRequest, res:
     })
     if (!project || !project.subdomain) return res.status(404).json({ ok: false, error: 'project_not_found' })
 
+    const subdomain = project.subdomain
     const repoPath = path.join(config.projectsDir, project.id)
     await prisma.project.update({ where: { id: project.id }, data: { status: 'building' } })
 
     // Fire-and-forget build
-    buildProject(repoPath, project.subdomain)
+    buildProject(repoPath, subdomain)
       .then(async (result) => {
         const newStatus = result.status === 'success' ? 'preview' : 'draft'
         await prisma.project.update({ where: { id: project.id }, data: { status: newStatus } })
         if (result.status !== 'success') {
-          notifyAdminBuildFailed(project.subdomain ?? 'unknown', result.message ?? 'Admin rebuild failed').catch(
-            () => {},
-          )
+          notifyAdminBuildFailed(subdomain, result.message ?? 'Admin rebuild failed').catch(() => {})
         }
       })
-      .catch(() => {})
+      .catch(async (err) => {
+        console.error(`[admin] rebuild failed for ${project.id}:`, err instanceof Error ? err.message : 'unknown')
+        await prisma.project.update({ where: { id: project.id }, data: { status: 'draft' } }).catch(() => {})
+        notifyAdminBuildFailed(subdomain, err instanceof Error ? err.message : 'Admin rebuild failed').catch(() => {})
+      })
 
     return res.json({ ok: true, data: { status: 'building' } })
   } catch (err) {

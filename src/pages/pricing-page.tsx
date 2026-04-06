@@ -18,7 +18,7 @@ const tiers = [
       'Site built in seconds',
       'Private preview in your dashboard',
       'Click-to-comment visual feedback',
-      'Download as standalone ZIP',
+      'Download as ZIP',
       'Git repo with full source code',
     ],
     cta: 'Start building — free',
@@ -49,8 +49,8 @@ const tiers = [
       'Everything in Starter',
       'Custom domain setup (yourbusiness.com)',
       'Priority support',
-      'Monthly content updates by our team',
-      'Advanced template customization',
+      'Up to 2 content updates per month by our team',
+      'Custom colors, fonts, and layouts',
       'Performance optimization',
     ],
     cta: 'Get started',
@@ -73,11 +73,19 @@ const faqs = [
   },
   {
     q: 'How fast is the site built?',
-    a: 'About 2 seconds. Pick a template, fill in your business info, and your preview is ready instantly.',
+    a: 'Typically under 10 seconds. Pick a template, fill in your business info, and your preview is ready.',
   },
   {
     q: 'Can I use my own domain?',
     a: 'Yes, on the Professional plan. We handle the DNS setup and SSL certificate for you.',
+  },
+  {
+    q: 'What happens to my site if I cancel?',
+    a: 'Your site stays live until the end of the billing period. After that, it goes back to private preview. Your code is always yours — download it anytime.',
+  },
+  {
+    q: 'Why Professional over Starter?',
+    a: 'Starter gives you a live site on a codebg.com subdomain. Professional adds your own domain (yourbusiness.com), priority support, and up to 2 hands-on content updates per month by our team.',
   },
 ]
 
@@ -99,7 +107,7 @@ export function PricingPage() {
           Simple pricing. Start free. Own your code.
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-          Create your business website for free. Preview it instantly. Pay only when you want a public URL. No setup
+          Create your business website for free. Preview it instantly. Pay only when you want a public site. No setup
           fees, no surprises.
         </p>
       </div>

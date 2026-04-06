@@ -1,12 +1,12 @@
-import * as React from 'react'
+import { type HTMLAttributes, type ReactNode } from 'react'
 import { cn } from '../../lib/utils'
 import { useScrollReveal } from '../../hooks/use-scroll-reveal'
 
-export interface SectionProps extends React.HTMLAttributes<HTMLElement> {
+export interface SectionProps extends HTMLAttributes<HTMLElement> {
   id: string
   heading?: string
   description?: string
-  headerRight?: React.ReactNode
+  headerRight?: ReactNode
   animate?: boolean
   stagger?: boolean
 }

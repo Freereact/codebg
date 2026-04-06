@@ -12,7 +12,7 @@ import { buildProject } from './build-service.js'
 import { createArchive } from './git-service.js'
 import { emitProjectEvent } from './events.js'
 import { createGitHubRepo, pushToGitHub } from '../github/index.js'
-import { notifyAdminBuildFailed } from '../admin/notifications.js'
+import { notifyUserPreviewReady, notifyAdminBuildFailed } from '../admin/notifications.js'
 
 const projectListSelect = {
   id: true,
@@ -177,6 +177,18 @@ async function runProjectBuild(
       emitProjectEvent(projectId, { type: 'status', data: { status: 'preview' } })
       emitProjectEvent(projectId, { type: 'build-complete', data: { durationMs: result.durationMs ?? 0 } })
       console.log(`[build] status → preview for ${projectId}`)
+
+      // Notify user that preview is ready (fire-and-forget)
+      void (async () => {
+        try {
+          const p = await prisma.project.findFirst({ where: { id: projectId }, include: { user: true } })
+          if (p?.user) {
+            await notifyUserPreviewReady(p.user.email, p.user.email.split('@')[0], businessInfo.name, subdomain, projectId)
+          }
+        } catch (e) {
+          console.error(`[notify] preview-ready failed for ${projectId}:`, e instanceof Error ? e.message : 'unknown')
+        }
+      })()
 
       // Push to GitHub (fire-and-forget, don't block the build)
       try {

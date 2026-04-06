@@ -1,6 +1,20 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ExternalLink, Trash2, Download, MessageSquare, Rocket } from 'lucide-react'
+import {
+  ExternalLink,
+  Trash2,
+  Download,
+  MessageSquare,
+  Rocket,
+  FileEdit,
+  Clock,
+  Eye,
+  CheckCircle2,
+  Globe,
+  XCircle,
+  Wrench,
+} from 'lucide-react'
+import type { ReactNode } from 'react'
 import type { ProjectListItem } from '../../types/portal'
 import { deleteProjectApi } from '../../lib/projects-api'
 import { createCheckoutSession } from '../../lib/stripe-api'
@@ -19,6 +33,16 @@ const STATUS_COLORS: Record<string, string> = {
   live: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
   maintenance: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
   cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+}
+
+const STATUS_ICONS: Record<string, ReactNode> = {
+  draft: <FileEdit size={12} />,
+  building: <Clock size={12} />,
+  preview: <Eye size={12} />,
+  live: <Globe size={12} />,
+  maintenance: <Wrench size={12} />,
+  cancelled: <XCircle size={12} />,
+  paid: <CheckCircle2 size={12} />,
 }
 
 function formatDate(iso: string): string {
@@ -88,7 +112,12 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
             <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">Building your site...</p>
           )}
         </div>
-        <span className={`inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor}`}>
+        <span
+          role="status"
+          aria-label={project.statusLabel}
+          className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor}`}
+        >
+          {STATUS_ICONS[project.status]}
           {project.statusLabel}
         </span>
       </div>
