@@ -125,13 +125,28 @@ jobs:
           ssh ${{ vars.VM_USER }}@${{ vars.VM_HOST }} bash -s << 'SCRIPT'
             set -euo pipefail
             sudo rm -f /etc/nginx/sites-enabled/codebg /etc/nginx/sites-available/codebg
+            sudo rm -f /etc/nginx/sites-enabled/default
+
+            # If SSL certs don't exist yet, provision them with a temporary HTTP-only config
+            if [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]; then
+              # Temporary HTTP-only server for Certbot challenge
+              printf 'server {\n  listen 80;\n  server_name test.codebg.com sample-apps.codebg.com;\n  root /var/www/codebg;\n  location /.well-known/acme-challenge/ { root /var/www/certbot; }\n}\n' \
+                | sudo tee /etc/nginx/sites-available/temp-http > /dev/null
+              sudo ln -sf /etc/nginx/sites-available/temp-http /etc/nginx/sites-enabled/temp-http
+              sudo nginx -t && sudo systemctl reload nginx
+              sudo certbot --nginx -d test.codebg.com -d sample-apps.codebg.com --expand --non-interactive --agree-tos
+              sudo rm -f /etc/nginx/sites-enabled/temp-http /etc/nginx/sites-available/temp-http
+            fi
+
+            # Now install the full SSL configs
             sudo cp ~/projects/codebg/infra/nginx/test.codebg.com.conf /etc/nginx/sites-available/test.codebg.com
             sudo ln -sf /etc/nginx/sites-available/test.codebg.com /etc/nginx/sites-enabled/test.codebg.com
             sudo cp ~/projects/codebg/infra/nginx/sample-apps.codebg.com.conf /etc/nginx/sites-available/sample-apps.codebg.com
             sudo ln -sf /etc/nginx/sites-available/sample-apps.codebg.com /etc/nginx/sites-enabled/sample-apps.codebg.com
             sudo nginx -t
             sudo systemctl reload nginx
-            # Only run certbot if certs don't exist yet (avoid rate limits on repeated deploys)
+
+            # Renew certs if needed (won't re-provision, just checks expiry)
             if ! sudo certbot certificates 2>/dev/null | grep -q "test.codebg.com"; then
               sudo certbot --nginx -d test.codebg.com -d sample-apps.codebg.com --expand --non-interactive --agree-tos
             fi
