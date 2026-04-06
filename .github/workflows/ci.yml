@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ["test-ci", "main"]
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            sample-apps/package-lock.json
+            backend/package-lock.json
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Frontend lint
+        run: npm run lint
+
+      - name: Frontend format check
+        run: npx prettier --check 'src/**/*.{ts,tsx}'
+
+      - name: Frontend typecheck & build
+        run: |
+          node scripts/generate-fallback-samples.mjs
+          npm run build
+
+      - name: Build sample apps (all customers)
+        run: |
+          cd sample-apps
+          npm ci
+          bash build-all.sh
+
+      - name: Install backend deps
+        run: |
+          cd backend
+          npm ci
+          npx prisma generate
+
+      - name: Backend lint
+        run: cd backend && npm run lint
+
+      - name: Backend format check
+        run: cd backend && npm run format:check
+
+      - name: Backend tests
+        run: cd backend && npm test
+
+      - name: Backend build
+        run: cd backend && npm run build
