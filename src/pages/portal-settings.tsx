@@ -18,7 +18,11 @@ export function PortalSettingsPage() {
       if (res.ok) {
         window.location.href = res.url
       } else {
-        setBillingError(res.error === 'no_active_subscription' ? 'No active subscription found.' : 'Could not open billing portal. Please try again.')
+        setBillingError(
+          res.error === 'no_active_subscription'
+            ? 'No active subscription found.'
+            : 'Could not open billing portal. Please try again.',
+        )
       }
     } catch {
       setBillingError('Network error. Please try again.')

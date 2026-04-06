@@ -35,12 +35,7 @@ export function TemplateCard({ template, selected, onSelect }: TemplateCardProps
         selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface dark:ring-offset-[#1a1d23]' : ''
       }`}
     >
-      <button
-        type="button"
-        aria-pressed={selected}
-        onClick={() => onSelect(template.slug)}
-        className="w-full"
-      >
+      <button type="button" aria-pressed={selected} onClick={() => onSelect(template.slug)} className="w-full">
         <div className={`flex h-32 items-center justify-center rounded-t-[20px] bg-gradient-to-br ${gradient}`}>
           <span className="text-2xl font-bold text-white/90">{template.title}</span>
         </div>
