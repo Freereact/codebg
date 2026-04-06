@@ -183,7 +183,13 @@ async function runProjectBuild(
         try {
           const p = await prisma.project.findFirst({ where: { id: projectId }, include: { user: true } })
           if (p?.user) {
-            await notifyUserPreviewReady(p.user.email, p.user.email.split('@')[0], businessInfo.name, subdomain, projectId)
+            await notifyUserPreviewReady(
+              p.user.email,
+              p.user.email.split('@')[0],
+              businessInfo.name,
+              subdomain,
+              projectId,
+            )
           }
         } catch (e) {
           console.error(`[notify] preview-ready failed for ${projectId}:`, e instanceof Error ? e.message : 'unknown')
