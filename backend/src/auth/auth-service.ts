@@ -104,6 +104,14 @@ export function verifyJwt(token: string): JwtPayload | null {
 }
 
 async function sendMagicLinkEmail(email: string, rawToken: string): Promise<void> {
+  const link = `${config.frontendUrl}/verify?token=${rawToken}`
+
+  // In local dev, log the link so you can sign in without a real email service
+  if (config.resendApiKey.startsWith('re_test') || !config.resendApiKey) {
+    console.log(`\n[auth] ✉ Magic link for ${email}:\n  ${link}\n`)
+    return
+  }
+
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
