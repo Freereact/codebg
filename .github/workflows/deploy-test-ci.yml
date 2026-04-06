@@ -128,7 +128,7 @@ jobs:
             sudo rm -f /etc/nginx/sites-enabled/default
 
             # If SSL certs don't exist yet, provision them with a temporary HTTP-only config
-            if [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]; then
+            if [ ! -f /etc/letsencrypt/live/test.codebg.com/fullchain.pem ]; then
               # Remove any existing SSL configs that would fail nginx -t
               sudo rm -f /etc/nginx/sites-enabled/test.codebg.com /etc/nginx/sites-enabled/test-sample-apps.codebg.com
               sudo rm -f /etc/nginx/sites-available/test.codebg.com /etc/nginx/sites-available/test-sample-apps.codebg.com
