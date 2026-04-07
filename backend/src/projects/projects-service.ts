@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { prisma } from '../db.js'
 import { config } from '../config.js'
-import type { ProjectListItem, ProjectDetail, UserProfile, ProjectStatus, PlanTier } from './types.js'
+import type { ProjectListItem, ProjectDetail, UserProfile, ProjectStatus, PlanTier, DomainStatus } from './types.js'
 import type { UserRole } from '../auth/types.js'
 import { PROJECT_STATUS_LABELS as statusLabels } from './types.js'
 import type { CreateProjectBody, UpdateProjectBody, TemplateSlug } from './site-config-schema.js'
@@ -18,6 +18,7 @@ const projectListSelect = {
   id: true,
   status: true,
   domain: true,
+  domainStatus: true,
   subdomain: true,
   templateSlug: true,
   planTier: true,
@@ -57,6 +58,7 @@ export async function listProjectsForUser(
     status: asStatus(row.status),
     statusLabel: toStatusLabel(row.status),
     domain: row.domain,
+    domainStatus: (row.domainStatus as DomainStatus) ?? null,
     subdomain: row.subdomain,
     templateSlug: row.templateSlug,
     planTier: asPlanTier(row.planTier),
@@ -89,6 +91,7 @@ export async function findProjectByIdForUser(projectId: string, userId: string):
     status: asStatus(row.status),
     statusLabel: toStatusLabel(row.status),
     domain: row.domain,
+    domainStatus: (row.domainStatus as DomainStatus) ?? null,
     subdomain: row.subdomain,
     templateSlug: row.templateSlug,
     planTier: asPlanTier(row.planTier),
@@ -135,6 +138,7 @@ export async function createProject(userId: string, input: CreateProjectBody): P
     status: asStatus(project.status),
     statusLabel: toStatusLabel(project.status),
     domain: project.domain,
+    domainStatus: (project.domainStatus as DomainStatus) ?? null,
     subdomain: project.subdomain,
     templateSlug: project.templateSlug,
     planTier: asPlanTier(project.planTier),
@@ -168,6 +172,13 @@ async function runProjectBuild(
 
     const result = await buildProject(repoPath, subdomain)
     console.log(`[build] result for ${projectId}: ${result.status} (${result.durationMs ?? 0}ms)`)
+
+    // If project has an active custom domain, also build with --base=/
+    const proj = await prisma.project.findFirst({ where: { id: projectId }, select: { domainStatus: true } })
+    if (result.status === 'success' && proj?.domainStatus === 'active') {
+      const customResult = await buildProject(repoPath, subdomain, '/')
+      console.log(`[build] custom-domain build for ${projectId}: ${customResult.status}`)
+    }
 
     if (result.status === 'success') {
       await prisma.project.update({

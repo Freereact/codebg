@@ -19,6 +19,7 @@ import type { ProjectListItem } from '../../types/portal'
 import { deleteProjectApi } from '../../lib/projects-api'
 import { createCheckoutSession } from '../../lib/stripe-api'
 import { useSiteMode } from '../../contexts/site-mode-context'
+import { CustomDomainSetup } from './custom-domain-setup'
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
@@ -162,6 +163,10 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
             </>
           )}
         </div>
+      )}
+
+      {project.status === 'live' && project.planTier === 'professional' && (
+        <CustomDomainSetup projectId={project.id} domain={project.domain} domainStatus={project.domainStatus} />
       )}
 
       {confirmingDelete ? (

@@ -86,9 +86,20 @@ else
 fi
 
 # ─── Create web directories ──────────────────────────────────────────────────
-mkdir -p /var/www/codebg /var/www/sample-apps /var/www/projects /var/www/sites /var/www/certbot
-chown -R 1000:1000 /var/www/projects /var/www/sites
+mkdir -p /var/www/codebg /var/www/sample-apps /var/www/projects /var/www/sites /var/www/certbot /var/www/domain-tasks
+chown -R 1000:1000 /var/www/projects /var/www/sites /var/www/domain-tasks
 echo "[dirs] Web directories created"
+
+# ─── Custom domain provisioning ───────────────────────────────────────────────
+apt-get install -y -qq jq
+cp ~/projects/codebg/infra/scripts/codebg-domain-setup.sh /usr/local/bin/codebg-domain-setup.sh
+chmod +x /usr/local/bin/codebg-domain-setup.sh
+cp ~/projects/codebg/infra/systemd/codebg-domain-watcher.path /etc/systemd/system/
+cp ~/projects/codebg/infra/systemd/codebg-domain-watcher.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable codebg-domain-watcher.path
+systemctl start codebg-domain-watcher.path
+echo "[domain] Provisioning watcher installed"
 
 # ─── Kernel hardening ────────────────────────────────────────────────────────
 cat > /etc/sysctl.d/99-codebg-hardening.conf << 'SYSCTL'

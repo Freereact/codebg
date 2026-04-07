@@ -1,0 +1,6 @@
+[Unit]
+Description=Process custom domain provisioning tasks
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/codebg-domain-setup.sh

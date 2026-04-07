@@ -15,8 +15,17 @@ export interface BuildResult {
 // Simple in-process mutex to serialize builds
 let buildLock: Promise<void> = Promise.resolve()
 
-export async function buildProject(repoPath: string, subdomain: string): Promise<BuildResult> {
-  const outputPath = path.join(config.sitesDir, subdomain)
+/**
+ * Build a project with Vite.
+ * @param repoPath - Path to the project's git repo
+ * @param subdomain - The project's subdomain (used for output dir and base path)
+ * @param base - Override the base path (default: /sites/<subdomain>/). Use '/' for custom domain builds.
+ */
+export async function buildProject(repoPath: string, subdomain: string, base?: string): Promise<BuildResult> {
+  const isCustomDomainBuild = base === '/'
+  const outputSuffix = isCustomDomainBuild ? '-custom' : ''
+  const outputPath = path.join(config.sitesDir, subdomain + outputSuffix)
+  const baseArg = base ?? `/sites/${subdomain}/`
 
   // Serialize builds — wait for any in-progress build
   const currentLock = buildLock
@@ -33,7 +42,7 @@ export async function buildProject(repoPath: string, subdomain: string): Promise
     await ensureNodeModulesSymlink(repoPath)
 
     const viteBin = path.join(repoPath, 'node_modules', '.bin', 'vite')
-    await execFileAsync(viteBin, ['build', `--base=/sites/${subdomain}/`, `--outDir=${outputPath}`, '--emptyOutDir'], {
+    await execFileAsync(viteBin, ['build', `--base=${baseArg}`, `--outDir=${outputPath}`, '--emptyOutDir'], {
       cwd: repoPath,
       env: { ...process.env },
       timeout: 60_000,

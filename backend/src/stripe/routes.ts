@@ -378,6 +378,16 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
       where: { id: sub.project.id },
       data: { status: 'cancelled', cancelledAt: new Date() },
     })
+
+    // Clean up custom domain if active
+    if (sub.project.domain && sub.project.domainStatus === 'active') {
+      const { writeDomainTask } = await import('../projects/domain-service.js')
+      await writeDomainTask('remove', sub.project.domain, sub.project.subdomain ?? sub.project.id)
+      await prisma.project.update({
+        where: { id: sub.project.id },
+        data: { domain: null, domainStatus: null, domainError: null },
+      })
+    }
   }
 
   console.log(`[stripe] subscription ${stripeSubId} deleted`)

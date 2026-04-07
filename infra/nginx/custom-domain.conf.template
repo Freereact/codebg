@@ -1,0 +1,56 @@
+server {
+    listen 80;
+    server_name {{DOMAIN}} www.{{DOMAIN}};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    server_name {{DOMAIN}} www.{{DOMAIN}};
+
+    ssl_certificate     /etc/letsencrypt/live/{{DOMAIN}}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{DOMAIN}}/privkey.pem;
+    include             /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Security headers
+    add_header X-Content-Type-Options  "nosniff"       always;
+    add_header X-Frame-Options         "SAMEORIGIN"    always;
+    add_header Referrer-Policy         "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header Permissions-Policy      "camera=(), microphone=(), geolocation=()" always;
+
+    root /var/www/sites/{{SUBDOMAIN}}-custom;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Vite fingerprinted assets: immutable cache
+    location ~* /assets/.+\-[a-zA-Z0-9]+\.(js|css|jpg|jpeg|png|webp|svg|woff2?)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        add_header X-Content-Type-Options  "nosniff"       always;
+        add_header X-Frame-Options         "SAMEORIGIN"    always;
+        add_header Referrer-Policy         "strict-origin-when-cross-origin" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        access_log off;
+    }
+
+    # Redirect www → non-www
+    if ($host = www.{{DOMAIN}}) {
+        return 301 https://{{DOMAIN}}$request_uri;
+    }
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+}

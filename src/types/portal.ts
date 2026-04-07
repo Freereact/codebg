@@ -24,11 +24,14 @@ export type FeedbackStatus = 'pending' | 'in_progress' | 'completed' | 'rejected
 // API response types
 // ============================================================================
 
+export type DomainStatus = 'pending' | 'dns_verified' | 'ssl_provisioning' | 'active' | 'error'
+
 export interface ProjectListItem {
   readonly id: string
   readonly status: ProjectStatus
   readonly statusLabel: string
   readonly domain: string | null
+  readonly domainStatus: DomainStatus | null
   readonly subdomain: string | null
   readonly templateSlug: string | null
   readonly planTier: PlanTier | null

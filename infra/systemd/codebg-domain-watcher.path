@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch for custom domain provisioning tasks
+
+[Path]
+PathModified=/var/www/domain-tasks
+Unit=codebg-domain-watcher.service
+
+[Install]
+WantedBy=multi-user.target

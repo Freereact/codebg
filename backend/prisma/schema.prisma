@@ -49,6 +49,8 @@ model Project {
   templateSlug    String?   @map("template_slug")
   siteConfig      Json      @default("{}") @map("site_config")
   domain          String?
+  domainStatus    String?   @map("domain_status")
+  domainError     String?   @map("domain_error")
   subdomain       String?
   githubUrl       String?   @map("github_url")
   status          String    @default("lead")

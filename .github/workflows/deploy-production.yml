@@ -164,14 +164,31 @@ jobs:
             printf 'STRIPE_WEBHOOK_SECRET=%s\n' "${{ secrets.STRIPE_WEBHOOK_SIGNING_SECRET }}"
             printf 'STRIPE_PRICE_STARTER_MONTHLY=%s\n' "${{ secrets.STRIPE_PRICE_STARTER_MONTHLY }}"
             printf 'STRIPE_PRICE_PROFESSIONAL_MONTHLY=%s\n' "${{ secrets.STRIPE_PRICE_PROFESSIONAL_MONTHLY }}"
+            printf 'SERVER_PUBLIC_IP=%s\n' "${{ vars.SERVER_PUBLIC_IP }}"
+            printf 'CUSTOM_DOMAIN_CNAME_TARGET=%s\n' "${{ vars.CUSTOM_DOMAIN_CNAME_TARGET }}"
+            echo 'DOMAIN_TASKS_DIR=/var/www/domain-tasks'
           } | ssh -o StrictHostKeyChecking=no ${{ vars.VM_USER }}@${{ vars.VM_HOST }} "cat > ~/projects/codebg/backend/.env && chmod 600 ~/projects/codebg/backend/.env"
 
       - name: Ensure project directories
         run: |
           ssh -o StrictHostKeyChecking=no ${{ vars.VM_USER }}@${{ vars.VM_HOST }} bash -s << 'SCRIPT'
             set -euo pipefail
-            mkdir -p /var/www/projects /var/www/sites
-            chown 1000:1000 /var/www/projects /var/www/sites
+            mkdir -p /var/www/projects /var/www/sites /var/www/domain-tasks
+            chown 1000:1000 /var/www/projects /var/www/sites /var/www/domain-tasks
+          SCRIPT
+
+      - name: Deploy domain provisioning
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ vars.VM_USER }}@${{ vars.VM_HOST }} bash -s << 'SCRIPT'
+            set -euo pipefail
+            apt-get install -y -qq jq > /dev/null 2>&1 || true
+            cp ~/projects/codebg/infra/scripts/codebg-domain-setup.sh /usr/local/bin/codebg-domain-setup.sh
+            chmod +x /usr/local/bin/codebg-domain-setup.sh
+            cp ~/projects/codebg/infra/systemd/codebg-domain-watcher.path /etc/systemd/system/
+            cp ~/projects/codebg/infra/systemd/codebg-domain-watcher.service /etc/systemd/system/
+            systemctl daemon-reload
+            systemctl enable codebg-domain-watcher.path
+            systemctl restart codebg-domain-watcher.path
           SCRIPT
 
       - name: Deploy backend

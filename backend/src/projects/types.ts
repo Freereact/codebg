@@ -34,6 +34,7 @@ export const PROJECT_STATUSES = [
 ] as const satisfies readonly ProjectStatus[]
 
 export type PlanTier = 'starter' | 'professional' | 'custom'
+export type DomainStatus = 'pending' | 'dns_verified' | 'ssl_provisioning' | 'active' | 'error'
 
 export const PLAN_TIERS = ['starter', 'professional', 'custom'] as const satisfies readonly PlanTier[]
 
@@ -71,6 +72,7 @@ export interface ProjectListItem {
   readonly status: ProjectStatus
   readonly statusLabel: string
   readonly domain: string | null
+  readonly domainStatus: DomainStatus | null
   readonly subdomain: string | null
   readonly templateSlug: string | null
   readonly planTier: PlanTier | null

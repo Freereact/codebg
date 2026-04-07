@@ -41,6 +41,9 @@ export const config = {
   get stripeConfigured(): boolean {
     return !!(this.stripeSecretKey && this.stripeWebhookSecret)
   },
+  serverPublicIp: process.env.SERVER_PUBLIC_IP ?? '',
+  customDomainCnameTarget: process.env.CUSTOM_DOMAIN_CNAME_TARGET ?? 'custom.codebg.com',
+  domainTasksDir: process.env.DOMAIN_TASKS_DIR ?? '/var/www/domain-tasks',
 }
 
 // Warn at startup about missing optional config

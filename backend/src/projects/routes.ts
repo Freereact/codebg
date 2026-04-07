@@ -17,6 +17,14 @@ import { listProjectsQuerySchema, projectIdSchema } from './validation.js'
 import { createProjectBodySchema, updateProjectBodySchema } from './site-config-schema.js'
 import { getAllTemplates } from './template-registry.js'
 import { createFeedbackSchema, updateFeedbackSchema, feedbackIdSchema } from './feedback-validation.js'
+import { setDomainSchema } from './domain-validation.js'
+import {
+  verifyDns,
+  writeDomainTask,
+  readDomainResult,
+  updateDomainStatus,
+  getDnsInstructions,
+} from './domain-service.js'
 import { createFeedback, listFeedback, updateFeedback } from './feedback-service.js'
 import { requireAdmin } from '../auth/middleware.js'
 import type { AuthenticatedRequest } from '../auth/types.js'
@@ -374,6 +382,166 @@ usersRouter.get('/me', requireAuth, async (req: AuthenticatedRequest, res: Respo
     return res.json({ ok: true, data: user })
   } catch (err) {
     console.error('[users] me error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+// ============================================================================
+// Custom Domain Management (Professional plan only)
+// ============================================================================
+
+projectsRouter.post('/:id/domain', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const parsed = projectIdSchema.safeParse(req.params)
+    if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+    const userId = getUserId(req)
+    const project = await prisma.project.findFirst({
+      where: { id: parsed.data.id, userId, deletedAt: null },
+      select: { id: true, planTier: true, status: true, subdomain: true, domain: true },
+    })
+    if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+    if (project.planTier !== 'professional')
+      return res.status(403).json({ ok: false, error: 'professional_plan_required' })
+    if (project.status !== 'live') return res.status(400).json({ ok: false, error: 'project_must_be_live' })
+
+    const body = setDomainSchema.safeParse(req.body)
+    if (!body.success)
+      return res.status(400).json({ ok: false, error: 'invalid_domain', details: body.error.flatten() })
+
+    const domain = body.data.domain
+
+    // Check domain not claimed by another project
+    const existing = await prisma.project.findFirst({
+      where: { domain, deletedAt: null, id: { not: project.id } },
+    })
+    if (existing) return res.status(409).json({ ok: false, error: 'domain_already_claimed' })
+
+    // If changing domain, clean up old one
+    if (project.domain && project.domain !== domain) {
+      await writeDomainTask('remove', project.domain, project.subdomain ?? project.id)
+    }
+
+    await prisma.project.update({
+      where: { id: project.id },
+      data: { domain, domainStatus: 'pending', domainError: null },
+    })
+
+    return res.json({
+      ok: true,
+      data: { domain, domainStatus: 'pending', dnsInstructions: getDnsInstructions(domain) },
+    })
+  } catch (err) {
+    console.error('[domain] set error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+projectsRouter.post('/:id/domain/verify', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const parsed = projectIdSchema.safeParse(req.params)
+    if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+    const userId = getUserId(req)
+    const project = await prisma.project.findFirst({
+      where: { id: parsed.data.id, userId, deletedAt: null },
+      select: { id: true, domain: true, domainStatus: true, subdomain: true },
+    })
+    if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+    if (!project.domain) return res.status(400).json({ ok: false, error: 'no_domain_set' })
+
+    const result = await verifyDns(project.domain)
+
+    if (!result.verified) {
+      return res.json({
+        ok: true,
+        data: {
+          domain: project.domain,
+          domainStatus: 'pending',
+          verified: false,
+          reason: result.reason,
+          dnsInstructions: getDnsInstructions(project.domain),
+        },
+      })
+    }
+
+    // DNS verified — trigger provisioning
+    await updateDomainStatus(project.id, 'dns_verified')
+    await writeDomainTask('setup', project.domain, project.subdomain ?? project.id)
+    await updateDomainStatus(project.id, 'ssl_provisioning')
+
+    return res.json({
+      ok: true,
+      data: { domain: project.domain, domainStatus: 'ssl_provisioning', verified: true, method: result.method },
+    })
+  } catch (err) {
+    console.error('[domain] verify error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+projectsRouter.get('/:id/domain/status', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const parsed = projectIdSchema.safeParse(req.params)
+    if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+    const userId = getUserId(req)
+    const project = await prisma.project.findFirst({
+      where: { id: parsed.data.id, userId, deletedAt: null },
+      select: { id: true, domain: true, domainStatus: true, domainError: true },
+    })
+    if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+    if (!project.domain) return res.json({ ok: true, data: { domain: null, domainStatus: null } })
+
+    // If provisioning, check for result from host-side script
+    if (project.domainStatus === 'ssl_provisioning') {
+      const taskResult = await readDomainResult(project.domain)
+      if (taskResult) {
+        if (taskResult.success) {
+          await updateDomainStatus(project.id, 'active')
+          return res.json({ ok: true, data: { domain: project.domain, domainStatus: 'active' } })
+        } else {
+          await updateDomainStatus(project.id, 'error', taskResult.error)
+          return res.json({
+            ok: true,
+            data: { domain: project.domain, domainStatus: 'error', domainError: taskResult.error },
+          })
+        }
+      }
+    }
+
+    return res.json({
+      ok: true,
+      data: { domain: project.domain, domainStatus: project.domainStatus, domainError: project.domainError },
+    })
+  } catch (err) {
+    console.error('[domain] status error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+projectsRouter.delete('/:id/domain', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const parsed = projectIdSchema.safeParse(req.params)
+    if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+    const userId = getUserId(req)
+    const project = await prisma.project.findFirst({
+      where: { id: parsed.data.id, userId, deletedAt: null },
+      select: { id: true, domain: true, subdomain: true },
+    })
+    if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+    if (!project.domain) return res.json({ ok: true })
+
+    await writeDomainTask('remove', project.domain, project.subdomain ?? project.id)
+    await prisma.project.update({
+      where: { id: project.id },
+      data: { domain: null, domainStatus: null, domainError: null },
+    })
+
+    return res.json({ ok: true })
+  } catch (err) {
+    console.error('[domain] delete error', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ ok: false, error: 'internal_error' })
   }
 })
