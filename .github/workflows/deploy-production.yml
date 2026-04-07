@@ -144,7 +144,7 @@ jobs:
             echo 'REDIS_URL=redis://codebg-redis:6379'
             echo 'RABBITMQ_URL=amqp://codebg-rabbitmq:5672'
             echo 'RABBITMQ_QUEUE=email_jobs'
-            echo 'ALLOWED_ORIGINS=https://codebg.com'
+            echo 'ALLOWED_ORIGINS=https://codebg.com,https://sample-apps.codebg.com'
             echo 'MAX_EMAILS_PER_DAY=100'
             printf 'TURNSTILE_SECRET_KEY=%s\n' "${{ secrets.TURNSTILE_SECRET_KEY }}"
             printf 'RESEND_API_KEY=%s\n' "${{ secrets.RESEND_API_KEY }}"

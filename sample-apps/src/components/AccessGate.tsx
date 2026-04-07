@@ -10,15 +10,27 @@ interface AccessResponse {
   siteUrl?: string
 }
 
+/** Derive the main site URL from the current hostname */
+function getMainSiteUrl(): string {
+  const host = window.location.hostname
+  if (host.startsWith('test-sample-apps.')) return `https://test.${host.replace('test-sample-apps.', '')}`
+  if (host.startsWith('sample-apps.')) return `https://${host.replace('sample-apps.', '')}`
+  return ''
+}
+
 export default function AccessGate({ slug, children }: { slug: string; children: React.ReactNode }) {
   const [status, setStatus] = useState<AccessStatus>('checking')
-  const [loginUrl, setLoginUrl] = useState('/login')
-  const [signupUrl, setSignupUrl] = useState('/login')
-  const [siteUrl, setSiteUrl] = useState('')
+  const mainSiteUrl = getMainSiteUrl()
+  const [loginUrl, setLoginUrl] = useState(`${mainSiteUrl}/login`)
+  const [signupUrl, setSignupUrl] = useState(`${mainSiteUrl}/login`)
+  const [siteUrl, setSiteUrl] = useState(mainSiteUrl)
 
   useEffect(() => {
     fetch(`/api/projects/access/${encodeURIComponent(slug)}`, { credentials: 'include' })
-      .then((r) => r.json() as Promise<AccessResponse>)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json() as Promise<AccessResponse>
+      })
       .then((d) => {
         if (d.siteUrl) setSiteUrl(d.siteUrl)
         if (d.granted) {
