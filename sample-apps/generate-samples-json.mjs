@@ -33,7 +33,8 @@ for (const customer of readdirSync(customersDir, { withFileTypes: true })) {
     const files = readdirSync(assetsDir)
     const hero = files.find(f => f.includes('-hero-') && /\.(jpg|jpeg|png|webp)$/.test(f))
     if (hero) {
-      meta.thumbnail = `https://sample-apps.codebg.com/${meta.slug}/assets/${hero}`
+      const sampleBase = process.env.VITE_SAMPLE_APPS_URL || 'https://sample-apps.codebg.com'
+      meta.thumbnail = `${sampleBase}/${meta.slug}/assets/${hero}`
     }
   } catch {
     // no built assets yet — skip thumbnail

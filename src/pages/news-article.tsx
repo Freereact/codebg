@@ -2,6 +2,7 @@ import { useParams, Navigate } from 'react-router-dom'
 import { ArticleLayout } from '../components/layout/article-layout'
 import { newsEntries } from '../data/news'
 import { NotFoundPage } from './not-found'
+import { SITE_URL } from '../lib/config'
 
 export function NewsArticlePage() {
   const { slug } = useParams<{ slug: string }>()
@@ -14,7 +15,7 @@ export function NewsArticlePage() {
   if (!entry) return <NotFoundPage />
 
   const kicker = [entry.date, entry.category].filter(Boolean).join(' · ')
-  const pageUrl = `https://codebg.com/news/${entry.slug}`
+  const pageUrl = `${SITE_URL}/news/${entry.slug}`
   const relatedArticles = newsEntries.filter((e) => e.slug !== entry.slug).slice(0, 3)
 
   return (
@@ -31,14 +32,14 @@ export function NewsArticlePage() {
           headline: entry.title,
           description: entry.description,
           url: pageUrl,
-          image: 'https://codebg.com/og-image.webp',
+          image: `${SITE_URL}/og-image.webp`,
           datePublished: entry.date ?? undefined,
-          author: { '@type': 'Organization', name: 'CodeBG', url: 'https://codebg.com' },
+          author: { '@type': 'Organization', name: 'CodeBG', url: SITE_URL },
           publisher: {
             '@type': 'Organization',
             name: 'CodeBG',
-            url: 'https://codebg.com',
-            logo: { '@type': 'ImageObject', url: 'https://codebg.com/og-image.webp' },
+            url: SITE_URL,
+            logo: { '@type': 'ImageObject', url: `${SITE_URL}/og-image.webp` },
           },
         },
       }}

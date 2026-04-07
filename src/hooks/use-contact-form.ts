@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormState } from '../types'
+import { SITE_URL } from '../lib/config'
 
 declare global {
   interface Window {
@@ -51,7 +52,7 @@ export function useContactForm() {
   const widgetIdRef = useRef<string | null>(null)
   const pendingFormRef = useRef<FormState | null>(null)
 
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'https://codebg.com'
+  const apiBase = import.meta.env.VITE_API_BASE_URL ?? SITE_URL
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
 
   useEffect(() => {

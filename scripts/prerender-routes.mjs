@@ -15,7 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const distDir = resolve(__dirname, '..', 'dist')
 const template = readFileSync(resolve(distDir, 'index.html'), 'utf-8')
 
-const SITE = 'https://codebg.com'
+const SITE = process.env.VITE_SITE_URL || 'https://codebg.com'
 
 const routes = [
   {

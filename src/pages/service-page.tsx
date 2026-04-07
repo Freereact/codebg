@@ -2,6 +2,7 @@ import { useParams, Navigate } from 'react-router-dom'
 import { ArticleLayout } from '../components/layout/article-layout'
 import { servicePages } from '../data/service-pages'
 import { NotFoundPage } from './not-found'
+import { SITE_URL } from '../lib/config'
 
 export function ServicePage() {
   const { slug } = useParams<{ slug: string }>()
@@ -13,7 +14,7 @@ export function ServicePage() {
   const entry = servicePages.find((e) => e.slug === slug)
   if (!entry) return <NotFoundPage />
 
-  const pageUrl = `https://codebg.com/services/${entry.slug}`
+  const pageUrl = `${SITE_URL}/services/${entry.slug}`
   const relatedServices = servicePages.filter((s) => s.slug !== entry.slug)
 
   return (
@@ -32,7 +33,7 @@ export function ServicePage() {
           provider: {
             '@type': 'ProfessionalService',
             name: 'CodeBG',
-            url: 'https://codebg.com',
+            url: SITE_URL,
             areaServed: { '@type': 'City', name: 'Penticton' },
           },
         },

@@ -29,7 +29,14 @@
     <h1>Sample sites by business type</h1>
     <p class="subtitle">Explore live examples and pick the structure that best matches your business.</p>
     <div class="grid" id="grid"></div>
-    <a class="back" href="https://codebg.com/customers/">&#8592; Back to CodeBG</a>
+    <a class="back" id="back-link" href="/customers/">&#8592; Back to CodeBG</a>
+    <script>
+      (function() {
+        var h = location.hostname;
+        var base = h.startsWith('test-sample-apps.') ? 'https://test.' + h.replace('test-sample-apps.', '') : h.startsWith('sample-apps.') ? 'https://' + h.replace('sample-apps.', '') : 'https://codebg.com';
+        document.getElementById('back-link').href = base + '/customers/';
+      })();
+    </script>
   </div>
   <script>
     fetch('/samples.json')

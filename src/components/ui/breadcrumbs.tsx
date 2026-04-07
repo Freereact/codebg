@@ -1,4 +1,5 @@
 import type { BreadcrumbItem } from '../layout/article-layout'
+import { SITE_URL } from '../../lib/config'
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[]
@@ -12,7 +13,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       '@type': 'ListItem',
       position: i + 1,
       name: item.label,
-      ...(item.href ? { item: `https://codebg.com${item.href}` } : {}),
+      ...(item.href ? { item: `${SITE_URL}${item.href}` } : {}),
     })),
   }
 

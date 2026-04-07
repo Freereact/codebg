@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { SITE_URL } from '../lib/config'
 
 export interface DocumentMeta {
   title?: string
@@ -45,8 +46,8 @@ export function useDocumentMeta(meta: DocumentMeta) {
     const pageTitle = meta.title ?? 'CodeBG — Fast Small Business Websites in Penticton, BC'
     const pageDesc = meta.description ?? ''
     const pathname = location.pathname === '/' ? '/' : location.pathname.replace(/\/+$/, '')
-    const pageUrl = `https://codebg.com${pathname}`
-    const pageImage = 'https://codebg.com/og-image.webp'
+    const pageUrl = `${SITE_URL}${pathname}`
+    const pageImage = `${SITE_URL}/og-image.webp`
 
     document.title = pageTitle
 

@@ -11,8 +11,8 @@ import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const SITE = 'https://codebg.com'
-const SAMPLE_SITE = 'https://sample-apps.codebg.com'
+const SITE = process.env.VITE_SITE_URL || 'https://codebg.com'
+const SAMPLE_SITE = process.env.VITE_SAMPLE_APPS_URL || 'https://sample-apps.codebg.com'
 const today = new Date().toISOString().split('T')[0]
 
 // Auto-discover sample apps from meta.json files
