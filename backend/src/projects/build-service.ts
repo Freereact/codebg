@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import path from 'node:path'
+import fs from 'node:fs/promises'
 import { config } from '../config.js'
 import { ensureNodeModulesSymlink } from './repo-service.js'
 
@@ -88,6 +89,9 @@ async function executeBuild(repoPath: string, subdomain: string, base?: string):
 
   const start = Date.now()
 
+  // Sync shared components from sample-apps (keeps AccessGate etc. up to date)
+  await syncSharedComponents(repoPath)
+
   // Ensure node_modules symlink exists for the build
   await ensureNodeModulesSymlink(repoPath)
 
@@ -102,6 +106,17 @@ async function executeBuild(repoPath: string, subdomain: string, base?: string):
   const durationMs = Date.now() - start
   console.log(`[build] ${subdomain}${outputSuffix} completed in ${durationMs}ms`)
   return { status: 'success', durationMs }
+}
+
+/** Sync shared components (AccessGate, Footer, etc.) from sample-apps before each build */
+async function syncSharedComponents(repoPath: string): Promise<void> {
+  const sampleComponents = path.join(config.sampleAppsDir, 'src', 'components')
+  const destComponents = path.join(repoPath, 'src', 'components')
+  try {
+    await fs.cp(sampleComponents, destComponents, { recursive: true })
+  } catch {
+    // Non-fatal — project may have custom components
+  }
 }
 
 /** Get current queue depth (for monitoring/status endpoints) */

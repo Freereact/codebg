@@ -2,10 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock dependencies before importing build-service
 vi.mock('../src/config.js', () => ({
-  config: { sitesDir: '/tmp/test-sites' },
+  config: { sitesDir: '/tmp/test-sites', sampleAppsDir: '/tmp/test-sample-apps' },
 }))
 vi.mock('../src/projects/repo-service.js', () => ({
   ensureNodeModulesSymlink: vi.fn().mockResolvedValue(undefined),
+}))
+vi.mock('node:fs/promises', () => ({
+  default: { cp: vi.fn().mockResolvedValue(undefined) },
+  cp: vi.fn().mockResolvedValue(undefined),
 }))
 vi.mock('node:child_process', () => ({
   execFile: vi.fn((_cmd: string, _args: string[], _opts: unknown, cb: (err: Error | null) => void) => {
