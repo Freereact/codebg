@@ -33,6 +33,16 @@ export async function createProject(
   })
 }
 
+export async function updateProject(
+  id: string,
+  body: { businessInfo?: Record<string, string>; comingSoon?: boolean },
+): Promise<{ ok: true; data: ProjectDetail } | { ok: false; error: string }> {
+  return apiFetch(`/api/projects/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+}
+
 export async function deleteProjectApi(id: string): Promise<{ ok: boolean; error?: string }> {
   return apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
 }

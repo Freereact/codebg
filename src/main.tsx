@@ -22,6 +22,7 @@ import { PortalDashboardPage } from './pages/portal-dashboard'
 import { NewProjectPage } from './pages/new-project'
 import { ProjectReviewPage } from './pages/project-review'
 import { PortalSettingsPage } from './pages/portal-settings'
+import { ProjectDetailPage } from './pages/project-detail'
 import { AdminLayout } from './components/layout/admin-layout'
 import { RequireAdmin } from './components/auth/require-admin'
 import { AdminDashboardPage } from './pages/admin/admin-dashboard'
@@ -70,6 +71,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                   <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
                   <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
                   <Route path="/portal/projects/new" element={<NewProjectPage />} />
+                  <Route path="/portal/projects/:id" element={<ProjectDetailPage />} />
                   <Route path="/portal/projects/:id/review" element={<ProjectReviewPage />} />
                   <Route path="/portal/settings" element={<PortalSettingsPage />} />
                 </Route>
