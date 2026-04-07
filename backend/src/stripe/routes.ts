@@ -35,12 +35,59 @@ checkoutRouter.post('/session', requireAuth, async (req: AuthenticatedRequest, r
       where: { id: parsed.data.projectId, userId, deletedAt: null },
     })
     if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
-    if (project.planTier) return res.status(400).json({ ok: false, error: 'already_subscribed' })
+    if (project.planTier && project.planTier === parsed.data.tier) {
+      return res.status(400).json({ ok: false, error: 'already_subscribed' })
+    }
 
     const stripe = getStripe()
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user) return res.status(401).json({ ok: false, error: 'user_not_found' })
 
+    // Resolve the target price ID
+    const configValue =
+      parsed.data.tier === 'starter' ? config.stripePriceStarterMonthly : config.stripePriceProfessionalMonthly
+    if (!configValue) return res.status(500).json({ ok: false, error: 'stripe_price_not_configured' })
+
+    let priceId = configValue
+    if (configValue.startsWith('prod_')) {
+      const product = await stripe.products.retrieve(configValue)
+      if (!product.default_price)
+        return res.status(500).json({ ok: false, error: 'stripe_product_has_no_default_price' })
+      priceId = typeof product.default_price === 'string' ? product.default_price : product.default_price.id
+    }
+
+    // If already subscribed on a different tier, update in-place (Stripe prorates automatically)
+    if (project.planTier && project.planTier !== parsed.data.tier) {
+      const activeSub = await prisma.subscription.findFirst({
+        where: { projectId: project.id, status: 'active' },
+      })
+      if (activeSub) {
+        const stripeSub = await stripe.subscriptions.retrieve(activeSub.stripeSubscriptionId)
+        const itemId = stripeSub.items.data[0]?.id
+        if (itemId) {
+          await stripe.subscriptions.update(activeSub.stripeSubscriptionId, {
+            items: [{ id: itemId, price: priceId }],
+            proration_behavior: 'create_prorations',
+            metadata: { ...stripeSub.metadata, tier: parsed.data.tier },
+          })
+
+          // Update our records immediately (webhook will confirm)
+          await prisma.subscription.update({
+            where: { id: activeSub.id },
+            data: { planTier: parsed.data.tier, stripePriceId: priceId },
+          })
+          await prisma.project.update({
+            where: { id: project.id },
+            data: { planTier: parsed.data.tier },
+          })
+
+          console.log(`[stripe] plan changed in-place: ${project.planTier} → ${parsed.data.tier} for ${project.id}`)
+          return res.json({ ok: true, data: { upgraded: true, tier: parsed.data.tier } })
+        }
+      }
+    }
+
+    // New subscription — create checkout session
     // Get or create Stripe customer
     let stripeCustomerId = user.stripeCustomerId
     if (!stripeCustomerId) {
@@ -51,20 +98,6 @@ checkoutRouter.post('/session', requireAuth, async (req: AuthenticatedRequest, r
       })
       stripeCustomerId = customer.id
       await prisma.user.update({ where: { id: userId }, data: { stripeCustomerId: customer.id } })
-    }
-
-    // Map tier to product/price — supports both price_* and prod_* IDs
-    const configValue =
-      parsed.data.tier === 'starter' ? config.stripePriceStarterMonthly : config.stripePriceProfessionalMonthly
-
-    if (!configValue) return res.status(500).json({ ok: false, error: 'stripe_price_not_configured' })
-
-    let priceId = configValue
-    if (configValue.startsWith('prod_')) {
-      const product = await stripe.products.retrieve(configValue)
-      if (!product.default_price)
-        return res.status(500).json({ ok: false, error: 'stripe_product_has_no_default_price' })
-      priceId = typeof product.default_price === 'string' ? product.default_price : product.default_price.id
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -200,23 +233,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   if (existingSub) {
     console.log(`[stripe] duplicate checkout.completed skipped for ${subscriptionId}`)
     return
-  }
-
-  // Cancel previous subscription for this project (upgrade/downgrade scenario)
-  const previousSub = await prisma.subscription.findFirst({
-    where: { projectId, status: 'active' },
-  })
-  if (previousSub) {
-    try {
-      await stripe.subscriptions.cancel(previousSub.stripeSubscriptionId)
-    } catch (cancelErr) {
-      console.warn(`[stripe] failed to cancel old subscription ${previousSub.stripeSubscriptionId}:`, cancelErr)
-    }
-    await prisma.subscription.update({
-      where: { id: previousSub.id },
-      data: { status: 'cancelled', cancelledAt: new Date() },
-    })
-    console.log(`[stripe] cancelled previous subscription ${previousSub.stripeSubscriptionId} (plan change)`)
   }
 
   const amountCents = subscription.items.data[0]?.price.unit_amount ?? 0

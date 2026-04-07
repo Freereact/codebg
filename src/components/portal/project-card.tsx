@@ -74,11 +74,14 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
     setGoLiveError('')
     try {
       const res = await createCheckoutSession(project.id, tier)
-      if (res.ok && res.url) {
-        window.location.href = res.url
-      } else {
-        setGoLiveError('error' in res ? String(res.error) : 'Checkout failed')
+      if (!res.ok) {
+        setGoLiveError(res.error)
         setGoingLive(false)
+      } else if ('upgraded' in res && res.upgraded) {
+        // In-place plan change (prorated) — reload to see updated state
+        window.location.reload()
+      } else if ('url' in res) {
+        window.location.href = res.url
       }
     } catch {
       setGoLiveError('Network error. Please try again.')
