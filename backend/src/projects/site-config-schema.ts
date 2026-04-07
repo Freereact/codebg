@@ -21,10 +21,18 @@ export const createProjectBodySchema = z.object({
 
 export type CreateProjectBody = z.infer<typeof createProjectBodySchema>
 
-export const updateProjectBodySchema = z.object({
-  businessInfo: businessInfoSchema.partial().refine((obj) => Object.keys(obj).length > 0, {
+export const updateProjectBodySchema = z
+  .object({
+    businessInfo: businessInfoSchema
+      .partial()
+      .refine((obj) => Object.keys(obj).length > 0, {
+        message: 'At least one field must be provided',
+      })
+      .optional(),
+    comingSoon: z.boolean().optional(),
+  })
+  .refine((obj) => obj.businessInfo || obj.comingSoon !== undefined, {
     message: 'At least one field must be provided',
-  }),
-})
+  })
 
 export type UpdateProjectBody = z.infer<typeof updateProjectBodySchema>

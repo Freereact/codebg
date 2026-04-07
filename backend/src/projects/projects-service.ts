@@ -253,6 +253,17 @@ export async function updateProjectSiteConfig(
   if (!existing) return null
 
   const currentConfig = (existing.siteConfig as Record<string, unknown>) ?? {}
+
+  // Handle comingSoon toggle (no rebuild needed)
+  if (input.comingSoon !== undefined && !input.businessInfo) {
+    const newSiteConfig = { ...currentConfig, comingSoon: input.comingSoon }
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { siteConfig: newSiteConfig },
+    })
+    return findProjectByIdForUser(projectId, userId)
+  }
+
   const currentBizInfo = (currentConfig.businessInfo as Record<string, unknown>) ?? {}
   const mergedBizInfo = { ...currentBizInfo, ...input.businessInfo }
 
@@ -260,7 +271,11 @@ export async function updateProjectSiteConfig(
   const validatedBizInfo = businessInfoSchema.safeParse(mergedBizInfo)
   if (!validatedBizInfo.success) return null
 
-  const newSiteConfig = { ...currentConfig, businessInfo: validatedBizInfo.data }
+  const newSiteConfig = {
+    ...currentConfig,
+    businessInfo: validatedBizInfo.data,
+    ...(input.comingSoon !== undefined ? { comingSoon: input.comingSoon } : {}),
+  }
 
   const project = await prisma.project.update({
     where: { id: projectId },

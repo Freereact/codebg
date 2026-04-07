@@ -128,19 +128,30 @@ projectsRouter.get('/access/:subdomain', async (req: AuthenticatedRequest, res: 
 
     const project = await prisma.project.findFirst({
       where: { subdomain, deletedAt: null },
-      select: { id: true, status: true, userId: true, planTier: true },
+      select: { id: true, status: true, userId: true, planTier: true, siteConfig: true },
     })
 
     if (!project) return res.json({ granted: false })
 
-    // Paid project with active subscription: always public
-    if (project.status === 'live' && project.planTier) {
-      return res.json({ granted: true, reason: 'public' })
-    }
-
-    // Check if requester is the owner (JWT cookie parsed by jwtMiddleware)
+    // Check if requester is the owner — owner always sees real site
     if (req.user && req.user.sub === project.userId) {
       return res.json({ granted: true, reason: 'owner', siteUrl: config.frontendUrl })
+    }
+
+    // Coming Soon mode — show placeholder instead of the site
+    const siteConfig = (project.siteConfig as Record<string, unknown>) ?? {}
+    if (siteConfig.comingSoon === true) {
+      const bizInfo = (siteConfig.businessInfo as Record<string, unknown>) ?? {}
+      return res.json({
+        granted: false,
+        comingSoon: true,
+        businessName: (bizInfo.name as string) ?? null,
+      })
+    }
+
+    // Paid project with active subscription: public
+    if (project.status === 'live' && project.planTier) {
+      return res.json({ granted: true, reason: 'public' })
     }
 
     return res.json({

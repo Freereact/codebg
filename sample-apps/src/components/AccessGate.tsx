@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-type AccessStatus = 'checking' | 'granted' | 'owner' | 'blocked'
+type AccessStatus = 'checking' | 'granted' | 'owner' | 'blocked' | 'coming_soon'
 
 interface AccessResponse {
   granted: boolean
@@ -8,6 +8,8 @@ interface AccessResponse {
   loginUrl?: string
   signupUrl?: string
   siteUrl?: string
+  comingSoon?: boolean
+  businessName?: string | null
 }
 
 /** Derive the main site URL from the current hostname */
@@ -24,6 +26,7 @@ export default function AccessGate({ slug, children }: { slug: string; children:
   const [loginUrl, setLoginUrl] = useState(`${mainSiteUrl}/login`)
   const [signupUrl, setSignupUrl] = useState(`${mainSiteUrl}/login`)
   const [siteUrl, setSiteUrl] = useState(mainSiteUrl)
+  const [businessName, setBusinessName] = useState<string | null>(null)
 
   useEffect(() => {
     fetch(`/api/projects/access/${encodeURIComponent(slug)}`, { credentials: 'include' })
@@ -35,6 +38,9 @@ export default function AccessGate({ slug, children }: { slug: string; children:
         if (d.siteUrl) setSiteUrl(d.siteUrl)
         if (d.granted) {
           setStatus(d.reason === 'owner' ? 'owner' : 'granted')
+        } else if (d.comingSoon) {
+          setStatus('coming_soon')
+          setBusinessName(d.businessName ?? null)
         } else {
           setStatus('blocked')
           if (d.loginUrl) setLoginUrl(d.loginUrl)
@@ -48,6 +54,10 @@ export default function AccessGate({ slug, children }: { slug: string; children:
         setStatus(isCodeBG ? 'blocked' : 'granted')
       })
   }, [slug])
+
+  if (status === 'coming_soon') {
+    return <ComingSoonPage businessName={businessName} />
+  }
 
   if (status === 'checking') {
     return (
@@ -163,6 +173,44 @@ function PaywallOverlay({ loginUrl, signupUrl }: { loginUrl: string; signupUrl: 
           Create your website — free
         </a>
       </div>
+    </div>
+  )
+}
+
+function ComingSoonPage({ businessName }: { businessName: string | null }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        padding: '24px',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        color: '#e2e8f0',
+        fontFamily: 'Inter, sans-serif',
+        textAlign: 'center',
+      }}
+    >
+      {businessName && (
+        <div style={{ fontSize: '28px', fontWeight: 700, marginBottom: '16px', color: '#f97316' }}>
+          {businessName}
+        </div>
+      )}
+      <h1 style={{ fontSize: '36px', fontWeight: 700, margin: '0 0 12px' }}>Coming Soon</h1>
+      <p style={{ maxWidth: '400px', color: '#94a3b8', lineHeight: 1.6, fontSize: '16px' }}>
+        We&apos;re working on something new. Check back shortly.
+      </p>
+      <div
+        style={{
+          marginTop: '48px',
+          width: '40px',
+          height: '4px',
+          borderRadius: '2px',
+          background: '#f97316',
+        }}
+      />
     </div>
   )
 }

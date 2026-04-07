@@ -1,8 +1,14 @@
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ExternalLink, Eye, MessageSquare, Download, Rocket } from 'lucide-react'
+import type { ProjectDetail } from '../types/portal'
 import { useProject } from '../hooks/use-project'
 import { useProjectEvents } from '../hooks/use-project-events'
 import { createCheckoutSession } from '../lib/stripe-api'
+import { updateProject } from '../lib/projects-api'
+import { BusinessInfoEditForm } from '../components/portal/business-info-edit-form'
+import { BuildProgress } from '../components/portal/build-progress'
+import { CustomDomainSetup } from '../components/portal/custom-domain-setup'
+import { deleteProjectApi } from '../lib/projects-api'
 import { Button } from '../components/ui/button'
 import { SkeletonCard } from '../components/ui/skeleton'
 import { cn } from '../lib/utils'
@@ -32,6 +38,8 @@ export function ProjectDetailPage() {
   const events = useProjectEvents(project?.status === 'building' ? id : undefined)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState('')
 
   // Auto-refresh when building
   useEffect(() => {
@@ -263,17 +271,154 @@ export function ProjectDetailPage() {
         </div>
       )}
 
-      {activeTab === 'content' && (
-        <div className="section-card p-5">
-          <p className="text-sm text-slate-500 dark:text-slate-400">Content editing — coming in the next update.</p>
+      {activeTab === 'content' && project.siteConfig && (
+        <div className="space-y-4">
+          <div className="section-card p-5">
+            <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+              Edit your business info below. Changes trigger an automatic rebuild (takes a few seconds).
+            </p>
+            <BusinessInfoEditForm
+              initialValues={
+                ((project.siteConfig as Record<string, unknown>).businessInfo as Record<string, string>) ?? {}
+              }
+              onSave={async (changed) => {
+                setSaving(true)
+                setSaveMessage('')
+                const res = await updateProject(project.id, { businessInfo: changed as Record<string, string> })
+                setSaving(false)
+                if (res.ok) {
+                  setSaveMessage('Saved. Your site is rebuilding...')
+                  refetch()
+                  setTimeout(() => setSaveMessage(''), 5000)
+                } else {
+                  setSaveMessage(`Error: ${res.error}`)
+                }
+              }}
+              saving={saving}
+            />
+            {saveMessage && (
+              <p
+                className={`mt-3 text-sm ${saveMessage.startsWith('Error') ? 'text-red-500' : 'text-green-600 dark:text-green-400'}`}
+              >
+                {saveMessage}
+              </p>
+            )}
+          </div>
+
+          {project.status === 'building' && (
+            <div className="section-card p-5">
+              <BuildProgress
+                status={events.status}
+                step={events.step}
+                buildComplete={events.buildComplete}
+                durationMs={events.durationMs}
+                error={events.error}
+              />
+            </div>
+          )}
         </div>
       )}
 
-      {activeTab === 'settings' && (
+      {activeTab === 'settings' && <SettingsTab project={project} onUpdate={refetch} />}
+    </div>
+  )
+}
+
+function SettingsTab({ project, onUpdate }: { project: ProjectDetail; onUpdate: () => void }) {
+  const siteConfig = (project.siteConfig as Record<string, unknown>) ?? {}
+  const comingSoon = siteConfig.comingSoon === true
+  const [toggling, setToggling] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  const handleToggleComingSoon = async () => {
+    setToggling(true)
+    await updateProject(project.id, { comingSoon: !comingSoon })
+    setToggling(false)
+    onUpdate()
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    const res = await deleteProjectApi(project.id)
+    if (res.ok) {
+      window.location.href = '/portal/dashboard'
+    }
+    setDeleting(false)
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Coming Soon toggle */}
+      {project.status === 'live' && (
         <div className="section-card p-5">
-          <p className="text-sm text-slate-500 dark:text-slate-400">Settings — coming in the next update.</p>
+          <h2 className="mb-1 text-sm font-semibold text-slate-800 dark:text-white">Coming Soon page</h2>
+          <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+            Show a &ldquo;Coming Soon&rdquo; placeholder instead of your site. You (the owner) always see the real site.
+          </p>
+          <button
+            onClick={handleToggleComingSoon}
+            disabled={toggling}
+            className={cn(
+              'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+              comingSoon ? 'bg-accent' : 'bg-slate-300 dark:bg-slate-600',
+            )}
+            role="switch"
+            aria-checked={comingSoon}
+          >
+            <span
+              className={cn(
+                'inline-block h-4 w-4 rounded-full bg-white transition-transform',
+                comingSoon ? 'translate-x-6' : 'translate-x-1',
+              )}
+            />
+          </button>
+          <span className="ml-3 text-sm text-slate-600 dark:text-slate-300">
+            {comingSoon ? 'Active — visitors see Coming Soon' : 'Off — visitors see your site'}
+          </span>
         </div>
       )}
+
+      {/* Custom domain */}
+      {project.status === 'live' && project.planTier === 'professional' && (
+        <div className="section-card p-5">
+          <h2 className="mb-1 text-sm font-semibold text-slate-800 dark:text-white">Custom domain</h2>
+          <CustomDomainSetup projectId={project.id} domain={project.domain} domainStatus={project.domainStatus} />
+        </div>
+      )}
+
+      {/* Danger zone */}
+      <div className="section-card border-red-200 p-5 dark:border-red-800/50">
+        <h2 className="mb-1 text-sm font-semibold text-red-600 dark:text-red-400">Danger zone</h2>
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+          Permanently delete this project and all associated data. This cannot be undone.
+        </p>
+        {confirmDelete ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500">Are you sure?</span>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="rounded px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+            >
+              {deleting ? 'Deleting...' : 'Yes, delete permanently'}
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="rounded px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="rounded border border-red-300 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
+          >
+            Delete project
+          </button>
+        )}
+      </div>
     </div>
   )
 }

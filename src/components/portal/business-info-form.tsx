@@ -1,26 +1,12 @@
 import { useState } from 'react'
 import type { BusinessInfoInput } from '../../types/portal'
 import { Button } from '../ui/button'
+import { validateBusinessInfo, type BusinessInfo, type FieldErrors } from '../../lib/business-info-validation'
 
 interface BusinessInfoFormProps {
   onSubmit: (info: BusinessInfoInput) => void
   onBack: () => void
   loading: boolean
-}
-
-type FieldErrors = Partial<Record<keyof BusinessInfoInput, string>>
-
-function validate(info: BusinessInfoInput): FieldErrors {
-  const errors: FieldErrors = {}
-  if (info.name.trim().length < 2) errors.name = 'Business name must be at least 2 characters'
-  if (info.name.length > 200) errors.name = 'Business name must be under 200 characters'
-  if (info.phone.trim().length < 5) errors.phone = 'Phone number must be at least 5 characters'
-  if (info.phone.length > 30) errors.phone = 'Phone number must be under 30 characters'
-  if (info.address.trim().length < 5) errors.address = 'Address must be at least 5 characters'
-  if (info.address.length > 500) errors.address = 'Address must be under 500 characters'
-  if (info.hours.trim().length < 3) errors.hours = 'Business hours must be at least 3 characters'
-  if (info.hours.length > 500) errors.hours = 'Business hours must be under 500 characters'
-  return errors
 }
 
 export function BusinessInfoForm({ onSubmit, onBack, loading }: BusinessInfoFormProps) {
@@ -31,11 +17,11 @@ export function BusinessInfoForm({ onSubmit, onBack, loading }: BusinessInfoForm
     hours: '',
   })
   const [errors, setErrors] = useState<FieldErrors>({})
-  const [touched, setTouched] = useState<Partial<Record<keyof BusinessInfoInput, boolean>>>({})
+  const [touched, setTouched] = useState<Partial<Record<keyof BusinessInfo, boolean>>>({})
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const fieldErrors = validate(info)
+    const fieldErrors = validateBusinessInfo(info)
     setErrors(fieldErrors)
     setTouched({ name: true, phone: true, address: true, hours: true })
     if (Object.keys(fieldErrors).length === 0) {
@@ -47,14 +33,14 @@ export function BusinessInfoForm({ onSubmit, onBack, loading }: BusinessInfoForm
     setInfo((prev) => ({ ...prev, [field]: value }))
     if (touched[field]) {
       const updated = { ...info, [field]: value }
-      const fieldErrors = validate(updated)
+      const fieldErrors = validateBusinessInfo(updated)
       setErrors((prev) => ({ ...prev, [field]: fieldErrors[field] }))
     }
   }
 
   const handleBlur = (field: keyof BusinessInfoInput) => {
     setTouched((prev) => ({ ...prev, [field]: true }))
-    const fieldErrors = validate(info)
+    const fieldErrors = validateBusinessInfo(info)
     setErrors((prev) => ({ ...prev, [field]: fieldErrors[field] }))
   }
 

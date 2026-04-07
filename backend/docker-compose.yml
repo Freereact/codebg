@@ -21,6 +21,13 @@ services:
     dns:
       - ${DNS_SERVER_1:-8.8.8.8}
       - ${DNS_SERVER_2:-8.8.4.4}
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 3G
+        reservations:
+          memory: 1G
     restart: unless-stopped
     depends_on:
       # Optional: remove if not using Redis/RabbitMQ (server falls back to direct email send)
