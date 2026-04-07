@@ -17,6 +17,7 @@ import { listProjectsQuerySchema, projectIdSchema } from './validation.js'
 import { createProjectBodySchema, updateProjectBodySchema } from './site-config-schema.js'
 import { getAllTemplates } from './template-registry.js'
 import { createFeedbackSchema, updateFeedbackSchema, feedbackIdSchema } from './feedback-validation.js'
+import { buildProject } from './build-service.js'
 import { setDomainSchema } from './domain-validation.js'
 import {
   verifyDns,
@@ -488,7 +489,7 @@ projectsRouter.get('/:id/domain/status', requireAuth, async (req: AuthenticatedR
     const userId = getUserId(req)
     const project = await prisma.project.findFirst({
       where: { id: parsed.data.id, userId, deletedAt: null },
-      select: { id: true, domain: true, domainStatus: true, domainError: true },
+      select: { id: true, domain: true, domainStatus: true, domainError: true, subdomain: true },
     })
     if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
     if (!project.domain) return res.json({ ok: true, data: { domain: null, domainStatus: null } })
@@ -499,6 +500,15 @@ projectsRouter.get('/:id/domain/status', requireAuth, async (req: AuthenticatedR
       if (taskResult) {
         if (taskResult.success) {
           await updateDomainStatus(project.id, 'active')
+
+          // Trigger the custom-domain build (--base=/)
+          if (project.subdomain) {
+            const repoPath = path.join(config.projectsDir, project.id)
+            buildProject(repoPath, project.subdomain, '/').catch((err) =>
+              console.error(`[domain] custom build failed for ${project.id}:`, err),
+            )
+          }
+
           return res.json({ ok: true, data: { domain: project.domain, domainStatus: 'active' } })
         } else {
           await updateDomainStatus(project.id, 'error', taskResult.error)

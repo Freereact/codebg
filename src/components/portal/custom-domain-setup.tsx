@@ -66,7 +66,7 @@ export function CustomDomainSetup({
     }
     setStatus(res.data.domainStatus)
     if (!res.data.verified) {
-      setError(res.data.reason ?? 'DNS not pointing to our server yet')
+      setError('DNS record not detected yet. It can take up to 48 hours to propagate. Try again shortly.')
     }
   }
 
@@ -152,33 +152,53 @@ export function CustomDomainSetup({
     )
   }
 
-  // Pending — show DNS instructions
+  // Pending — show DNS instructions as a guided checklist
   if (status === 'pending' && domain) {
+    const cnameTarget = dnsInstructions?.target ?? 'custom.codebg.com'
     return (
       <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
-        <p className="mb-2 text-xs font-medium text-slate-600 dark:text-slate-300">
-          Add this DNS record at your domain provider:
+        <p className="mb-3 text-xs font-medium text-slate-800 dark:text-slate-200">
+          Connect <strong>{domain}</strong> — 2 steps:
         </p>
-        <div className="mb-2 rounded bg-slate-100 p-2 font-mono text-xs dark:bg-slate-700">
-          <div className="flex items-center justify-between">
-            <span>
-              CNAME {domain} → {dnsInstructions?.target ?? 'custom.codebg.com'}
+
+        <div className="mb-3 space-y-2 text-xs text-slate-600 dark:text-slate-400">
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
+              1
             </span>
-            <button
-              onClick={() => copyToClipboard(dnsInstructions?.target ?? 'custom.codebg.com')}
-              className="text-slate-400 hover:text-accent"
-              aria-label="Copy CNAME target"
-            >
-              {copied ? <CheckCircle2 size={14} /> : <Copy size={14} />}
-            </button>
+            <div>
+              <p>Go to your domain provider and add this DNS record:</p>
+              <div className="mt-1 flex items-center gap-2 rounded bg-slate-100 px-2 py-1.5 font-mono dark:bg-slate-700">
+                <span className="flex-1">CNAME → {cnameTarget}</span>
+                <button
+                  onClick={() => copyToClipboard(cnameTarget)}
+                  className="shrink-0 text-slate-400 hover:text-accent"
+                  aria-label="Copy CNAME target"
+                >
+                  {copied ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+                </button>
+              </div>
+              {dnsInstructions?.altTarget && (
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Apex domain? Use A record → {dnsInstructions.altTarget}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-400 dark:border-slate-600">
+              2
+            </span>
+            <p>Click verify once your DNS record is saved (can take a few minutes to propagate).</p>
           </div>
         </div>
-        {dnsInstructions?.altTarget && (
-          <p className="mb-2 text-[11px] text-slate-500 dark:text-slate-400">
-            Or A record: {domain} → {dnsInstructions.altTarget}
-          </p>
+
+        {error && (
+          <div className="mb-2 rounded bg-amber-50 p-2 text-xs text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+            {error}
+          </div>
         )}
-        {error && <p className="mb-2 text-xs text-red-500">{error}</p>}
         <div className="flex gap-2">
           <Button onClick={handleVerify} disabled={loading}>
             {loading ? 'Checking...' : 'Verify DNS'}
