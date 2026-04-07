@@ -165,6 +165,26 @@ export function ProjectCard({ project, onDeleted }: ProjectCardProps) {
         </div>
       )}
 
+      {project.status === 'live' && project.planTier === 'starter' && mode === 'normal' && (
+        <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+          <p className="mb-2 text-xs font-medium text-slate-600 dark:text-slate-300">
+            Upgrade to Professional for custom domain + priority support:
+          </p>
+          {goLiveError && (
+            <p role="alert" className="mb-2 text-xs text-red-500">
+              {goLiveError}
+            </p>
+          )}
+          <button
+            onClick={() => handleGoLive('professional')}
+            disabled={goingLive}
+            className="rounded-md border border-accent/50 px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/10 disabled:opacity-50"
+          >
+            {goingLive ? 'Redirecting...' : 'Upgrade to Pro $39/mo'}
+          </button>
+        </div>
+      )}
+
       {project.status === 'live' && project.planTier === 'professional' && (
         <CustomDomainSetup projectId={project.id} domain={project.domain} domainStatus={project.domainStatus} />
       )}

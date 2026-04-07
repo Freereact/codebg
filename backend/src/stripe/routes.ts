@@ -185,10 +185,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     return
   }
 
-  // Idempotency: skip if project already live
+  // Idempotency: skip if project already live on the same tier
   const project = await prisma.project.findFirst({ where: { id: projectId, deletedAt: null } })
   if (!project) return
-  if (project.status === 'live') return
+  if (project.status === 'live' && project.planTier === tier) return
 
   const stripe = getStripe()
   const subscription = await stripe.subscriptions.retrieve(subscriptionId)
@@ -200,6 +200,23 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   if (existingSub) {
     console.log(`[stripe] duplicate checkout.completed skipped for ${subscriptionId}`)
     return
+  }
+
+  // Cancel previous subscription for this project (upgrade/downgrade scenario)
+  const previousSub = await prisma.subscription.findFirst({
+    where: { projectId, status: 'active' },
+  })
+  if (previousSub) {
+    try {
+      await stripe.subscriptions.cancel(previousSub.stripeSubscriptionId)
+    } catch (cancelErr) {
+      console.warn(`[stripe] failed to cancel old subscription ${previousSub.stripeSubscriptionId}:`, cancelErr)
+    }
+    await prisma.subscription.update({
+      where: { id: previousSub.id },
+      data: { status: 'cancelled', cancelledAt: new Date() },
+    })
+    console.log(`[stripe] cancelled previous subscription ${previousSub.stripeSubscriptionId} (plan change)`)
   }
 
   const amountCents = subscription.items.data[0]?.price.unit_amount ?? 0
@@ -329,10 +346,36 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
   })
   if (!sub) return
 
+  // Detect tier change by comparing price ID
+  const newPriceId = subscription.items.data[0]?.price.id ?? null
+  let newTier: string | null = null
+  if (newPriceId) {
+    if (newPriceId === config.stripePriceStarterMonthly) {
+      newTier = 'starter'
+    } else if (newPriceId === config.stripePriceProfessionalMonthly) {
+      newTier = 'professional'
+    } else {
+      // Price might be from a product ID — resolve default price
+      try {
+        const stripe = getStripe()
+        const price = await stripe.prices.retrieve(newPriceId)
+        const productId = typeof price.product === 'string' ? price.product : price.product.id
+        if (productId === config.stripePriceStarterMonthly) newTier = 'starter'
+        else if (productId === config.stripePriceProfessionalMonthly) newTier = 'professional'
+      } catch {
+        // Can't resolve — keep existing tier
+      }
+    }
+  }
+
+  const tierChanged = newTier && newTier !== sub.planTier
+
   await prisma.subscription.update({
     where: { id: sub.id },
     data: {
       status: subscription.status as string,
+      planTier: newTier ?? undefined,
+      amountCents: subscription.items.data[0]?.price.unit_amount ?? undefined,
       cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
       currentPeriodStart: subscription.items.data[0]?.current_period_start
         ? new Date(subscription.items.data[0].current_period_start * 1000)
@@ -342,6 +385,28 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
         : undefined,
     },
   })
+
+  // Update project tier if changed
+  if (tierChanged) {
+    await prisma.project.update({
+      where: { id: sub.projectId },
+      data: { planTier: newTier },
+    })
+    console.log(`[stripe] plan changed for project ${sub.projectId}: ${sub.planTier} → ${newTier}`)
+
+    // Downgrade from professional: clean up custom domain
+    if (sub.planTier === 'professional' && newTier === 'starter') {
+      const project = await prisma.project.findFirst({ where: { id: sub.projectId } })
+      if (project?.domain && project.domainStatus === 'active') {
+        const { writeDomainTask } = await import('../projects/domain-service.js')
+        await writeDomainTask('remove', project.domain, project.subdomain ?? project.id)
+        await prisma.project.update({
+          where: { id: project.id },
+          data: { domain: null, domainStatus: null, domainError: null },
+        })
+      }
+    }
+  }
 
   console.log(`[stripe] subscription ${stripeSubId} updated: ${subscription.status}`)
 
@@ -374,9 +439,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
   })
 
   if (sub.project) {
+    // Revert to preview so user can re-subscribe via Go Live buttons
     await prisma.project.update({
       where: { id: sub.project.id },
-      data: { status: 'cancelled', cancelledAt: new Date() },
+      data: { status: 'preview', planTier: null, cancelledAt: new Date() },
     })
 
     // Clean up custom domain if active
