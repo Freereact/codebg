@@ -53,11 +53,18 @@ checkoutRouter.post('/session', requireAuth, async (req: AuthenticatedRequest, r
       await prisma.user.update({ where: { id: userId }, data: { stripeCustomerId: customer.id } })
     }
 
-    // Map tier to price
-    const priceId =
+    // Map tier to product/price — supports both price_* and prod_* IDs
+    const configValue =
       parsed.data.tier === 'starter' ? config.stripePriceStarterMonthly : config.stripePriceProfessionalMonthly
 
-    if (!priceId) return res.status(500).json({ ok: false, error: 'stripe_price_not_configured' })
+    if (!configValue) return res.status(500).json({ ok: false, error: 'stripe_price_not_configured' })
+
+    let priceId = configValue
+    if (configValue.startsWith('prod_')) {
+      const product = await stripe.products.retrieve(configValue)
+      if (!product.default_price) return res.status(500).json({ ok: false, error: 'stripe_product_has_no_default_price' })
+      priceId = typeof product.default_price === 'string' ? product.default_price : product.default_price.id
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
