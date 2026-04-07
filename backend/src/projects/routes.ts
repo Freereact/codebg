@@ -120,8 +120,11 @@ projectsRouter.get('/:id/events', requireAuth, async (req: AuthenticatedRequest,
   }
 })
 
-// Public access check — used by the AccessGate component embedded in built sites
+// Public access check — used by the AccessGate component embedded in built sites.
+// Allows any origin since custom domain sites call this from their own domain.
 projectsRouter.get('/access/:subdomain', async (req: AuthenticatedRequest, res: Response) => {
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin ?? '*')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
   try {
     const subdomain = req.params.subdomain
     if (!subdomain) return res.json({ granted: false })
