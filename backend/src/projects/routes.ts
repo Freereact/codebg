@@ -28,6 +28,8 @@ import {
   getDnsInstructions,
 } from './domain-service.js'
 import { createFeedback, listFeedback, updateFeedback } from './feedback-service.js'
+import { listMessages, createCustomerMessage, markMessagesRead, getUnreadCountsForProject } from './message-service.js'
+import { createMessageSchema } from './message-validation.js'
 import { requireAdmin } from '../auth/middleware.js'
 import type { AuthenticatedRequest } from '../auth/types.js'
 
@@ -319,6 +321,99 @@ projectsRouter.get('/:id/feedback', requireAuth, async (req: AuthenticatedReques
     return res.status(500).json({ ok: false, error: 'internal_error' })
   }
 })
+
+// --- Messages (threaded conversation on feedback items) ---
+
+// Static route must come before parameterized /:feedbackId routes
+projectsRouter.get('/:id/feedback/unread', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const idParsed = projectIdSchema.safeParse({ id: req.params.id })
+    if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+    const project = await findProjectByIdForUser(idParsed.data.id, getUserId(req))
+    if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+
+    const counts = await getUnreadCountsForProject(idParsed.data.id, getUserId(req))
+    return res.json({ ok: true, data: counts })
+  } catch (err) {
+    console.error('[messages] unread error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+projectsRouter.get(
+  '/:id/feedback/:feedbackId/messages',
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const idParsed = projectIdSchema.safeParse({ id: req.params.id })
+      if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+      const project = await findProjectByIdForUser(idParsed.data.id, getUserId(req))
+      if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+
+      const fbParsed = feedbackIdSchema.safeParse({ feedbackId: req.params.feedbackId })
+      if (!fbParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
+
+      const messages = await listMessages(fbParsed.data.feedbackId)
+      return res.json({ ok: true, data: messages })
+    } catch (err) {
+      console.error('[messages] list error', err instanceof Error ? err.message : 'unknown')
+      return res.status(500).json({ ok: false, error: 'internal_error' })
+    }
+  },
+)
+
+projectsRouter.post(
+  '/:id/feedback/:feedbackId/messages',
+  requireAuth,
+  feedbackLimiter,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const idParsed = projectIdSchema.safeParse({ id: req.params.id })
+      if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+      const project = await findProjectByIdForUser(idParsed.data.id, getUserId(req))
+      if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+
+      const fbParsed = feedbackIdSchema.safeParse({ feedbackId: req.params.feedbackId })
+      if (!fbParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
+
+      const bodyParsed = createMessageSchema.safeParse(req.body)
+      if (!bodyParsed.success)
+        return res.status(400).json({ ok: false, error: 'invalid_payload', issues: bodyParsed.error.issues })
+
+      const message = await createCustomerMessage(fbParsed.data.feedbackId, getUserId(req), bodyParsed.data.body)
+      return res.status(201).json({ ok: true, data: message })
+    } catch (err) {
+      console.error('[messages] create error', err instanceof Error ? err.message : 'unknown')
+      return res.status(500).json({ ok: false, error: 'internal_error' })
+    }
+  },
+)
+
+projectsRouter.post(
+  '/:id/feedback/:feedbackId/messages/read',
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const idParsed = projectIdSchema.safeParse({ id: req.params.id })
+      if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+
+      const project = await findProjectByIdForUser(idParsed.data.id, getUserId(req))
+      if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+
+      const fbParsed = feedbackIdSchema.safeParse({ feedbackId: req.params.feedbackId })
+      if (!fbParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
+
+      const markedCount = await markMessagesRead(fbParsed.data.feedbackId, 'client')
+      return res.json({ ok: true, markedCount })
+    } catch (err) {
+      console.error('[messages] read error', err instanceof Error ? err.message : 'unknown')
+      return res.status(500).json({ ok: false, error: 'internal_error' })
+    }
+  },
+)
 
 // --- Feedback admin (operator) ---
 

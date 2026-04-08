@@ -32,6 +32,7 @@ model User {
   authTokens      AuthToken[]
   contentRequests ContentRequest[]
   adminNotes      AdminNote[]
+  messages        Message[]
 
   @@unique([email], map: "users_email_active_idx")
   @@index([role], map: "users_role_idx")
@@ -209,8 +210,9 @@ model ContentRequest {
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  messages Message[]
 
   @@index([projectId, createdAt(sort: Desc)], map: "content_requests_project_idx")
   @@index([status, createdAt], map: "content_requests_status_idx")
@@ -238,4 +240,25 @@ model AdminNote {
   @@index([projectId, createdAt(sort: Desc)], map: "admin_notes_project_idx")
   @@index([isPinned(sort: Desc), createdAt(sort: Desc)], map: "admin_notes_pinned_idx")
   @@map("admin_notes")
+}
+
+// ============================================================================
+// 9. messages (threaded conversations on content_requests)
+// ============================================================================
+
+model Message {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contentRequestId String    @map("content_request_id") @db.Uuid
+  authorId         String    @map("author_id") @db.Uuid
+  authorRole       String    @map("author_role")
+  body             String
+  readAt           DateTime? @map("read_at") @db.Timestamptz
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  contentRequest ContentRequest @relation(fields: [contentRequestId], references: [id], onDelete: Cascade)
+  author         User           @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([contentRequestId, createdAt], map: "messages_thread_idx")
+  @@index([authorId, readAt], map: "messages_unread_idx")
+  @@map("messages")
 }

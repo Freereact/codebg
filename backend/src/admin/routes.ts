@@ -10,6 +10,13 @@ import { buildProject } from '../projects/build-service.js'
 import { updateFeedback } from '../projects/feedback-service.js'
 import { updateFeedbackSchema, feedbackIdSchema } from '../projects/feedback-validation.js'
 import {
+  listMessages,
+  createAdminMessage,
+  markMessagesRead,
+  getAdminUnreadCounts,
+} from '../projects/message-service.js'
+import { createAdminMessageSchema } from '../projects/message-validation.js'
+import {
   getAdminStats,
   listAdminProjects,
   getAdminProjectDetail,
@@ -259,6 +266,71 @@ adminRouter.patch('/feedback/:feedbackId', async (req: AuthenticatedRequest, res
     return res.json({ ok: true, data: updated })
   } catch (err) {
     console.error('[admin] feedback update error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+// ============================================================================
+// Messages (threaded conversations on feedback items)
+// ============================================================================
+
+// Static route must come before parameterized /feedback/:feedbackId routes
+adminRouter.get('/feedback/unread', async (_req: AuthenticatedRequest, res: Response) => {
+  try {
+    const counts = await getAdminUnreadCounts()
+    return res.json({ ok: true, data: counts })
+  } catch (err) {
+    console.error('[admin] unread error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+adminRouter.get('/feedback/:feedbackId/messages', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const idParsed = feedbackIdSchema.safeParse(req.params)
+    if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
+
+    const messages = await listMessages(idParsed.data.feedbackId)
+    return res.json({ ok: true, data: messages })
+  } catch (err) {
+    console.error('[admin] messages list error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+adminRouter.post('/feedback/:feedbackId/messages', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const idParsed = feedbackIdSchema.safeParse(req.params)
+    if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
+
+    const bodyParsed = createAdminMessageSchema.safeParse(req.body)
+    if (!bodyParsed.success)
+      return res.status(400).json({ ok: false, error: 'invalid_payload', issues: bodyParsed.error.issues })
+
+    const adminId = req.user?.sub
+    if (!adminId) return res.status(401).json({ ok: false, error: 'unauthorized' })
+    const message = await createAdminMessage(
+      idParsed.data.feedbackId,
+      adminId,
+      bodyParsed.data.body,
+      bodyParsed.data.status,
+    )
+    return res.status(201).json({ ok: true, data: message })
+  } catch (err) {
+    console.error('[admin] messages create error', err instanceof Error ? err.message : 'unknown')
+    return res.status(500).json({ ok: false, error: 'internal_error' })
+  }
+})
+
+adminRouter.post('/feedback/:feedbackId/messages/read', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const idParsed = feedbackIdSchema.safeParse(req.params)
+    if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
+
+    const markedCount = await markMessagesRead(idParsed.data.feedbackId, 'admin')
+    return res.json({ ok: true, markedCount })
+  } catch (err) {
+    console.error('[admin] messages read error', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ ok: false, error: 'internal_error' })
   }
 })
