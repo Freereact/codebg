@@ -5,11 +5,13 @@ import { useProject } from '../hooks/use-project'
 import { useProjectEvents } from '../hooks/use-project-events'
 import { createCheckoutSession } from '../lib/stripe-api'
 import { updateProject } from '../lib/projects-api'
+import { fetchUnreadCounts } from '../lib/feedback-api'
 import { BusinessInfoEditForm } from '../components/portal/business-info-edit-form'
 import { BuildProgress } from '../components/portal/build-progress'
 import { CustomDomainSetup } from '../components/portal/custom-domain-setup'
 import { deleteProjectApi } from '../lib/projects-api'
 import { Button } from '../components/ui/button'
+import { UnreadBadge } from '../components/ui/unread-badge'
 import { SkeletonCard } from '../components/ui/skeleton'
 import { cn } from '../lib/utils'
 import { useState, useEffect } from 'react'
@@ -40,6 +42,15 @@ export function ProjectDetailPage() {
   const [checkoutError, setCheckoutError] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread feedback message count
+  useEffect(() => {
+    if (!id) return
+    fetchUnreadCounts(id).then((res) => {
+      if (res.ok) setUnreadCount(res.data.total)
+    })
+  }, [id])
 
   // Auto-refresh when building
   useEffect(() => {
@@ -191,6 +202,7 @@ export function ProjectDetailPage() {
               <Button asChild variant="ghost">
                 <Link to={`/portal/projects/${project.id}/review`}>
                   <MessageSquare size={14} className="mr-1.5" /> Review
+                  <UnreadBadge count={unreadCount} />
                 </Link>
               </Button>
               {project.planTier && (

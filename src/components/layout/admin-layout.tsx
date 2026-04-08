@@ -1,8 +1,11 @@
+import { useEffect, useState } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, FolderKanban, Users, MessageSquare, LogOut } from 'lucide-react'
 import { useAuth } from '../../hooks/use-auth'
 import { cn } from '../../lib/utils'
 import { SiteModeBanner } from '../ui/site-mode-banner'
+import { UnreadBadge } from '../ui/unread-badge'
+import { fetchAdminUnreadCounts } from '../../lib/admin-api'
 
 const navItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
@@ -14,6 +17,18 @@ const navItems = [
 function AdminSidebar() {
   const { pathname } = useLocation()
   const { logout } = useAuth()
+  const [unreadFeedback, setUnreadFeedback] = useState(0)
+
+  useEffect(() => {
+    const load = () => {
+      fetchAdminUnreadCounts().then((res) => {
+        if (res.ok) setUnreadFeedback(res.data.total)
+      })
+    }
+    load()
+    const interval = setInterval(load, 60_000) // Poll every 60s
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <aside className="flex w-56 flex-shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-shell">
@@ -40,6 +55,7 @@ function AdminSidebar() {
             >
               <item.icon size={18} />
               {item.label}
+              {item.label === 'Feedback' && <UnreadBadge count={unreadFeedback} />}
             </Link>
           )
         })}
