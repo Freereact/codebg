@@ -12,7 +12,7 @@ services:
     ports:
       - "127.0.0.1:8787:8787"
     volumes:
-      - ${SAMPLE_APPS_HOST_PATH:-../sample-apps}:/mnt/sample-apps
+      - ${SAMPLE_APPS_HOST_PATH:-../sample-apps}:/mnt/sample-apps:ro
       - ${PROJECTS_HOST_PATH:-/var/www/projects}:/var/www/projects
       - ${SITES_HOST_PATH:-/var/www/sites}:/var/www/sites
       - ${DOMAIN_TASKS_PATH:-/var/www/domain-tasks}:/var/www/domain-tasks

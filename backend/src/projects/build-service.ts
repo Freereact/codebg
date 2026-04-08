@@ -98,7 +98,11 @@ async function executeBuild(repoPath: string, subdomain: string, base?: string):
   const viteBin = path.join(repoPath, 'node_modules', '.bin', 'vite')
   await execFileAsync(viteBin, ['build', `--base=${baseArg}`, `--outDir=${outputPath}`, '--emptyOutDir'], {
     cwd: repoPath,
-    env: { ...process.env },
+    env: {
+      PATH: process.env.PATH,
+      HOME: process.env.HOME,
+      NODE_ENV: 'production',
+    },
     timeout: 60_000,
     maxBuffer: 10 * 1024 * 1024, // 10MB stdout/stderr limit
   })

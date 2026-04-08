@@ -85,7 +85,7 @@ app.get('/api/site-mode', async (_req, res) => {
 
 app.get('/healthz', async (_req, res) => {
   try {
-    await prisma.$queryRawUnsafe('SELECT 1')
+    await prisma.$queryRaw`SELECT 1`
     await redis.ping()
     res.json({ ok: true })
   } catch {

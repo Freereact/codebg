@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { Router } from 'express'
-import type { Response } from 'express'
+import type { Request, Response } from 'express'
+import rateLimit from 'express-rate-limit'
 import { requireAuth } from '../auth/middleware.js'
 import { config } from '../config.js'
 import { prisma } from '../db.js'
@@ -35,6 +36,47 @@ function getUserId(req: AuthenticatedRequest): string {
   if (!req.user) throw new Error('requireAuth did not populate req.user')
   return req.user.sub
 }
+
+/** Key rate limiter by authenticated user ID (falls back to IP) */
+function userKey(req: Request): string {
+  return (req as AuthenticatedRequest).user?.sub ?? req.ip ?? 'unknown'
+}
+
+const createProjectLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  limit: 5,
+  keyGenerator: userKey,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { ok: false, error: 'too_many_requests' },
+})
+
+const updateProjectLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 10,
+  keyGenerator: userKey,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { ok: false, error: 'too_many_requests' },
+})
+
+const feedbackLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  limit: 20,
+  keyGenerator: userKey,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { ok: false, error: 'too_many_requests' },
+})
+
+const domainLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  limit: 10,
+  keyGenerator: userKey,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { ok: false, error: 'too_many_requests' },
+})
 
 export const projectsRouter = Router()
 
@@ -168,7 +210,7 @@ projectsRouter.get('/access/:subdomain', async (req: AuthenticatedRequest, res: 
   }
 })
 
-projectsRouter.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+projectsRouter.post('/', requireAuth, createProjectLimiter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const parsed = createProjectBodySchema.safeParse(req.body)
     if (!parsed.success) {
@@ -183,7 +225,7 @@ projectsRouter.post('/', requireAuth, async (req: AuthenticatedRequest, res: Res
   }
 })
 
-projectsRouter.patch('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+projectsRouter.patch('/:id', requireAuth, updateProjectLimiter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const idParsed = projectIdSchema.safeParse(req.params)
     if (!idParsed.success) {
@@ -241,7 +283,7 @@ projectsRouter.get('/:id/download', requireAuth, async (req: AuthenticatedReques
 
 // --- Feedback (content requests) ---
 
-projectsRouter.post('/:id/feedback', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+projectsRouter.post('/:id/feedback', requireAuth, feedbackLimiter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const idParsed = projectIdSchema.safeParse(req.params)
     if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
@@ -405,7 +447,7 @@ usersRouter.get('/me', requireAuth, async (req: AuthenticatedRequest, res: Respo
 // Custom Domain Management (Professional plan only)
 // ============================================================================
 
-projectsRouter.post('/:id/domain', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+projectsRouter.post('/:id/domain', requireAuth, domainLimiter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const parsed = projectIdSchema.safeParse(req.params)
     if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
@@ -452,48 +494,53 @@ projectsRouter.post('/:id/domain', requireAuth, async (req: AuthenticatedRequest
   }
 })
 
-projectsRouter.post('/:id/domain/verify', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const parsed = projectIdSchema.safeParse(req.params)
-    if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
+projectsRouter.post(
+  '/:id/domain/verify',
+  requireAuth,
+  domainLimiter,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const parsed = projectIdSchema.safeParse(req.params)
+      if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_project_id' })
 
-    const userId = getUserId(req)
-    const project = await prisma.project.findFirst({
-      where: { id: parsed.data.id, userId, deletedAt: null },
-      select: { id: true, domain: true, domainStatus: true, subdomain: true },
-    })
-    if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
-    if (!project.domain) return res.status(400).json({ ok: false, error: 'no_domain_set' })
+      const userId = getUserId(req)
+      const project = await prisma.project.findFirst({
+        where: { id: parsed.data.id, userId, deletedAt: null },
+        select: { id: true, domain: true, domainStatus: true, subdomain: true },
+      })
+      if (!project) return res.status(404).json({ ok: false, error: 'project_not_found' })
+      if (!project.domain) return res.status(400).json({ ok: false, error: 'no_domain_set' })
 
-    const result = await verifyDns(project.domain)
+      const result = await verifyDns(project.domain)
 
-    if (!result.verified) {
+      if (!result.verified) {
+        return res.json({
+          ok: true,
+          data: {
+            domain: project.domain,
+            domainStatus: 'pending',
+            verified: false,
+            reason: result.reason,
+            dnsInstructions: getDnsInstructions(project.domain),
+          },
+        })
+      }
+
+      // DNS verified — trigger provisioning
+      await updateDomainStatus(project.id, 'dns_verified')
+      await writeDomainTask('setup', project.domain, project.subdomain ?? project.id)
+      await updateDomainStatus(project.id, 'ssl_provisioning')
+
       return res.json({
         ok: true,
-        data: {
-          domain: project.domain,
-          domainStatus: 'pending',
-          verified: false,
-          reason: result.reason,
-          dnsInstructions: getDnsInstructions(project.domain),
-        },
+        data: { domain: project.domain, domainStatus: 'ssl_provisioning', verified: true, method: result.method },
       })
+    } catch (err) {
+      console.error('[domain] verify error', err instanceof Error ? err.message : 'unknown')
+      return res.status(500).json({ ok: false, error: 'internal_error' })
     }
-
-    // DNS verified — trigger provisioning
-    await updateDomainStatus(project.id, 'dns_verified')
-    await writeDomainTask('setup', project.domain, project.subdomain ?? project.id)
-    await updateDomainStatus(project.id, 'ssl_provisioning')
-
-    return res.json({
-      ok: true,
-      data: { domain: project.domain, domainStatus: 'ssl_provisioning', verified: true, method: result.method },
-    })
-  } catch (err) {
-    console.error('[domain] verify error', err instanceof Error ? err.message : 'unknown')
-    return res.status(500).json({ ok: false, error: 'internal_error' })
-  }
-})
+  },
+)
 
 projectsRouter.get('/:id/domain/status', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {

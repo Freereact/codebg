@@ -5,6 +5,8 @@ import { magicLinkSchema, verifyTokenSchema } from './validation.js'
 import { findOrCreateUser, createAndSendMagicLink, verifyMagicLinkToken, signJwt } from './auth-service.js'
 import { requireAuth } from './middleware.js'
 import type { AuthenticatedRequest } from './types.js'
+import { verifyTurnstile } from '../turnstile.js'
+import { config } from '../config.js'
 
 const magicLinkLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -29,6 +31,11 @@ authRouter.post('/magic-link', magicLinkLimiter, async (req: Request, res: Respo
     const parsed = magicLinkSchema.safeParse(req.body)
     if (!parsed.success) {
       return res.status(400).json({ ok: false, error: 'invalid_email', issues: parsed.error.issues })
+    }
+
+    const turnstileOk = await verifyTurnstile(config.turnstileSecret, parsed.data.turnstileToken, req.ip)
+    if (!turnstileOk) {
+      return res.status(400).json({ ok: false, error: 'turnstile_failed' })
     }
 
     const user = await findOrCreateUser(parsed.data.email)

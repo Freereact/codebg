@@ -1,31 +1,43 @@
 import { describe, expect, it } from 'vitest'
 import { magicLinkSchema, verifyTokenSchema } from '../src/auth/validation.js'
 
+const validToken = 'turnstile-test-token-abc123'
+
 describe('magicLinkSchema', () => {
-  it('accepts a valid email', () => {
-    const result = magicLinkSchema.safeParse({ email: 'user@example.com' })
+  it('accepts a valid email with turnstile token', () => {
+    const result = magicLinkSchema.safeParse({ email: 'user@example.com', turnstileToken: validToken })
     expect(result.success).toBe(true)
   })
 
   it('rejects missing email', () => {
-    const result = magicLinkSchema.safeParse({})
+    const result = magicLinkSchema.safeParse({ turnstileToken: validToken })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects missing turnstile token', () => {
+    const result = magicLinkSchema.safeParse({ email: 'user@example.com' })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects turnstile token shorter than 10 chars', () => {
+    const result = magicLinkSchema.safeParse({ email: 'user@example.com', turnstileToken: 'short' })
     expect(result.success).toBe(false)
   })
 
   it('rejects invalid email format', () => {
-    const result = magicLinkSchema.safeParse({ email: 'not-an-email' })
+    const result = magicLinkSchema.safeParse({ email: 'not-an-email', turnstileToken: validToken })
     expect(result.success).toBe(false)
   })
 
   it('rejects email exceeding 320 chars', () => {
-    const result = magicLinkSchema.safeParse({ email: 'a'.repeat(310) + '@example.com' })
+    const result = magicLinkSchema.safeParse({ email: 'a'.repeat(310) + '@example.com', turnstileToken: validToken })
     expect(result.success).toBe(false)
   })
 
   it('accepts email at max length boundary', () => {
     const local = 'a'.repeat(305)
     const email = `${local}@ex.com` // 312 chars
-    const result = magicLinkSchema.safeParse({ email })
+    const result = magicLinkSchema.safeParse({ email, turnstileToken: validToken })
     expect(result.success).toBe(true)
   })
 })

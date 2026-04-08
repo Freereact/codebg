@@ -1,10 +1,13 @@
 import type { AuthUser } from '../types/auth'
 import { apiFetch } from './api'
 
-export async function requestMagicLink(email: string): Promise<{ ok: boolean; error?: string }> {
+export async function requestMagicLink(
+  email: string,
+  turnstileToken: string,
+): Promise<{ ok: boolean; error?: string }> {
   return apiFetch('/api/auth/magic-link', {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, turnstileToken }),
   })
 }
 

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import type { Request, Response } from 'express'
 import type Stripe from 'stripe'
+import rateLimit from 'express-rate-limit'
 import { requireAuth } from '../auth/middleware.js'
 import type { AuthenticatedRequest } from '../auth/types.js'
 import { config } from '../config.js'
@@ -15,6 +16,15 @@ import {
   notifyAdminNewPayment,
 } from '../admin/notifications.js'
 
+const checkoutLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  limit: 10,
+  keyGenerator: (req: Request) => (req as AuthenticatedRequest).user?.sub ?? req.ip ?? 'unknown',
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { ok: false, error: 'too_many_requests' },
+})
+
 export const checkoutRouter = Router()
 export const stripeWebhookRouter = Router()
 export const billingRouter = Router()
@@ -23,7 +33,7 @@ export const billingRouter = Router()
 // POST /api/checkout/session — create Stripe Checkout session
 // ============================================================================
 
-checkoutRouter.post('/session', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+checkoutRouter.post('/session', requireAuth, checkoutLimiter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const parsed = createCheckoutSchema.safeParse(req.body)
     if (!parsed.success) return res.status(400).json({ ok: false, error: 'invalid_payload' })

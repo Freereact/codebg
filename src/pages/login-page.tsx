@@ -1,11 +1,61 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Navigate } from 'react-router-dom'
 import { requestMagicLink } from '../lib/auth-api'
+import { loadTurnstileScript } from '../lib/turnstile'
 import { useAuth } from '../hooks/use-auth'
 import { useSiteMode } from '../contexts/site-mode-context'
 import { Button } from '../components/ui/button'
 
 const RESEND_COOLDOWN = 60
+
+/** Inline Turnstile widget that re-initializes when the container mounts. */
+function TurnstileWidget({
+  onToken,
+  onExpire,
+  onError,
+}: {
+  onToken: (token: string) => void
+  onExpire: () => void
+  onError: () => void
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const widgetIdRef = useRef<string | null>(null)
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function init() {
+      if (!siteKey || !containerRef.current) return
+
+      try {
+        await loadTurnstileScript()
+        if (cancelled || !window.turnstile || !containerRef.current) return
+
+        widgetIdRef.current = window.turnstile.render(containerRef.current, {
+          sitekey: siteKey,
+          callback: (t: string) => onToken(t),
+          'expired-callback': () => onExpire(),
+        })
+      } catch {
+        if (!cancelled) onError()
+      }
+    }
+
+    void init()
+    return () => {
+      cancelled = true
+      if (window.turnstile && widgetIdRef.current) {
+        window.turnstile.remove(widgetIdRef.current)
+        widgetIdRef.current = null
+      }
+    }
+    // Re-init only when this component mounts; callbacks are stable via the parent
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [siteKey])
+
+  return <div ref={containerRef} className="flex justify-center" />
+}
 
 export function LoginPage() {
   const { state: authState } = useAuth()
@@ -15,6 +65,7 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [cooldown, setCooldown] = useState(0)
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   useEffect(() => {
     if (cooldown <= 0) return
@@ -22,13 +73,26 @@ export function LoginPage() {
     return () => clearTimeout(timer)
   }, [cooldown])
 
+  const handleToken = useCallback((token: string) => setTurnstileToken(token), [])
+  const handleExpire = useCallback(() => setTurnstileToken(''), [])
+  const handleTurnstileError = useCallback(
+    () => setError('Security widget failed to load. Please refresh the page.'),
+    [],
+  )
+
   const handleResend = useCallback(async () => {
+    if (!turnstileToken) {
+      setError('Please complete the security check first.')
+      return
+    }
+
     setError('')
     setLoading(true)
     setCooldown(RESEND_COOLDOWN)
 
     try {
-      const res = await requestMagicLink(email)
+      const res = await requestMagicLink(email, turnstileToken)
+      setTurnstileToken('')
       if (!res.ok) {
         setError(res.error ?? 'Could not resend. Please try again.')
       }
@@ -37,9 +101,8 @@ export function LoginPage() {
     } finally {
       setLoading(false)
     }
-  }, [email])
+  }, [email, turnstileToken])
 
-  // Redirect to portal if already logged in
   if (authState.status === 'authenticated') {
     return <Navigate to="/portal/dashboard" replace />
   }
@@ -59,16 +122,27 @@ export function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!turnstileToken) {
+      setError('Please complete the security check first.')
+      return
+    }
+
     setError('')
     setLoading(true)
 
     try {
-      const res = await requestMagicLink(email)
+      const res = await requestMagicLink(email, turnstileToken)
+      setTurnstileToken('')
       if (res.ok) {
         setSent(true)
         setCooldown(RESEND_COOLDOWN)
       } else {
-        setError(res.error ?? 'Something went wrong')
+        setError(
+          res.error === 'turnstile_failed'
+            ? 'Security check failed. Please try again.'
+            : (res.error ?? 'Something went wrong'),
+        )
       }
     } catch {
       setError('Network error. Please try again.')
@@ -87,13 +161,16 @@ export function LoginPage() {
             link in the email to continue.
           </p>
           <div className="mt-6">
+            <div className="mb-4">
+              <TurnstileWidget onToken={handleToken} onExpire={handleExpire} onError={handleTurnstileError} />
+            </div>
             {cooldown > 0 ? (
               <p className="text-sm text-slate-400 dark:text-slate-500">Resend available in {cooldown}s</p>
             ) : (
               <button
                 type="button"
                 onClick={handleResend}
-                disabled={loading}
+                disabled={loading || !turnstileToken}
                 className="text-sm font-medium text-accent hover:underline disabled:opacity-50"
               >
                 {loading ? 'Sending...' : "Didn't receive it? Send again"}
@@ -110,6 +187,7 @@ export function LoginPage() {
             onClick={() => {
               setSent(false)
               setError('')
+              setTurnstileToken('')
             }}
             className="mt-4 text-xs text-slate-400 hover:underline"
           >
@@ -140,12 +218,13 @@ export function LoginPage() {
             className="input"
             aria-describedby={error ? 'email-error' : undefined}
           />
+          <TurnstileWidget onToken={handleToken} onExpire={handleExpire} onError={handleTurnstileError} />
           {error && (
             <p id="email-error" role="alert" className="text-sm text-red-400">
               {error}
             </p>
           )}
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading || !turnstileToken}>
             {loading ? 'Sending...' : 'Send magic link'}
           </Button>
         </form>

@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const magicLinkSchema = z.object({
   email: z.string().email().max(320),
+  turnstileToken: z.string().min(10),
 })
 
 export const verifyTokenSchema = z.object({
