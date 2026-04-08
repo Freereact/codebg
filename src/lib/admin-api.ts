@@ -124,6 +124,52 @@ export async function createAdminNote(input: {
 }
 
 // ============================================================================
+// Messages (threaded conversations on feedback items)
+// ============================================================================
+
+export interface AdminMessageItem {
+  id: string
+  contentRequestId: string
+  authorId: string
+  authorRole: string
+  body: string
+  readAt: string | null
+  createdAt: string
+}
+
+export interface AdminUnreadCounts {
+  total: number
+  byFeedback: Record<string, number>
+}
+
+export async function fetchAdminMessages(feedbackId: string): Promise<ApiResult<AdminMessageItem[]>> {
+  return apiFetch(`/api/admin/feedback/${feedbackId}/messages`)
+}
+
+export async function sendAdminMessage(
+  feedbackId: string,
+  body: string,
+  status?: string,
+): Promise<ApiResult<AdminMessageItem>> {
+  return apiFetch(`/api/admin/feedback/${feedbackId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ body, status }),
+  })
+}
+
+export async function markAdminMessagesRead(
+  feedbackId: string,
+): Promise<{ ok: true; markedCount: number } | { ok: false; error: string }> {
+  return apiFetch(`/api/admin/feedback/${feedbackId}/messages/read`, {
+    method: 'POST',
+  })
+}
+
+export async function fetchAdminUnreadCounts(): Promise<ApiResult<AdminUnreadCounts>> {
+  return apiFetch('/api/admin/feedback/unread')
+}
+
+// ============================================================================
 // Site Mode
 // ============================================================================
 
