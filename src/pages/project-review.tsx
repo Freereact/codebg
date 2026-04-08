@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Send, CheckCircle, Clock, MessageSquare, ChevronLeft } from 'lucide-react'
+import {
+  ArrowLeft,
+  Send,
+  CheckCircle,
+  Clock,
+  MessageSquare,
+  ChevronLeft,
+  PanelRightOpen,
+  PanelRightClose,
+} from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { ConversationThread } from '../components/feedback/conversation-thread'
 import type { ThreadMessage } from '../components/feedback/conversation-thread'
@@ -25,6 +34,7 @@ export function ProjectReviewPage() {
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [panelOpen, setPanelOpen] = useState(true)
 
   // Thread view state
   const [activeThread, setActiveThread] = useState<string | null>(null)
@@ -47,7 +57,10 @@ export function ProjectReviewPage() {
     const threadParam = searchParams.get('thread')
     if (threadParam && feedback.length > 0) {
       const exists = feedback.find((f) => f.id === threadParam)
-      if (exists) openThread(threadParam)
+      if (exists) {
+        openThread(threadParam)
+        setPanelOpen(true)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedback.length, searchParams])
@@ -65,6 +78,7 @@ export function ProjectReviewPage() {
         setActiveThread(null)
         setSelectedSection({ id: e.data.sectionId, title: e.data.sectionTitle })
         setComment('')
+        setPanelOpen(true)
       }
     }
     window.addEventListener('message', handler)
@@ -80,7 +94,6 @@ export function ProjectReviewPage() {
       const res = await fetchMessages(id, feedbackId)
       if (res.ok) setThreadMessages(res.data)
       setThreadLoading(false)
-      // Mark as read
       markMessagesRead(id, feedbackId).catch(() => {})
     },
     [id],
@@ -92,7 +105,6 @@ export function ProjectReviewPage() {
       const res = await sendMessage(id, activeThread, body)
       if (res.ok) {
         setThreadMessages((prev) => [...prev, res.data])
-        // Re-fetch feedback to update status (thread may have re-opened)
         const fbRes = await fetchFeedback(id)
         if (fbRes.ok) setFeedback(fbRes.data)
       }
@@ -158,23 +170,34 @@ export function ProjectReviewPage() {
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-700">
         <Link
-          to="/portal/dashboard"
+          to={`/portal/projects/${id}`}
           className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-          aria-label="Back to dashboard"
+          aria-label="Back to project"
         >
           <ArrowLeft size={20} />
         </Link>
         <h1 className="text-sm font-medium text-slate-800 dark:text-white">{project.subdomain ?? 'Project'}</h1>
-        <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent">Review Mode</span>
-        <span className="ml-auto text-xs text-slate-400">
-          <MessageSquare size={14} className="mr-1 inline" />
-          {feedback.length} comment{feedback.length !== 1 ? 's' : ''}
+        <span className="hidden rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent sm:inline-block">
+          Review Mode
         </span>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs text-slate-400">
+            <MessageSquare size={14} className="mr-1 inline" />
+            {feedback.length}
+          </span>
+          <button
+            onClick={() => setPanelOpen(!panelOpen)}
+            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 md:hidden"
+            aria-label={panelOpen ? 'Show preview' : 'Show comments'}
+          >
+            {panelOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Iframe — site preview */}
-        <div className="flex-1 bg-white">
+        {/* Iframe — site preview (hidden on mobile when panel is open) */}
+        <div className={`flex-1 bg-white ${panelOpen ? 'hidden md:block' : 'block'}`}>
           {previewUrl ? (
             <iframe
               ref={iframeRef}
@@ -190,15 +213,19 @@ export function ProjectReviewPage() {
           )}
         </div>
 
-        {/* Comment panel */}
-        <div className="flex w-80 flex-shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-surface dark:border-slate-700 dark:bg-shell">
+        {/* Comment panel (full width on mobile, fixed width on desktop) */}
+        <div
+          className={`flex flex-col overflow-hidden border-l border-slate-200 bg-surface dark:border-slate-700 dark:bg-shell ${
+            panelOpen ? 'w-full md:w-80 md:flex-shrink-0' : 'hidden'
+          }`}
+        >
           {/* Thread view */}
           {activeThread && activeItem && (
             <div className="flex flex-1 flex-col overflow-hidden">
-              <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2 dark:border-slate-700">
+              <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2.5 dark:border-slate-700">
                 <button
                   onClick={() => setActiveThread(null)}
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -206,7 +233,7 @@ export function ProjectReviewPage() {
                   <p className="truncate text-xs font-medium text-slate-600 dark:text-slate-300">
                     {activeItem.sectionTitle}
                   </p>
-                  <p className="text-[10px] text-slate-400">{activeItem.status}</p>
+                  <p className="text-[10px] text-slate-400">{activeItem.status.replace('_', ' ')}</p>
                 </div>
               </div>
               <div className="flex-1 overflow-hidden">
@@ -297,14 +324,14 @@ export function ProjectReviewPage() {
                   >
                     <div className="mb-1 flex items-center gap-1.5">
                       {STATUS_ICONS[item.status] ?? STATUS_ICONS.pending}
-                      <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                      <span className="truncate text-xs font-medium text-slate-600 dark:text-slate-300">
                         {item.sectionTitle}
                       </span>
-                      <MessageSquare size={12} className="ml-auto text-slate-400" />
+                      <MessageSquare size={12} className="ml-auto shrink-0 text-slate-400" />
                     </div>
                     <p className="line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{item.description}</p>
                     {item.adminResponse && (
-                      <p className="mt-1 text-[10px] text-green-600 dark:text-green-400">Team replied</p>
+                      <p className="mt-1.5 text-[10px] font-medium text-green-600 dark:text-green-400">Team replied</p>
                     )}
                   </button>
                 ))}
