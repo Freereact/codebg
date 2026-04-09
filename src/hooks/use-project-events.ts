@@ -1,5 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ProjectStatus } from '../types/portal'
+
+interface NewMessageEvent {
+  feedbackId: string
+  message: {
+    id: string
+    contentRequestId: string
+    authorId: string
+    authorRole: string
+    body: string
+    readAt: string | null
+    createdAt: string
+  }
+}
 
 interface ProjectEventState {
   status: ProjectStatus | null
@@ -12,7 +25,10 @@ interface ProjectEventState {
 
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
-export function useProjectEvents(projectId: string | undefined): ProjectEventState {
+export function useProjectEvents(
+  projectId: string | undefined,
+  onNewMessage?: (event: NewMessageEvent) => void,
+): ProjectEventState {
   const [state, setState] = useState<ProjectEventState>({
     status: null,
     step: null,
@@ -21,6 +37,10 @@ export function useProjectEvents(projectId: string | undefined): ProjectEventSta
     buildComplete: false,
     durationMs: null,
   })
+
+  // Use ref for the callback so SSE listener always calls the latest version
+  const onNewMessageRef = useRef(onNewMessage)
+  onNewMessageRef.current = onNewMessage
 
   useEffect(() => {
     if (!projectId) return
@@ -56,6 +76,11 @@ export function useProjectEvents(projectId: string | undefined): ProjectEventSta
       const data = JSON.parse((e as MessageEvent).data) as { durationMs: number }
       setState((s) => ({ ...s, buildComplete: true, step: null, durationMs: data.durationMs }))
       source.close()
+    })
+
+    source.addEventListener('new-message', (e) => {
+      const data = JSON.parse((e as MessageEvent).data) as NewMessageEvent
+      onNewMessageRef.current?.(data)
     })
 
     source.addEventListener('error', (e) => {

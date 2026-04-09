@@ -1,5 +1,16 @@
 import { Link } from 'react-router-dom'
-import { Pencil, FileEdit, Clock, Eye, Globe, XCircle, Wrench, CheckCircle2, Loader2 } from 'lucide-react'
+import {
+  Pencil,
+  FileEdit,
+  Clock,
+  Eye,
+  Globe,
+  XCircle,
+  Wrench,
+  CheckCircle2,
+  Loader2,
+  MessageSquare,
+} from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { ProjectListItem } from '../../types/portal'
 
@@ -34,9 +45,10 @@ function formatDate(iso: string): string {
 
 interface ProjectCardProps {
   project: ProjectListItem
+  unreadCount?: number
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, unreadCount = 0 }: ProjectCardProps) {
   const statusColor = STATUS_COLORS[project.status] ?? STATUS_COLORS.lead
   const projectName = project.subdomain ?? project.templateSlug ?? 'New project'
 
@@ -66,12 +78,20 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
       <div className="mt-3 flex items-center justify-between">
         <p className="text-xs text-slate-400">{formatDate(project.createdAt)}</p>
-        <span
-          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-accent dark:hover:bg-slate-700"
-          aria-label="Edit content"
-        >
-          <Pencil size={12} /> Edit
-        </span>
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
+              <MessageSquare size={10} />
+              {unreadCount} new
+            </span>
+          )}
+          <span
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-accent dark:hover:bg-slate-700"
+            aria-label="Edit content"
+          >
+            <Pencil size={12} /> Edit
+          </span>
+        </div>
       </div>
     </Link>
   )

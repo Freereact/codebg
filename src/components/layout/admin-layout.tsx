@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, FolderKanban, Users, MessageSquare, LogOut } from 'lucide-react'
 import { useAuth } from '../../hooks/use-auth'
+import { useAdminEvents } from '../../hooks/use-admin-events'
 import { cn } from '../../lib/utils'
 import { SiteModeBanner } from '../ui/site-mode-banner'
 import { UnreadBadge } from '../ui/unread-badge'
@@ -19,14 +20,27 @@ function AdminSidebar() {
   const { logout } = useAuth()
   const [unreadFeedback, setUnreadFeedback] = useState(0)
 
+  // Fetch initial count
   useEffect(() => {
-    const load = () => {
+    fetchAdminUnreadCounts().then((res) => {
+      if (res.ok) setUnreadFeedback(res.data.total)
+    })
+  }, [])
+
+  // SSE: increment on new customer messages, fall back to polling
+  const handleNewMessage = useCallback(() => {
+    setUnreadFeedback((c) => c + 1)
+  }, [])
+
+  useAdminEvents(handleNewMessage)
+
+  // Polling fallback (in case SSE disconnects)
+  useEffect(() => {
+    const interval = setInterval(() => {
       fetchAdminUnreadCounts().then((res) => {
         if (res.ok) setUnreadFeedback(res.data.total)
       })
-    }
-    load()
-    const interval = setInterval(load, 60_000) // Poll every 60s
+    }, 120_000) // 2 min fallback
     return () => clearInterval(interval)
   }, [])
 

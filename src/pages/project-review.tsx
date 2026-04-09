@@ -13,6 +13,7 @@ import {
 import { Button } from '../components/ui/button'
 import { ConversationThread } from '../components/feedback/conversation-thread'
 import type { ThreadMessage } from '../components/feedback/conversation-thread'
+import { useProjectEvents } from '../hooks/use-project-events'
 import { fetchProject } from '../lib/projects-api'
 import { createFeedback, fetchFeedback, fetchMessages, sendMessage, markMessagesRead } from '../lib/feedback-api'
 import type { FeedbackItem } from '../lib/feedback-api'
@@ -40,6 +41,26 @@ export function ProjectReviewPage() {
   const [activeThread, setActiveThread] = useState<string | null>(null)
   const [threadMessages, setThreadMessages] = useState<ThreadMessage[]>([])
   const [threadLoading, setThreadLoading] = useState(false)
+  const [newMessageThreads, setNewMessageThreads] = useState<Set<string>>(new Set())
+  const activeThreadRef = useRef<string | null>(null)
+  activeThreadRef.current = activeThread
+
+  // SSE: listen for real-time messages
+  useProjectEvents(id, (event) => {
+    if (event.message.authorRole === 'client') return // Ignore own messages echoed back
+    if (activeThreadRef.current === event.feedbackId) {
+      // Active thread — append message directly
+      setThreadMessages((prev) => {
+        if (prev.some((m) => m.id === event.message.id)) return prev // Dedup
+        return [...prev, event.message]
+      })
+      // Auto mark-as-read
+      if (id) markMessagesRead(id, event.feedbackId).catch(() => {})
+    } else {
+      // Different thread — show dot indicator
+      setNewMessageThreads((prev) => new Set(prev).add(event.feedbackId))
+    }
+  })
 
   // Load project and feedback
   useEffect(() => {
@@ -91,6 +112,12 @@ export function ProjectReviewPage() {
       setActiveThread(feedbackId)
       setSelectedSection(null)
       setThreadLoading(true)
+      // Clear new-message indicator for this thread
+      setNewMessageThreads((prev) => {
+        const next = new Set(prev)
+        next.delete(feedbackId)
+        return next
+      })
       const res = await fetchMessages(id, feedbackId)
       if (res.ok) setThreadMessages(res.data)
       setThreadLoading(false)
@@ -327,11 +354,20 @@ export function ProjectReviewPage() {
                       <span className="truncate text-xs font-medium text-slate-600 dark:text-slate-300">
                         {item.sectionTitle}
                       </span>
-                      <MessageSquare size={12} className="ml-auto shrink-0 text-slate-400" />
+                      {newMessageThreads.has(item.id) ? (
+                        <span className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent">
+                          <MessageSquare size={10} className="text-white" />
+                        </span>
+                      ) : (
+                        <MessageSquare size={12} className="ml-auto shrink-0 text-slate-400" />
+                      )}
                     </div>
                     <p className="line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{item.description}</p>
-                    {item.adminResponse && (
+                    {item.adminResponse && !newMessageThreads.has(item.id) && (
                       <p className="mt-1.5 text-[10px] font-medium text-green-600 dark:text-green-400">Team replied</p>
+                    )}
+                    {newMessageThreads.has(item.id) && (
+                      <p className="mt-1.5 text-[10px] font-medium text-accent">New message</p>
                     )}
                   </button>
                 ))}

@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ChevronLeft, MessageSquare, Inbox } from 'lucide-react'
 import { ConversationThread } from '../../components/feedback/conversation-thread'
 import type { ThreadMessage } from '../../components/feedback/conversation-thread'
+import { useAdminEvents } from '../../hooks/use-admin-events'
+import type { AdminNewMessageEvent } from '../../hooks/use-admin-events'
 import { fetchAdminFeedback, fetchAdminMessages, sendAdminMessage, markAdminMessagesRead } from '../../lib/admin-api'
 import type { AdminFeedbackItem } from '../../lib/admin-api'
 import { STATUS_BADGE_STYLES } from '../../lib/feedback-styles'
@@ -34,6 +36,27 @@ export function AdminFeedbackPage() {
   const [threadMessages, setThreadMessages] = useState<ThreadMessage[]>([])
   const [threadLoading, setThreadLoading] = useState(false)
   const [threadStatus, setThreadStatus] = useState<string>('pending')
+  const [newMessageThreads, setNewMessageThreads] = useState<Set<string>>(new Set())
+  const activeThreadRef = useRef<string | null>(null)
+  activeThreadRef.current = activeThread
+
+  // SSE: listen for real-time customer messages
+  useAdminEvents(
+    useCallback((event: AdminNewMessageEvent) => {
+      if (event.message.authorRole === 'admin') return // Ignore own messages echoed back
+      if (activeThreadRef.current === event.feedbackId) {
+        // Active thread — append message directly
+        setThreadMessages((prev) => {
+          if (prev.some((m) => m.id === event.message.id)) return prev
+          return [...prev, event.message]
+        })
+        markAdminMessagesRead(event.feedbackId).catch(() => {})
+      } else {
+        // Different thread — show indicator
+        setNewMessageThreads((prev) => new Set(prev).add(event.feedbackId))
+      }
+    }, []),
+  )
 
   const statusFilter = searchParams.get('status') ?? 'all'
 
@@ -55,6 +78,11 @@ export function AdminFeedbackPage() {
     setActiveThread(feedbackId)
     setThreadStatus(status)
     setThreadLoading(true)
+    setNewMessageThreads((prev) => {
+      const next = new Set(prev)
+      next.delete(feedbackId)
+      return next
+    })
     const res = await fetchAdminMessages(feedbackId)
     if (res.ok) setThreadMessages(res.data)
     setThreadLoading(false)
@@ -186,10 +214,16 @@ export function AdminFeedbackPage() {
               <span className="text-slate-300">&middot;</span>
               <span className="truncate text-xs text-slate-500">{fb.sectionTitle}</span>
               <div className="ml-auto flex shrink-0 items-center gap-2">
-                <MessageSquare
-                  size={14}
-                  className="text-slate-300 transition-colors group-hover:text-accent dark:text-slate-600"
-                />
+                {newMessageThreads.has(fb.id) ? (
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent">
+                    <MessageSquare size={10} className="text-white" />
+                  </span>
+                ) : (
+                  <MessageSquare
+                    size={14}
+                    className="text-slate-300 transition-colors group-hover:text-accent dark:text-slate-600"
+                  />
+                )}
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE_STYLES[fb.status] ?? STATUS_BADGE_STYLES.pending}`}
                 >
@@ -202,6 +236,7 @@ export function AdminFeedbackPage() {
               {fb.user.email}
               <span className="mx-1.5">&middot;</span>
               {relativeTime(fb.createdAt)}
+              {newMessageThreads.has(fb.id) && <span className="ml-1.5 font-medium text-accent">New message</span>}
             </p>
           </button>
         ))}

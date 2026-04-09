@@ -35,6 +35,7 @@ import {
   createNoteSchema,
 } from './validation.js'
 import { notifyUserStatusChange, notifyAdminBuildFailed } from './notifications.js'
+import { onAdminEvent } from '../projects/events.js'
 import { prisma } from '../db.js'
 import { getSiteMode, setSiteMode, setSiteModeSchema } from '../site-mode.js'
 
@@ -42,6 +43,42 @@ export const adminRouter = Router()
 
 // All routes require admin role
 adminRouter.use(requireAdmin)
+
+// ============================================================================
+// SSE: real-time admin events (new messages, etc.)
+// ============================================================================
+
+adminRouter.get('/events', (req: AuthenticatedRequest, res: Response) => {
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('X-Accel-Buffering', 'no')
+  res.flushHeaders()
+
+  const unsubscribe = onAdminEvent((event) => {
+    res.write(`event: ${event.type}\ndata: ${JSON.stringify({ ...event.data, projectId: event.projectId })}\n\n`)
+  })
+
+  const heartbeat = setInterval(() => {
+    res.write(': heartbeat\n\n')
+  }, 30_000)
+
+  const maxLifetime = setTimeout(
+    () => {
+      cleanup()
+      res.end()
+    },
+    10 * 60 * 1000,
+  )
+
+  const cleanup = () => {
+    unsubscribe()
+    clearInterval(heartbeat)
+    clearTimeout(maxLifetime)
+  }
+
+  req.on('close', cleanup)
+})
 
 // ============================================================================
 // Stats

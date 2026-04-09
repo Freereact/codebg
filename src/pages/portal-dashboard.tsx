@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/use-auth'
 import { useProjects } from '../hooks/use-projects'
+import { fetchUnreadCounts } from '../lib/feedback-api'
 import { EmptyProjectsState } from '../components/portal/empty-state'
 import { ProjectCard } from '../components/portal/project-card'
 import { SkeletonCard } from '../components/ui/skeleton'
@@ -15,9 +16,22 @@ function getGreeting(): string {
 export function PortalDashboardPage() {
   const { state: authState } = useAuth()
   const { projects, loading, error, refetch } = useProjects()
+  const [unreadByProject, setUnreadByProject] = useState<Record<string, number>>({})
 
   const email = authState.status === 'authenticated' ? authState.user.email : ''
   const name = email.includes('@') ? email.split('@')[0] : 'there'
+
+  // Fetch unread counts for all projects
+  useEffect(() => {
+    if (projects.length === 0) return
+    for (const p of projects) {
+      fetchUnreadCounts(p.id).then((res) => {
+        if (res.ok && res.data.total > 0) {
+          setUnreadByProject((prev) => ({ ...prev, [p.id]: res.data.total }))
+        }
+      })
+    }
+  }, [projects])
 
   // Auto-refresh when any project is building
   useEffect(() => {
@@ -60,7 +74,7 @@ export function PortalDashboardPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard key={project.id} project={project} unreadCount={unreadByProject[project.id] ?? 0} />
           ))}
         </div>
       )}

@@ -37,14 +37,18 @@ export function ProjectDetailPage() {
   const initialTab = (searchParams.get('tab') as TabId) ?? 'overview'
   const [activeTab, setActiveTab] = useState<TabId>(TABS.some((t) => t.id === initialTab) ? initialTab : 'overview')
   const { project, loading, error, refetch } = useProject(id ?? '')
-  const events = useProjectEvents(project?.status === 'building' ? id : undefined)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
   const [unreadCount, setUnreadCount] = useState(0)
 
-  // Fetch unread feedback message count
+  // SSE: build events + real-time message notifications
+  const events = useProjectEvents(id, () => {
+    setUnreadCount((c) => c + 1)
+  })
+
+  // Fetch unread feedback message count on mount
   useEffect(() => {
     if (!id) return
     fetchUnreadCounts(id).then((res) => {

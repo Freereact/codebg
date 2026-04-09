@@ -1,13 +1,31 @@
+import { useEffect, useState } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, LogOut, Settings } from 'lucide-react'
+import { Sun, Moon, LogOut, Settings, Bell } from 'lucide-react'
 import { useThemeContext } from '../../hooks/use-theme'
 import { useAuth } from '../../hooks/use-auth'
+import { useProjects } from '../../hooks/use-projects'
+import { fetchUnreadCounts } from '../../lib/feedback-api'
 import { SiteModeBanner } from '../ui/site-mode-banner'
 import { IS_TEST } from '../../lib/config'
 
 function PortalHeader() {
   const { theme, toggleTheme } = useThemeContext()
   const { state: authState, logout } = useAuth()
+  const { projects } = useProjects()
+  const [totalUnread, setTotalUnread] = useState(0)
+
+  useEffect(() => {
+    if (projects.length === 0) return
+    let sum = 0
+    let pending = projects.length
+    for (const p of projects) {
+      fetchUnreadCounts(p.id).then((res) => {
+        if (res.ok) sum += res.data.total
+        pending--
+        if (pending === 0) setTotalUnread(sum)
+      })
+    }
+  }, [projects])
 
   const email = authState.status === 'authenticated' ? authState.user.email : ''
 
@@ -25,6 +43,19 @@ function PortalHeader() {
 
         <div className="flex items-center gap-4">
           <span className="hidden text-sm text-slate-300 sm:inline">{email}</span>
+
+          <Link
+            to="/portal/dashboard"
+            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10"
+            aria-label={totalUnread > 0 ? `${totalUnread} unread messages` : 'Messages'}
+          >
+            <Bell size={18} />
+            {totalUnread > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                {totalUnread > 99 ? '99+' : totalUnread}
+              </span>
+            )}
+          </Link>
 
           <Link
             to="/portal/settings"
