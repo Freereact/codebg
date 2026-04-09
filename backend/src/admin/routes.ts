@@ -34,7 +34,7 @@ import {
   updateProjectStatusSchema,
   createNoteSchema,
 } from './validation.js'
-import { notifyUserFeedbackResponse, notifyUserStatusChange, notifyAdminBuildFailed } from './notifications.js'
+import { notifyUserStatusChange, notifyAdminBuildFailed } from './notifications.js'
 import { prisma } from '../db.js'
 import { getSiteMode, setSiteMode, setSiteModeSchema } from '../site-mode.js'
 
@@ -244,24 +244,14 @@ adminRouter.patch('/feedback/:feedbackId', async (req: AuthenticatedRequest, res
     const updated = await updateFeedback(idParsed.data.feedbackId, bodyParsed.data)
     if (!updated) return res.status(404).json({ ok: false, error: 'feedback_not_found' })
 
-    // If admin responded, email the user
-    if (bodyParsed.data.adminResponse) {
-      const feedbackRow = await prisma.contentRequest.findUnique({
-        where: { id: idParsed.data.feedbackId },
-        include: {
-          user: { select: { email: true, name: true } },
-          project: { select: { id: true } },
-        },
-      })
-      if (feedbackRow) {
-        notifyUserFeedbackResponse(
-          feedbackRow.user.email,
-          feedbackRow.user.name,
-          feedbackRow.project.id,
-          updated.sectionTitle,
-          bodyParsed.data.adminResponse,
-        ).catch(() => {})
-      }
+    // If admin responded, also create a Message for the conversation thread
+    if (bodyParsed.data.adminResponse && req.user?.sub) {
+      await createAdminMessage(
+        idParsed.data.feedbackId,
+        req.user.sub,
+        bodyParsed.data.adminResponse,
+        bodyParsed.data.status,
+      ).catch(() => {})
     }
 
     return res.json({ ok: true, data: updated })

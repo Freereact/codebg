@@ -1,6 +1,7 @@
 import { prisma } from '../db.js'
 import type { CreateFeedbackInput, UpdateFeedbackInput } from './feedback-validation.js'
 import { notifyAdminNewFeedback } from '../admin/notifications.js'
+import { emitAdminEvent } from './events.js'
 
 export interface FeedbackItem {
   readonly id: string
@@ -25,6 +26,34 @@ export async function createFeedback(
       title: input.sectionTitle,
       description: input.description,
       attachments: { sectionId: input.sectionId, sectionTitle: input.sectionTitle },
+    },
+  })
+
+  // Seed the initial message so the conversation thread is never empty
+  const message = await prisma.message.create({
+    data: {
+      contentRequestId: row.id,
+      authorId: userId,
+      authorRole: 'client',
+      body: input.description,
+    },
+  })
+
+  // SSE: notify admin channel about new feedback
+  emitAdminEvent({
+    type: 'new-message',
+    projectId,
+    data: {
+      feedbackId: row.id,
+      message: {
+        id: message.id,
+        contentRequestId: row.id,
+        authorId: userId,
+        authorRole: 'client',
+        body: input.description,
+        readAt: null,
+        createdAt: message.createdAt.toISOString(),
+      },
     },
   })
 
