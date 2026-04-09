@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Send, MessageCircle } from 'lucide-react'
 import { Button } from '../ui/button'
+import { STATUS_BADGE_STYLES } from '../../lib/feedback-styles'
 
 export interface ThreadMessage {
   id: string
@@ -40,13 +41,6 @@ function formatTime(iso: string): string {
     )
   }
   return d.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  rejected: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
 }
 
 export function ConversationThread({
@@ -157,7 +151,7 @@ export function ConversationThread({
               onClick={() => onStatusChange(s)}
               className={`rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${
                 currentStatus === s
-                  ? (STATUS_STYLES[s] ?? 'bg-accent text-black')
+                  ? (STATUS_BADGE_STYLES[s] ?? 'bg-accent text-black')
                   : 'bg-slate-50 text-slate-400 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-500 dark:hover:bg-slate-700'
               }`}
             >

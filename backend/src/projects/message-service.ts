@@ -3,6 +3,13 @@ import { redis } from '../redis.js'
 import { emitProjectEvent, emitAdminEvent } from './events.js'
 import { notifyAdminNewFeedback, notifyUserFeedbackResponse } from '../admin/notifications.js'
 
+export class FeedbackNotFoundError extends Error {
+  constructor(id: string) {
+    super(`Feedback not found: ${id}`)
+    this.name = 'FeedbackNotFoundError'
+  }
+}
+
 export interface MessageItem {
   readonly id: string
   readonly contentRequestId: string
@@ -11,6 +18,17 @@ export interface MessageItem {
   readonly body: string
   readonly readAt: string | null
   readonly createdAt: string
+}
+
+/**
+ * Verify a feedback thread belongs to a given project. Throws FeedbackNotFoundError if not.
+ */
+export async function verifyFeedbackOwnership(contentRequestId: string, projectId: string): Promise<void> {
+  const row = await prisma.contentRequest.findFirst({
+    where: { id: contentRequestId, projectId },
+    select: { id: true },
+  })
+  if (!row) throw new FeedbackNotFoundError(contentRequestId)
 }
 
 /**
@@ -45,7 +63,7 @@ export async function createCustomerMessage(
       user: { select: { email: true } },
     },
   })
-  if (!feedback) throw new Error('Feedback not found')
+  if (!feedback) throw new FeedbackNotFoundError(contentRequestId)
 
   const message = await prisma.message.create({
     data: { contentRequestId, authorId, authorRole: 'client', body },
@@ -98,7 +116,7 @@ export async function createAdminMessage(
       user: { select: { id: true, email: true, name: true } },
     },
   })
-  if (!feedback) throw new Error('Feedback not found')
+  if (!feedback) throw new FeedbackNotFoundError(contentRequestId)
 
   const message = await prisma.message.create({
     data: { contentRequestId, authorId, authorRole: 'admin', body },
@@ -226,9 +244,9 @@ function mapRow(row: {
 /** Send email notification unless one was sent for this key in the last 15 minutes. */
 async function notifyWithDebounce(key: string, send: () => Promise<void>): Promise<void> {
   const redisKey = `email_debounce:${key}`
-  const exists = await redis.get(redisKey)
-  if (exists) return
+  // Atomic set-if-not-exists to avoid race conditions
+  const wasSet = await redis.set(redisKey, '1', 'EX', 900, 'NX')
+  if (!wasSet) return
 
-  await redis.set(redisKey, '1', 'EX', 900) // 15 min TTL
   await send().catch(() => {})
 }

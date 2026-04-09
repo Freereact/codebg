@@ -28,7 +28,14 @@ import {
   getDnsInstructions,
 } from './domain-service.js'
 import { createFeedback, listFeedback, updateFeedback } from './feedback-service.js'
-import { listMessages, createCustomerMessage, markMessagesRead, getUnreadCountsForProject } from './message-service.js'
+import {
+  listMessages,
+  createCustomerMessage,
+  markMessagesRead,
+  getUnreadCountsForProject,
+  verifyFeedbackOwnership,
+  FeedbackNotFoundError,
+} from './message-service.js'
 import { createMessageSchema } from './message-validation.js'
 import { requireAdmin } from '../auth/middleware.js'
 import type { AuthenticatedRequest } from '../auth/types.js'
@@ -44,41 +51,21 @@ function userKey(req: Request): string {
   return (req as AuthenticatedRequest).user?.sub ?? req.ip ?? 'unknown'
 }
 
-const createProjectLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  limit: 5,
-  keyGenerator: userKey,
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
-  message: { ok: false, error: 'too_many_requests' },
-})
+function userRateLimit(windowMs: number, limit: number) {
+  return rateLimit({
+    windowMs,
+    limit,
+    keyGenerator: userKey,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { ok: false, error: 'too_many_requests' },
+  })
+}
 
-const updateProjectLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 10,
-  keyGenerator: userKey,
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
-  message: { ok: false, error: 'too_many_requests' },
-})
-
-const feedbackLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  limit: 20,
-  keyGenerator: userKey,
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
-  message: { ok: false, error: 'too_many_requests' },
-})
-
-const domainLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  limit: 10,
-  keyGenerator: userKey,
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
-  message: { ok: false, error: 'too_many_requests' },
-})
+const createProjectLimiter = userRateLimit(60 * 60 * 1000, 5) // 5/hour
+const updateProjectLimiter = userRateLimit(15 * 60 * 1000, 10) // 10/15min
+const feedbackLimiter = userRateLimit(60 * 60 * 1000, 20) // 20/hour
+const domainLimiter = userRateLimit(60 * 60 * 1000, 10) // 10/hour
 
 export const projectsRouter = Router()
 
@@ -355,9 +342,11 @@ projectsRouter.get(
       const fbParsed = feedbackIdSchema.safeParse({ feedbackId: req.params.feedbackId })
       if (!fbParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
 
+      await verifyFeedbackOwnership(fbParsed.data.feedbackId, idParsed.data.id)
       const messages = await listMessages(fbParsed.data.feedbackId)
       return res.json({ ok: true, data: messages })
     } catch (err) {
+      if (err instanceof FeedbackNotFoundError) return res.status(404).json({ ok: false, error: 'feedback_not_found' })
       console.error('[messages] list error', err instanceof Error ? err.message : 'unknown')
       return res.status(500).json({ ok: false, error: 'internal_error' })
     }
@@ -379,6 +368,8 @@ projectsRouter.post(
       const fbParsed = feedbackIdSchema.safeParse({ feedbackId: req.params.feedbackId })
       if (!fbParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
 
+      await verifyFeedbackOwnership(fbParsed.data.feedbackId, idParsed.data.id)
+
       const bodyParsed = createMessageSchema.safeParse(req.body)
       if (!bodyParsed.success)
         return res.status(400).json({ ok: false, error: 'invalid_payload', issues: bodyParsed.error.issues })
@@ -386,6 +377,7 @@ projectsRouter.post(
       const message = await createCustomerMessage(fbParsed.data.feedbackId, getUserId(req), bodyParsed.data.body)
       return res.status(201).json({ ok: true, data: message })
     } catch (err) {
+      if (err instanceof FeedbackNotFoundError) return res.status(404).json({ ok: false, error: 'feedback_not_found' })
       console.error('[messages] create error', err instanceof Error ? err.message : 'unknown')
       return res.status(500).json({ ok: false, error: 'internal_error' })
     }
@@ -406,9 +398,11 @@ projectsRouter.post(
       const fbParsed = feedbackIdSchema.safeParse({ feedbackId: req.params.feedbackId })
       if (!fbParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
 
+      await verifyFeedbackOwnership(fbParsed.data.feedbackId, idParsed.data.id)
       const markedCount = await markMessagesRead(fbParsed.data.feedbackId, 'client')
       return res.json({ ok: true, markedCount })
     } catch (err) {
+      if (err instanceof FeedbackNotFoundError) return res.status(404).json({ ok: false, error: 'feedback_not_found' })
       console.error('[messages] read error', err instanceof Error ? err.message : 'unknown')
       return res.status(500).json({ ok: false, error: 'internal_error' })
     }

@@ -14,6 +14,7 @@ import {
   createAdminMessage,
   markMessagesRead,
   getAdminUnreadCounts,
+  FeedbackNotFoundError,
 } from '../projects/message-service.js'
 import { createAdminMessageSchema } from '../projects/message-validation.js'
 import {
@@ -317,6 +318,7 @@ adminRouter.post('/feedback/:feedbackId/messages', async (req: AuthenticatedRequ
     )
     return res.status(201).json({ ok: true, data: message })
   } catch (err) {
+    if (err instanceof FeedbackNotFoundError) return res.status(404).json({ ok: false, error: 'feedback_not_found' })
     console.error('[admin] messages create error', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ ok: false, error: 'internal_error' })
   }

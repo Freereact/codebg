@@ -5,6 +5,7 @@ import { ConversationThread } from '../../components/feedback/conversation-threa
 import type { ThreadMessage } from '../../components/feedback/conversation-thread'
 import { fetchAdminFeedback, fetchAdminMessages, sendAdminMessage, markAdminMessagesRead } from '../../lib/admin-api'
 import type { AdminFeedbackItem } from '../../lib/admin-api'
+import { STATUS_BADGE_STYLES } from '../../lib/feedback-styles'
 
 const STATUS_FILTERS = ['all', 'pending', 'in_progress', 'completed']
 const STATUS_OPTIONS = ['pending', 'in_progress', 'completed', 'rejected']
@@ -20,13 +21,6 @@ function relativeTime(iso: string): string {
   if (diffHr < 24) return `${diffHr}h ago`
   if (diffDay < 30) return `${diffDay}d ago`
   return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' })
-}
-
-const STATUS_BADGE: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  rejected: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
 }
 
 export function AdminFeedbackPage() {
@@ -108,7 +102,7 @@ export function AdminFeedbackPage() {
             </p>
           </div>
           <span
-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-medium ${STATUS_BADGE[threadStatus] ?? STATUS_BADGE.pending}`}
+            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-medium ${STATUS_BADGE_STYLES[threadStatus] ?? STATUS_BADGE_STYLES.pending}`}
           >
             {threadStatus.replace('_', ' ')}
           </span>
@@ -197,7 +191,7 @@ export function AdminFeedbackPage() {
                   className="text-slate-300 transition-colors group-hover:text-accent dark:text-slate-600"
                 />
                 <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[fb.status] ?? STATUS_BADGE.pending}`}
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE_STYLES[fb.status] ?? STATUS_BADGE_STYLES.pending}`}
                 >
                   {fb.status.replace('_', ' ')}
                 </span>
