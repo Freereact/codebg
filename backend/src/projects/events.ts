@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events'
 
 export interface ProjectEvent {
-  type: 'progress' | 'status' | 'error' | 'build-complete' | 'feedback-response' | 'new-message'
+  type: 'progress' | 'status' | 'error' | 'build-complete' | 'new-message'
   data: Record<string, unknown>
 }
 

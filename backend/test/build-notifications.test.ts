@@ -24,7 +24,6 @@ vi.mock('../src/config.js', () => ({
     projectsDir: '/tmp/test-projects',
     sitesDir: '/tmp/test-sites',
     sampleAppsDir: '/tmp/test-sample-apps',
-    buildRateLimitSeconds: 300,
     frontendUrl: 'https://codebg.com',
     resendApiKey: 'test',
     mailFrom: 'noreply@codebg.com',

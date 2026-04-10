@@ -26,7 +26,6 @@ export const config = {
   projectsDir: process.env.PROJECTS_DIR ?? '/var/www/projects',
   sitesDir: process.env.SITES_DIR ?? '/var/www/sites',
   sampleAppsDir: required('SAMPLE_APPS_DIR'),
-  buildRateLimitSeconds: Number(process.env.BUILD_RATE_LIMIT_SECONDS ?? 300),
   ghAppId: process.env.GH_APP_ID ?? '',
   ghAppPrivateKey: process.env.GH_APP_PRIVATE_KEY
     ? Buffer.from(process.env.GH_APP_PRIVATE_KEY, 'base64').toString('utf-8')

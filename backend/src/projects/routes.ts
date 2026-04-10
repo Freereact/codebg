@@ -17,7 +17,7 @@ import {
 import { listProjectsQuerySchema, projectIdSchema } from './validation.js'
 import { createProjectBodySchema, updateProjectBodySchema } from './site-config-schema.js'
 import { getAllTemplates } from './template-registry.js'
-import { createFeedbackSchema, updateFeedbackSchema, feedbackIdSchema } from './feedback-validation.js'
+import { createFeedbackSchema, feedbackIdSchema } from './feedback-validation.js'
 import { buildProject } from './build-service.js'
 import { setDomainSchema } from './domain-validation.js'
 import {
@@ -27,7 +27,7 @@ import {
   updateDomainStatus,
   getDnsInstructions,
 } from './domain-service.js'
-import { createFeedback, listFeedback, updateFeedback } from './feedback-service.js'
+import { createFeedback, listFeedback } from './feedback-service.js'
 import {
   listMessages,
   createCustomerMessage,
@@ -37,7 +37,6 @@ import {
   FeedbackNotFoundError,
 } from './message-service.js'
 import { createMessageSchema } from './message-validation.js'
-import { requireAdmin } from '../auth/middleware.js'
 import type { AuthenticatedRequest } from '../auth/types.js'
 
 /** Defensively extract user sub from req.user (guaranteed by requireAuth) */
@@ -408,28 +407,6 @@ projectsRouter.post(
     }
   },
 )
-
-// --- Feedback admin (operator) ---
-
-export const feedbackRouter = Router()
-
-feedbackRouter.patch('/:feedbackId', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const idParsed = feedbackIdSchema.safeParse(req.params)
-    if (!idParsed.success) return res.status(400).json({ ok: false, error: 'invalid_feedback_id' })
-
-    const bodyParsed = updateFeedbackSchema.safeParse(req.body)
-    if (!bodyParsed.success) return res.status(400).json({ ok: false, error: 'invalid_payload' })
-
-    const updated = await updateFeedback(idParsed.data.feedbackId, bodyParsed.data)
-    if (!updated) return res.status(404).json({ ok: false, error: 'feedback_not_found' })
-
-    return res.json({ ok: true, data: updated })
-  } catch (err) {
-    console.error('[feedback] update error', err instanceof Error ? err.message : 'unknown')
-    return res.status(500).json({ ok: false, error: 'internal_error' })
-  }
-})
 
 // --- Delete ---
 
