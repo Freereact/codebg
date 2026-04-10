@@ -15,12 +15,6 @@ async function git(repoPath: string, args: string[], opts?: { maxBuffer?: number
   }) as Promise<ExecResult>
 }
 
-export interface CommitInfo {
-  hash: string
-  date: string
-  message: string
-}
-
 /**
  * Initialize a new git repo, stage all files, and create the initial commit.
  * Returns the commit hash.
@@ -54,18 +48,4 @@ export async function createArchive(repoPath: string): Promise<Buffer> {
     encoding: 'buffer',
   })) as unknown as { stdout: Buffer; stderr: string }
   return stdout
-}
-
-/**
- * Get commit history. Returns structured commit objects.
- */
-export async function getHistory(repoPath: string, limit: number): Promise<CommitInfo[]> {
-  const { stdout } = await git(repoPath, ['log', `--max-count=${limit}`, '--format=%H|%aI|%s'])
-  const output = stdout.toString().trim()
-  if (!output) return []
-
-  return output.split('\n').map((line) => {
-    const [hash, date, ...msgParts] = line.split('|')
-    return { hash, date, message: msgParts.join('|') }
-  })
 }

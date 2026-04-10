@@ -15,16 +15,14 @@ function PortalHeader() {
   const [totalUnread, setTotalUnread] = useState(0)
 
   useEffect(() => {
-    if (projects.length === 0) return
-    let sum = 0
-    let pending = projects.length
-    for (const p of projects) {
-      fetchUnreadCounts(p.id).then((res) => {
-        if (res.ok) sum += res.data.total
-        pending--
-        if (pending === 0) setTotalUnread(sum)
-      })
+    if (projects.length === 0) {
+      setTotalUnread(0)
+      return
     }
+    Promise.all(projects.map((p) => fetchUnreadCounts(p.id))).then((results) => {
+      const sum = results.reduce((acc, res) => (res.ok ? acc + res.data.total : acc), 0)
+      setTotalUnread(sum)
+    })
   }, [projects])
 
   const email = authState.status === 'authenticated' ? authState.user.email : ''

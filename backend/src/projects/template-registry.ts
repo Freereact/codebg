@@ -80,10 +80,6 @@ const TEMPLATE_THEMES: Record<TemplateSlug, string> = {
 }`,
 }
 
-export function getTemplateMeta(slug: TemplateSlug): TemplateMeta {
-  return TEMPLATE_META[slug]
-}
-
 export function getAllTemplates(): readonly TemplateMeta[] {
   return Object.values(TEMPLATE_META)
 }

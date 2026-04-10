@@ -19,24 +19,29 @@ export async function createFeedback(
   userId: string,
   input: CreateFeedbackInput,
 ): Promise<FeedbackItem> {
-  const row = await prisma.contentRequest.create({
-    data: {
-      projectId,
-      userId,
-      title: input.sectionTitle,
-      description: input.description,
-      attachments: { sectionId: input.sectionId, sectionTitle: input.sectionTitle },
-    },
-  })
+  // Atomic: create ContentRequest + initial Message together so a conversation
+  // thread is never orphaned without its first message.
+  const { row, message } = await prisma.$transaction(async (tx) => {
+    const row = await tx.contentRequest.create({
+      data: {
+        projectId,
+        userId,
+        title: input.sectionTitle,
+        description: input.description,
+        attachments: { sectionId: input.sectionId, sectionTitle: input.sectionTitle },
+      },
+    })
 
-  // Seed the initial message so the conversation thread is never empty
-  const message = await prisma.message.create({
-    data: {
-      contentRequestId: row.id,
-      authorId: userId,
-      authorRole: 'client',
-      body: input.description,
-    },
+    const message = await tx.message.create({
+      data: {
+        contentRequestId: row.id,
+        authorId: userId,
+        authorRole: 'client',
+        body: input.description,
+      },
+    })
+
+    return { row, message }
   })
 
   // SSE: notify admin channel about new feedback

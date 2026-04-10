@@ -99,8 +99,6 @@ export interface UserProfile {
   readonly createdAt: string
 }
 
-export { type CommitInfo } from './git-service.js'
-
 export interface PaginatedResponse<T> {
   readonly ok: true
   readonly data: readonly T[]

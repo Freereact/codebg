@@ -7,6 +7,9 @@ function required(name: string): string {
   return value
 }
 
+// Validate DATABASE_URL exists at startup (Prisma reads it directly from env)
+required('DATABASE_URL')
+
 export const config = {
   port: Number(process.env.PORT ?? 8787),
   redisUrl: required('REDIS_URL'),
@@ -18,7 +21,6 @@ export const config = {
   mailTo: required('MAIL_TO'),
   allowedOrigins: (process.env.ALLOWED_ORIGINS ?? 'https://codebg.com').split(',').map((s) => s.trim()),
   maxPerDay: Number(process.env.MAX_EMAILS_PER_DAY ?? 100),
-  databaseUrl: required('DATABASE_URL'),
   jwtSecret: required('JWT_SECRET'),
   frontendUrl: required('FRONTEND_URL'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
@@ -37,9 +39,6 @@ export const config = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? '',
   stripePriceStarterMonthly: process.env.STRIPE_PRICE_STARTER_MONTHLY ?? '',
   stripePriceProfessionalMonthly: process.env.STRIPE_PRICE_PROFESSIONAL_MONTHLY ?? '',
-  get stripeConfigured(): boolean {
-    return !!(this.stripeSecretKey && this.stripeWebhookSecret)
-  },
   serverPublicIp: process.env.SERVER_PUBLIC_IP ?? '',
   customDomainCnameTarget: process.env.CUSTOM_DOMAIN_CNAME_TARGET ?? 'custom.codebg.com',
   domainTasksDir: process.env.DOMAIN_TASKS_DIR ?? '/var/www/domain-tasks',

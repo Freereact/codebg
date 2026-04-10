@@ -29,7 +29,7 @@ vi.mock('node:util', async () => {
   }
 })
 
-const { initRepo, commitFiles, createArchive, getHistory } = await import('../src/projects/git-service.js')
+const { initRepo, commitFiles, createArchive } = await import('../src/projects/git-service.js')
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -116,24 +116,5 @@ describe('createArchive', () => {
     mockExecFile.mockResolvedValue({ stdout: Buffer.from('zipdata'), stderr: '' })
     const result = await createArchive('/tmp/repo')
     expect(Buffer.isBuffer(result)).toBe(true)
-  })
-})
-
-describe('getHistory', () => {
-  it('parses git log output into structured commits', async () => {
-    mockExecFile.mockResolvedValue({
-      stdout: 'abc123|2026-03-19|Initial commit\ndef456|2026-03-19|Update info\n',
-      stderr: '',
-    })
-    const history = await getHistory('/tmp/repo', 10)
-    expect(history).toHaveLength(2)
-    expect(history[0].hash).toBe('abc123')
-    expect(history[0].message).toBe('Initial commit')
-  })
-
-  it('returns empty array for empty output', async () => {
-    mockExecFile.mockResolvedValue({ stdout: '', stderr: '' })
-    const history = await getHistory('/tmp/repo', 10)
-    expect(history).toEqual([])
   })
 })

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export interface AdminNewMessageEvent {
   feedbackId: string
@@ -17,10 +17,9 @@ export interface AdminNewMessageEvent {
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
 export function useAdminEvents(onNewMessage?: (event: AdminNewMessageEvent) => void): { connected: boolean } {
+  const [connected, setConnected] = useState(false)
   const onNewMessageRef = useRef(onNewMessage)
   onNewMessageRef.current = onNewMessage
-
-  const connectedRef = useRef(false)
 
   useEffect(() => {
     const source = new EventSource(`${API_BASE}/api/admin/events`, {
@@ -30,13 +29,13 @@ export function useAdminEvents(onNewMessage?: (event: AdminNewMessageEvent) => v
     const maxLifetime = setTimeout(
       () => {
         source.close()
-        connectedRef.current = false
+        setConnected(false)
       },
       10 * 60 * 1000,
     )
 
     source.onopen = () => {
-      connectedRef.current = true
+      setConnected(true)
     }
 
     source.addEventListener('new-message', (e) => {
@@ -45,14 +44,15 @@ export function useAdminEvents(onNewMessage?: (event: AdminNewMessageEvent) => v
     })
 
     source.onerror = () => {
-      connectedRef.current = false
+      setConnected(false)
     }
 
     return () => {
       source.close()
       clearTimeout(maxLifetime)
+      setConnected(false)
     }
   }, [])
 
-  return { connected: connectedRef.current }
+  return { connected }
 }
